@@ -26,6 +26,7 @@ export class Client extends Entity<ClientProps> {
 
   set name(name: string) {
     this.props.name = name
+    this.updatedAt = new Date()
   }
 
   get phone() {
@@ -34,6 +35,7 @@ export class Client extends Entity<ClientProps> {
 
   set phone(phone: string) {
     this.props.phone = phone
+    this.updatedAt = new Date()
   }
 
   get periodPreference() {
@@ -42,6 +44,7 @@ export class Client extends Entity<ClientProps> {
 
   set periodPreference(periodPreference: PeriodPreferenceType[]) {
     this.props.periodPreference = periodPreference
+    this.updatedAt = new Date()
   }
 
   get extraPreferences() {
@@ -50,6 +53,7 @@ export class Client extends Entity<ClientProps> {
 
   set extraPreferences(extraPreferences: string) {
     this.props.extraPreferences = extraPreferences
+    this.updatedAt = new Date()
   }
 
   get appointmentHistory() {
@@ -61,7 +65,11 @@ export class Client extends Entity<ClientProps> {
   }
 
   get updatedAt() {
-    return this.props.updatedAt
+    return this.props.updatedAt ?? new Date()
+  }
+
+  set updatedAt(updatedAt: Date) {
+    this.props.updatedAt = updatedAt
   }
 
   static create(props: ClientProps, id?: UniqueEntityId) {
