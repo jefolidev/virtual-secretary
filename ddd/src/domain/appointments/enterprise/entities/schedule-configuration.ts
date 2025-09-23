@@ -12,7 +12,7 @@ interface ScheduleConfigurationProps {
   holidays: Date[]
   enableGoogleMeet: boolean
   createdAt: Date
-  updatedAt: Date
+  updatedAt?: Date
 }
 
 export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
@@ -111,7 +111,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
   }
 
   get updatedAt() {
-    return this.props.updatedAt
+    return this.props.updatedAt ?? new Date()
   }
 
   set updatedAt(updatedAt: Date) {
@@ -127,10 +127,10 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
   ) {
     const scheduleConfiguration = new ScheduleConfiguration(
       {
+        ...props,
         sessionDurationMinutes: 60,
         bufferIntervalMinutes: 10,
         createdAt: new Date(),
-        ...props,
       },
       id
     )

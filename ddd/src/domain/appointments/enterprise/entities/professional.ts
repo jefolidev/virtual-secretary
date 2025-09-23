@@ -6,6 +6,7 @@ import type { NotificationSettings } from './value-objects/notification-settings
 interface ProfessionalProps {
   userId: UniqueEntityId
   notificationSettingsId: UniqueEntityId
+  cancellationPolicyId: UniqueEntityId
   name: string
   phone: string
   officeAddress: string
@@ -21,6 +22,10 @@ export class Professional extends Entity<ProfessionalProps> {
 
   get notificationSettingsId() {
     return this.props.notificationSettingsId
+  }
+
+  get cancellationPolicyId() {
+    return this.props.cancellationPolicyId
   }
 
   get name() {

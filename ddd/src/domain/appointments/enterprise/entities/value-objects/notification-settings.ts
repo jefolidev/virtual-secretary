@@ -40,6 +40,6 @@ export class NotificationSettings {
       throw new Error('Reminder before minutes must be at least 10 minutes')
     }
 
-    return new NotificationSettings({ reminderBeforeMinutes: 10, ...props })
+    return new NotificationSettings({ ...props, reminderBeforeMinutes: 10 })
   }
 }
