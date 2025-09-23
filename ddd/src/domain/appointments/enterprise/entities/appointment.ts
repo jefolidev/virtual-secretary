@@ -1,6 +1,6 @@
-import { Entity } from '../../../../core/entities/entity'
-import type { Optional } from '../../../../core/entities/types/optional'
-import { UniqueEntityId } from '../../../../core/entities/unique-entity-id'
+import { Entity } from '@/core/entities/entity'
+import type { Optional } from '@/core/entities/types/optional'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 
 type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 type AppointmentStatusType =
