@@ -34,7 +34,7 @@ export class Professional extends Entity<ProfessionalProps> {
 
   set name(name: string) {
     this.props.name = name
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get phone() {
@@ -43,7 +43,7 @@ export class Professional extends Entity<ProfessionalProps> {
 
   set phone(phone: string) {
     this.props.phone = phone
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get officeAddress() {
@@ -52,7 +52,7 @@ export class Professional extends Entity<ProfessionalProps> {
 
   set officeAddress(officeAddress: string) {
     this.props.officeAddress = officeAddress
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get notificationSettings() {
@@ -67,8 +67,8 @@ export class Professional extends Entity<ProfessionalProps> {
     return this.props.updatedAt ?? this.props.createdAt
   }
 
-  set updatedAt(updatedAt: Date) {
-    this.props.updatedAt = updatedAt
+  private touch() {
+    this.props.updatedAt = new Date()
   }
 
   static create(

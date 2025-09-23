@@ -27,7 +27,7 @@ export class Client extends Entity<ClientProps> {
 
   set name(name: string) {
     this.props.name = name
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get phone() {
@@ -36,7 +36,7 @@ export class Client extends Entity<ClientProps> {
 
   set phone(phone: string) {
     this.props.phone = phone
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get periodPreference() {
@@ -45,7 +45,7 @@ export class Client extends Entity<ClientProps> {
 
   set periodPreference(periodPreference: PeriodPreferenceType[]) {
     this.props.periodPreference = periodPreference
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get extraPreferences() {
@@ -54,7 +54,7 @@ export class Client extends Entity<ClientProps> {
 
   set extraPreferences(extraPreferences: string) {
     this.props.extraPreferences = extraPreferences
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get appointmentHistory() {
@@ -69,8 +69,8 @@ export class Client extends Entity<ClientProps> {
     return this.props.updatedAt ?? this.props.createdAt
   }
 
-  set updatedAt(updatedAt: Date) {
-    this.props.updatedAt = updatedAt
+  private touch() {
+    this.props.updatedAt = new Date()
   }
 
   static create(

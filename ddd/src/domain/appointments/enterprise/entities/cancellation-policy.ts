@@ -27,7 +27,7 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
     }
 
     this.props.minHoursBeforeCancellation = minHoursBeforeCancellation
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get cancelationFeePercentage() {
@@ -40,7 +40,7 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
     }
 
     this.props.cancelationFeePercentage = cancelationFeePercentage
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get allowReschedule() {
@@ -49,7 +49,7 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
 
   set allowReschedule(allowReschedule: boolean) {
     this.props.allowReschedule = allowReschedule
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get description() {
@@ -58,20 +58,19 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
 
   set description(description: string) {
     this.props.description = description
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get createdAt() {
     return this.props.createdAt
   }
 
-  /* TODO: Mudar a logica do updatedAt das entidades quando houver o touch */
   get updatedAt() {
     return this.props.updatedAt ?? this.props.createdAt
   }
 
-  set updatedAt(updatedAt: Date) {
-    this.props.updatedAt = updatedAt
+  private touch() {
+    this.props.updatedAt = new Date()
   }
 
   static create(

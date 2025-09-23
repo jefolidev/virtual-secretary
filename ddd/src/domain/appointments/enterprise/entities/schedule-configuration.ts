@@ -30,7 +30,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
     }
 
     this.props.workingDays = workingDays
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get workingHours() {
@@ -59,7 +59,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
     }
 
     this.props.workingHours = workingHours
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get sessionDurationMinutes() {
@@ -72,7 +72,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
     }
 
     this.props.sessionDurationMinutes = sessionDurationMinutes
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get bufferIntervalMinutes() {
@@ -85,7 +85,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
     }
 
     this.props.bufferIntervalMinutes = bufferIntervalMinutes
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get holidays() {
@@ -94,7 +94,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
 
   set holidays(holidays: Date[]) {
     this.props.holidays = holidays
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get enableGoogleMeet() {
@@ -103,7 +103,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
 
   set enableGoogleMeet(enableGoogleMeet: boolean) {
     this.props.enableGoogleMeet = enableGoogleMeet
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get createdAt() {
@@ -114,8 +114,8 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
     return this.props.updatedAt ?? this.props.createdAt
   }
 
-  set updatedAt(updatedAt: Date) {
-    this.props.updatedAt = updatedAt
+  private touch() {
+    this.props.updatedAt = new Date()
   }
 
   static create(

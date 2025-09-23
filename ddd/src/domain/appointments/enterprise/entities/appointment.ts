@@ -41,7 +41,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set startDateTime(startDateTime: Date) {
     this.props.startDateTime = startDateTime
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get endDateTime() {
@@ -50,7 +50,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set endDateTime(endDateTime: Date) {
     this.props.endDateTime = endDateTime
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get modality() {
@@ -59,7 +59,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set modality(modality: AppointmentModalityType) {
     this.props.modality = modality
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get status() {
@@ -68,7 +68,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set status(status: AppointmentStatusType) {
     this.props.status = status
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get extraPreferences() {
@@ -97,7 +97,7 @@ export class Appointment extends Entity<AppointmentProps> {
     }
 
     this.props.isRescheduled = isRescheduled
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get rescheduleDateTime() {
@@ -121,12 +121,12 @@ export class Appointment extends Entity<AppointmentProps> {
     }
 
     this.props.rescheduleDateTime = rescheduleDateTime
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   setRescheduleDateTime(rescheduleDateTime: { start: Date; end: Date }) {
     this.props.rescheduleDateTime = rescheduleDateTime
-    this.updatedAt = new Date()
+    this.touch()
   }
 
   get createdAt() {
@@ -137,8 +137,8 @@ export class Appointment extends Entity<AppointmentProps> {
     return this.props.updatedAt ?? this.props.createdAt
   }
 
-  set updatedAt(updatedAt: Date) {
-    this.props.updatedAt = updatedAt
+  private touch() {
+    this.props.updatedAt = new Date()
   }
 
   get hasPayment(): boolean {
