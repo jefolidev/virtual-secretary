@@ -1,4 +1,5 @@
 import { Entity } from '@/core/entities/entity'
+import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { Appointment } from './appointment'
 
@@ -72,7 +73,10 @@ export class Client extends Entity<ClientProps> {
     this.props.updatedAt = updatedAt
   }
 
-  static create(props: ClientProps, id?: UniqueEntityId) {
+  static create(
+    props: Optional<ClientProps, 'createdAt'>,
+    id?: UniqueEntityId
+  ) {
     const client = new Client(
       { ...props, createdAt: props.createdAt ?? new Date() },
       id

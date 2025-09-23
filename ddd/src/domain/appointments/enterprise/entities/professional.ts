@@ -1,4 +1,5 @@
 import { Entity } from '@/core/entities/entity'
+import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { NotificationSettings } from './value-objects/notification-settings'
 
@@ -60,7 +61,10 @@ export class Professional extends Entity<ProfessionalProps> {
     this.props.updatedAt = updatedAt
   }
 
-  static create(props: ProfessionalProps, id?: UniqueEntityId) {
+  static create(
+    props: Optional<ProfessionalProps, 'createdAt'>,
+    id?: UniqueEntityId
+  ) {
     const professional = new Professional(
       { ...props, createdAt: props.createdAt ?? new Date() },
       id
