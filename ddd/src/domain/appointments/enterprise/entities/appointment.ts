@@ -97,6 +97,10 @@ export class Appointment extends Entity<AppointmentProps> {
     this.props.updatedAt = updatedAt
   }
 
+  get hasPayment(): boolean {
+    return !!this.props.paymentId
+  }
+
   static create(
     props: Optional<AppointmentProps, 'createdAt'>,
     id?: UniqueEntityId
