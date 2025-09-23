@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.0.0",
-    "@rocketseat/eslint-config": "^2.2.2"
+    "@rocketseat/eslint-config": "^2.2.2",
+    "dayjs": "^1.11.18"
   }
 }

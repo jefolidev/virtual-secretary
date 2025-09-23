@@ -43,6 +43,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set startDateTime(startDateTime: Date) {
     this.props.startDateTime = startDateTime
+    this.updatedAt = new Date()
   }
 
   get endDateTime() {
@@ -51,6 +52,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set endDateTime(endDateTime: Date) {
     this.props.endDateTime = endDateTime
+    this.updatedAt = new Date()
   }
 
   get modality() {
@@ -59,6 +61,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set modality(modality: AppointmentModalityType) {
     this.props.modality = modality
+    this.updatedAt = new Date()
   }
 
   get status() {
@@ -67,6 +70,7 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set status(status: AppointmentStatusType) {
     this.props.status = status
+    this.updatedAt = new Date()
   }
 
   get extraPreferences() {
