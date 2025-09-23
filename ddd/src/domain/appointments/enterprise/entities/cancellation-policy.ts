@@ -65,8 +65,9 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
     return this.props.createdAt
   }
 
+  /* TODO: Mudar a logica do updatedAt das entidades quando houver o touch */
   get updatedAt() {
-    return this.props.updatedAt ?? new Date()
+    return this.props.updatedAt ?? this.props.createdAt
   }
 
   set updatedAt(updatedAt: Date) {
@@ -83,7 +84,7 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
     const cancellationPolicy = new CancellationPolicy(
       {
         ...props,
-        minHoursBeforeCancellation: 24,
+        minHoursBeforeCancellation: props.minHoursBeforeCancellation ?? 24,
         createdAt: props.createdAt ?? new Date(),
       },
       id

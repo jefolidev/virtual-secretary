@@ -134,7 +134,7 @@ export class Appointment extends Entity<AppointmentProps> {
   }
 
   get updatedAt() {
-    return this.props.updatedAt ?? new Date()
+    return this.props.updatedAt ?? this.props.createdAt
   }
 
   set updatedAt(updatedAt: Date) {

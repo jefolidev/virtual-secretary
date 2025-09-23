@@ -66,7 +66,7 @@ export class Client extends Entity<ClientProps> {
   }
 
   get updatedAt() {
-    return this.props.updatedAt ?? new Date()
+    return this.props.updatedAt ?? this.props.createdAt
   }
 
   set updatedAt(updatedAt: Date) {

@@ -64,7 +64,7 @@ export class Professional extends Entity<ProfessionalProps> {
   }
 
   get updatedAt() {
-    return this.props.updatedAt ?? new Date()
+    return this.props.updatedAt ?? this.props.createdAt
   }
 
   set updatedAt(updatedAt: Date) {

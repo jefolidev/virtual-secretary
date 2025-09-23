@@ -111,7 +111,7 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
   }
 
   get updatedAt() {
-    return this.props.updatedAt ?? new Date()
+    return this.props.updatedAt ?? this.props.createdAt
   }
 
   set updatedAt(updatedAt: Date) {
