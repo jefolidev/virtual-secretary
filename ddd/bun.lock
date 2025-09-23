@@ -4,12 +4,12 @@
     "": {
       "name": "ddd",
       "dependencies": {
-        "@faker-js/faker": "^10.0.0",
         "@rocketseat/eslint-config": "^2.2.2",
         "dayjs": "^1.11.18",
         "vite-tsconfig-paths": "^5.1.4",
       },
       "devDependencies": {
+        "@faker-js/faker": "^10.0.0",
         "@types/bun": "latest",
         "@types/node": "^24.5.2",
         "@typescript-eslint/eslint-plugin": "^8.44.0",

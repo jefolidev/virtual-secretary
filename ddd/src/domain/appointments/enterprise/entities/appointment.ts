@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 type AppointmentStatusType = 'SCHEDULED' | 'CANCELED' | 'NO_SHOW' | 'COMPLETED'
 
-interface AppointmentProps {
+export interface AppointmentProps {
   clientId: UniqueEntityId
   professionalId: UniqueEntityId
   paymentId?: UniqueEntityId
@@ -146,11 +146,15 @@ export class Appointment extends Entity<AppointmentProps> {
   }
 
   static create(
-    props: Optional<AppointmentProps, 'createdAt'>,
+    props: Optional<AppointmentProps, 'createdAt' | 'isRescheduled'>,
     id?: UniqueEntityId
   ) {
     const appointment = new Appointment(
-      { ...props, createdAt: props.createdAt ?? new Date() },
+      {
+        ...props,
+        createdAt: props.createdAt ?? new Date(),
+        isRescheduled: props.isRescheduled ?? false,
+      },
       id
     )
 
