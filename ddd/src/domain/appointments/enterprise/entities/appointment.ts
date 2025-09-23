@@ -1,14 +1,10 @@
 import { Entity } from '@/core/entities/entity'
 import type { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import dayjs from 'dayjs'
 
 type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
-type AppointmentStatusType =
-  | 'SCHEDULED'
-  | 'CANCELED'
-  | 'CONFIRMED'
-  | 'NO_SHOW'
-  | 'COMPLETED'
+type AppointmentStatusType = 'SCHEDULED' | 'CANCELED' | 'NO_SHOW' | 'COMPLETED'
 
 interface AppointmentProps {
   clientId: UniqueEntityId
@@ -20,6 +16,8 @@ interface AppointmentProps {
   status: AppointmentStatusType
   extraPreferences?: string
   googleMeetLink?: string
+  isRescheduled: boolean
+  rescheduleDateTime?: { start: Date; end: Date }
   createdAt: Date
   updatedAt?: Date
 }
@@ -87,6 +85,48 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set googleMeetLink(googleMeetLink: string) {
     this.props.googleMeetLink = googleMeetLink
+  }
+
+  get isRescheduled() {
+    return this.props.isRescheduled
+  }
+
+  set isRescheduled(isRescheduled: boolean) {
+    if (this.props.status !== 'SCHEDULED') {
+      throw new Error('the schedule must still be as scheduled.')
+    }
+
+    this.props.isRescheduled = isRescheduled
+    this.updatedAt = new Date()
+  }
+
+  get rescheduleDateTime() {
+    return this.props.rescheduleDateTime
+  }
+
+  setAsRescheduled(rescheduleDateTime: { start: Date; end: Date }) {
+    if (!this.props.isRescheduled) {
+      throw new Error('Appointment must be marked as rescheduled first')
+    }
+
+    const start = dayjs(rescheduleDateTime.start)
+    const end = dayjs(rescheduleDateTime.end)
+
+    if (!start.isValid() || !end.isValid()) {
+      throw new Error('Invalid reschedule date')
+    }
+
+    if (start.isAfter(end)) {
+      throw new Error('Reschedule start must be before end')
+    }
+
+    this.props.rescheduleDateTime = rescheduleDateTime
+    this.updatedAt = new Date()
+  }
+
+  setRescheduleDateTime(rescheduleDateTime: { start: Date; end: Date }) {
+    this.props.rescheduleDateTime = rescheduleDateTime
+    this.updatedAt = new Date()
   }
 
   get createdAt() {
