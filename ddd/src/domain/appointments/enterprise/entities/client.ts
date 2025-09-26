@@ -5,7 +5,7 @@ import type { Appointment } from './appointment'
 
 type PeriodPreferenceType = 'morning' | 'afternoon' | 'evening'
 
-interface ClientProps {
+export interface ClientProps {
   userId: UniqueEntityId
   name: string
   phone: string

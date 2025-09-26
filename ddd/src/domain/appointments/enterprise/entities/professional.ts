@@ -3,7 +3,7 @@ import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { NotificationSettings } from './value-objects/notification-settings'
 
-interface ProfessionalProps {
+export interface ProfessionalProps {
   userId: UniqueEntityId
   notificationSettingsId: UniqueEntityId
   cancellationPolicyId: UniqueEntityId

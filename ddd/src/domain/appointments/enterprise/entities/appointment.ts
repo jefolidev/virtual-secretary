@@ -3,8 +3,12 @@ import type { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
 
-type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
-type AppointmentStatusType = 'SCHEDULED' | 'CANCELED' | 'NO_SHOW' | 'COMPLETED'
+export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
+export type AppointmentStatusType =
+  | 'SCHEDULED'
+  | 'CANCELED'
+  | 'NO_SHOW'
+  | 'COMPLETED'
 
 export interface AppointmentProps {
   clientId: UniqueEntityId
@@ -14,7 +18,6 @@ export interface AppointmentProps {
   endDateTime: Date
   modality: AppointmentModalityType
   status: AppointmentStatusType
-  extraPreferences?: string
   googleMeetLink?: string
   isRescheduled: boolean
   rescheduleDateTime?: { start: Date; end: Date }
@@ -69,14 +72,6 @@ export class Appointment extends Entity<AppointmentProps> {
   set status(status: AppointmentStatusType) {
     this.props.status = status
     this.touch()
-  }
-
-  get extraPreferences() {
-    return this.props.extraPreferences ?? 'No extra preferences'
-  }
-
-  set extraPreferences(extraPreferences: string) {
-    this.props.extraPreferences = extraPreferences
   }
 
   get googleMeetLink() {
@@ -146,12 +141,13 @@ export class Appointment extends Entity<AppointmentProps> {
   }
 
   static create(
-    props: Optional<AppointmentProps, 'createdAt' | 'isRescheduled'>,
+    props: Optional<AppointmentProps, 'createdAt' | 'isRescheduled' | 'status'>,
     id?: UniqueEntityId
   ) {
     const appointment = new Appointment(
       {
         ...props,
+        status: 'SCHEDULED',
         createdAt: props.createdAt ?? new Date(),
         isRescheduled: props.isRescheduled ?? false,
       },

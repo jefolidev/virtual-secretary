@@ -3,15 +3,56 @@ import type { AppointmentsRepository } from '@/domain/appointments/application/r
 import type { Appointment } from '@/domain/appointments/enterprise/entities/appointment'
 
 export class InMemoryAppointmentRepository implements AppointmentsRepository {
-  save(appointment: Appointment): Promise<void> {
-    throw new Error('Method not implemented.')
+  public items: Appointment[] = []
+
+  async create(appointment: Appointment): Promise<void> {
+    await this.items.push(appointment)
   }
-  findAppointmentsByProfessionalId(
+  async findById(id: UniqueEntityId): Promise<Appointment | null> {
+    const appointment = await this.items.find((appointment) =>
+      appointment.id.equals(id)
+    )
+
+    return appointment ?? null
+  }
+
+  async findOverlapping(
+    professionalId: UniqueEntityId,
+    startDate: Date,
+    endDate: Date
+  ): Promise<Appointment[]> {
+    return this.items.filter((appointment) => {
+      return (
+        appointment.professionalId.equals(professionalId) &&
+        appointment.startDateTime < endDate &&
+        appointment.endDateTime > startDate
+      )
+    })
+  }
+
+  async findManyByProfessionalId(
     professionalId: UniqueEntityId
   ): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+    const appointment = await this.items.filter((appointment) => {
+      return appointment.professionalId.equals(professionalId)
+    })
+
+    return appointment
   }
-  findAppointmentsByClientId(clientId: UniqueEntityId): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+
+  async findManyByClientId(clientId: UniqueEntityId): Promise<Appointment[]> {
+    const appointment = await this.items.filter((appointment) => {
+      return appointment.clientId.equals(clientId)
+    })
+
+    return appointment
+  }
+
+  async save(appointment: Appointment): Promise<void> {
+    const itemIndex = await this.items.findIndex(
+      (item) => item.id === appointment.id
+    )
+
+    this.items[itemIndex] = appointment
   }
 }

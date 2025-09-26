@@ -1,7 +1,7 @@
 import type { UseCaseError } from '@/core/errors/use-case-error'
 
-export class ResourceNotFoundError extends Error implements UseCaseError {
-  constructor() {
-    super('Resource not found')
+export class NotFoundError extends Error implements UseCaseError {
+  constructor(message = 'Resourece not founded.') {
+    super(message)
   }
 }

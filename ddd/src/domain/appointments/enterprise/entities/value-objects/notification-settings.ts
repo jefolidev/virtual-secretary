@@ -19,13 +19,13 @@ interface NotificationSettingsProps {
 export class NotificationSettings {
   public readonly channels: NotificationChannel[]
   public readonly enabledTypes: NotificationType[]
-  public reminderBeforeMinuts: number
+  public reminderBeforeMinutes: number
   public dailySummaryTime: string
 
   constructor(props: NotificationSettingsProps) {
     this.channels = props.channels
     this.enabledTypes = props.enabledTypes
-    this.reminderBeforeMinuts = props.reminderBeforeMinutes
+    this.reminderBeforeMinutes = props.reminderBeforeMinutes
     this.dailySummaryTime = props.dailySummaryTime
   }
 
