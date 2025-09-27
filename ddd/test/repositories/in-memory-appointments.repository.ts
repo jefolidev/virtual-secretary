@@ -8,6 +8,18 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   async create(appointment: Appointment): Promise<void> {
     await this.items.push(appointment)
   }
+
+  async findMany(): Promise<Appointment[]> {
+    return await this.items
+  }
+
+  findManyByDate(
+    startDate: Date,
+    endDate: Date
+  ): Promise<Appointment[] | null> {
+    throw new Error('Method not implemented.')
+  }
+
   async findById(id: UniqueEntityId): Promise<Appointment | null> {
     const appointment = await this.items.find((appointment) =>
       appointment.id.equals(id)
