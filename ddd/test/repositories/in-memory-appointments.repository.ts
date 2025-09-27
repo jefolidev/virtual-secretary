@@ -13,11 +13,18 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     return await this.items
   }
 
-  findManyByDate(
+  async findManyByDate(
     startDate: Date,
     endDate: Date
   ): Promise<Appointment[] | null> {
-    throw new Error('Method not implemented.')
+    const appointment = await this.items.filter((appointment) => {
+      return (
+        appointment.startDateTime.getTime() >= startDate.getTime() &&
+        appointment.endDateTime.getTime() <= endDate.getTime()
+      )
+    })
+
+    return appointment
   }
 
   async findById(id: UniqueEntityId): Promise<Appointment | null> {
