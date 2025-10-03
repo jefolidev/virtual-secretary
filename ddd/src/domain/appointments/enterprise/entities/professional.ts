@@ -1,7 +1,6 @@
 import { Entity } from '@/core/entities/entity'
 import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import type { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
   userId: UniqueEntityId
@@ -10,7 +9,6 @@ export interface ProfessionalProps {
   name: string
   phone: string
   officeAddress: string
-  notificationSettings: NotificationSettings
   createdAt: Date
   updatedAt?: Date
 }
@@ -53,10 +51,6 @@ export class Professional extends Entity<ProfessionalProps> {
   set officeAddress(officeAddress: string) {
     this.props.officeAddress = officeAddress
     this.touch()
-  }
-
-  get notificationSettings() {
-    return this.props.notificationSettings
   }
 
   get createdAt() {
