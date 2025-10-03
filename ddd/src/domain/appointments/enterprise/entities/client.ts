@@ -3,7 +3,7 @@ import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { Appointment } from './appointment'
 
-type PeriodPreferenceType = 'morning' | 'afternoon' | 'evening'
+export type PeriodPreferenceType = 'morning' | 'afternoon' | 'evening'
 
 export interface ClientProps {
   userId: UniqueEntityId
