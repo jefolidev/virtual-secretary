@@ -26,6 +26,11 @@ export class Professional extends Entity<ProfessionalProps> {
     return this.props.cancellationPolicyId
   }
 
+  set cancellationPolicyId(cancellationPolicyId: UniqueEntityId) {
+    this.props.cancellationPolicyId = cancellationPolicyId
+    this.touch()
+  }
+
   get name() {
     return this.props.name
   }

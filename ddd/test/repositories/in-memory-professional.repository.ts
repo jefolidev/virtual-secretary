@@ -1,3 +1,4 @@
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { Professional } from '@/domain/appointments/enterprise/entities/professional'
 import type { ProfessionalRepository } from './../../src/domain/appointments/application/repositories/professional-repository'
 
@@ -15,6 +16,24 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
 
     return professional ?? null
   }
+
+  async assignCancellationPolicy(
+    professionalId: string,
+    cancellationPolicyId: string
+  ) {
+    const item = await this.items.find(
+      (item) => item.id?.toString() === professionalId
+    )
+
+    if (!item) {
+      throw new Error('Professional not found.')
+    }
+
+    if (!item.cancellationPolicyId) {
+      item.cancellationPolicyId = new UniqueEntityId(cancellationPolicyId)
+    }
+  }
+
   async save(professional: Professional): Promise<void> {
     const itemIndex = await this.items.findIndex(
       (item) => item.id === professional.id
