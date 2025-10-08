@@ -17,6 +17,7 @@ interface CreateAppointmentUseCaseProps {
   endDateTime: Date
   modality: AppointmentModalityType
   googleMeetLink?: string
+  price: number
 }
 
 type CreateAppointmentUseCaseResponse = Either<
@@ -46,9 +47,8 @@ export class CreateAppointmentUseCase {
       return left(new NotFoundError('Client not found'))
     }
 
-    const professional = await this.professionalRepository.findById(
-      professionalId.toString()
-    )
+    const professional =
+      await this.professionalRepository.findById(professionalId)
     if (!professional) {
       return left(new NotFoundError('Professional not found'))
     }
@@ -71,6 +71,7 @@ export class CreateAppointmentUseCase {
       endDateTime,
       modality,
       googleMeetLink,
+      price: 100,
     })
 
     await this.appointmentsRepository.create(appointment)

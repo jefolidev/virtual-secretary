@@ -6,7 +6,7 @@ import dayjs from 'dayjs'
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 export type AppointmentStatusType =
   | 'SCHEDULED'
-  | 'CANCELED'
+  | 'CANCELLED'
   | 'NO_SHOW'
   | 'COMPLETED'
 
@@ -18,6 +18,7 @@ export interface AppointmentProps {
   endDateTime: Date
   modality: AppointmentModalityType
   status: AppointmentStatusType
+  price: number
   googleMeetLink?: string
   isRescheduled: boolean
   rescheduleDateTime?: { start: Date; end: Date }
@@ -72,6 +73,14 @@ export class Appointment extends Entity<AppointmentProps> {
   set status(status: AppointmentStatusType) {
     this.props.status = status
     this.touch()
+  }
+
+  get price() {
+    return this.props.price
+  }
+
+  set price(price: number) {
+    this.props.price = price
   }
 
   get googleMeetLink() {

@@ -1,4 +1,5 @@
 import { left, right, type Either } from '@/core/either'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
@@ -33,8 +34,9 @@ export class CreateCancellationPolicyUseCase {
     allowReschedule,
     description,
   }: CreateCancellationPolicyUseCaseProps): Promise<CreateCancellationPolicyUseCaseResponse> {
-    const professional =
-      await this.professionalRepository.findById(professionalId)
+    const professional = await this.professionalRepository.findById(
+      new UniqueEntityId(professionalId)
+    )
 
     if (!professional) {
       return left(new NotFoundError('Professional not found'))

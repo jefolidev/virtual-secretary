@@ -7,7 +7,7 @@ import {
 } from '@/domain/appointments/enterprise/entities/appointment'
 
 export function makeAppointment(
-  override: Partial<AppointmentProps>,
+  override?: Partial<AppointmentProps>,
   id?: UniqueEntityId
 ) {
   const appointment: Appointment = Appointment.create(
@@ -19,6 +19,7 @@ export function makeAppointment(
       modality: 'ONLINE',
       status: 'CANCELED',
       googleMeetLink: faker.internet.url(),
+      price: 100,
       ...override,
     },
     id

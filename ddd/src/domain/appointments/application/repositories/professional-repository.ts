@@ -1,8 +1,9 @@
+import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { Professional } from '../../enterprise/entities/professional'
 
 export interface ProfessionalRepository {
   create(professional: Professional): Promise<void>
-  findById(id: string): Promise<Professional | null>
+  findById(id: UniqueEntityId): Promise<Professional | null>
   assignCancellationPolicy(
     professionalId: string,
     cancellationPolicyId: string

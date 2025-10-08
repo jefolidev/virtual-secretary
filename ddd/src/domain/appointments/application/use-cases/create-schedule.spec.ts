@@ -39,6 +39,7 @@ describe('Create Appointment', () => {
       endDateTime: new Date(),
       modality: 'ONLINE',
       googleMeetLink: 'https://meet.google.com/abc',
+      price: 100,
     })
 
     expect(response.isRight()).toBe(true)
@@ -73,6 +74,7 @@ describe('Create Appointment', () => {
       endDateTime: new Date('2023-01-01T11:00:00.000Z'),
       modality: 'ONLINE',
       googleMeetLink: 'https://meet.google.com/abc',
+      price: 100,
     })
 
     const overlappingAppointments =

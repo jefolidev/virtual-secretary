@@ -16,12 +16,6 @@ export function makeProfessional(
       phone: faker.phone.number(),
       cancellationPolicyId: new UniqueEntityId(),
       notificationSettingsId: new UniqueEntityId(),
-      notificationSettings: {
-        channels: ['EMAIL'],
-        enabledTypes: [],
-        reminderBeforeMinutes: 1,
-        dailySummaryTime: '10:00',
-      },
       officeAddress: faker.location.streetAddress(),
       ...override,
     },
