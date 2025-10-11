@@ -17,7 +17,7 @@ describe('Fetch Client', () => {
 
       await inMemoryClientRepository.create(client)
 
-      const response = await sut.execute(undefined)
+      const response = await sut.execute()
 
       expect(response.isRight()).toBe(true)
       if (response.isRight()) {

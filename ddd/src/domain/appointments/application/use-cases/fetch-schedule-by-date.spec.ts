@@ -34,8 +34,6 @@ describe('Fetch Schedule By Date', () => {
 
     expect(response.isRight()).toBe(true)
 
-    console.log(inMemoryAppointmentRepository.items)
-
     if (response.isRight()) {
       expect(response.value.appointments).toHaveLength(1)
       expect(response.value.appointments![0]).toBe(appointment)

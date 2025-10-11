@@ -1,5 +1,8 @@
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
-import type { Appointment } from '../../enterprise/entities/appointment'
+import type {
+  Appointment,
+  AppointmentStatusType,
+} from '../../enterprise/entities/appointment'
 
 export interface AppointmentsRepository {
   create(appointment: Appointment): Promise<void>
@@ -16,4 +19,5 @@ export interface AppointmentsRepository {
   findManyByClientId(clientId: UniqueEntityId): Promise<Appointment[]>
   findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[] | null>
   save(appointment: Appointment): Promise<void>
+  findManyByStatus(status: AppointmentStatusType): Promise<Appointment[]>
 }

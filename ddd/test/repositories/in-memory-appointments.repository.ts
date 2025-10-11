@@ -1,6 +1,9 @@
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import type { AppointmentsRepository } from '@src/domain/appointments/application/repositories/appointments.repository'
-import type { Appointment } from '@src/domain/appointments/enterprise/entities/appointment'
+import type {
+  Appointment,
+  AppointmentStatusType,
+} from '@src/domain/appointments/enterprise/entities/appointment'
 
 export class InMemoryAppointmentRepository implements AppointmentsRepository {
   public items: Appointment[] = []
@@ -62,6 +65,16 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   async findManyByClientId(clientId: UniqueEntityId): Promise<Appointment[]> {
     const appointment = await this.items.filter((appointment) => {
       return appointment.clientId.equals(clientId)
+    })
+
+    return appointment
+  }
+
+  async findManyByStatus(
+    status: AppointmentStatusType
+  ): Promise<Appointment[]> {
+    const appointment = await this.items.filter((appointment) => {
+      return appointment.status === status
     })
 
     return appointment
