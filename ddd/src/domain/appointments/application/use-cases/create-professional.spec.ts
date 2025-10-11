@@ -1,5 +1,5 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { faker } from '@faker-js/faker'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { InMemoryProfessionalRepository } from './../../../../../test/repositories/in-memory-professional.repository'
 import { CreateProfessionalUseCase } from './create-professional'
 

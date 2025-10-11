@@ -1,6 +1,6 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import type { AppointmentsRepository } from '@/domain/appointments/application/repositories/appointments.repository'
-import type { Appointment } from '@/domain/appointments/enterprise/entities/appointment'
+import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import type { AppointmentsRepository } from '@src/domain/appointments/application/repositories/appointments.repository'
+import type { Appointment } from '@src/domain/appointments/enterprise/entities/appointment'
 
 export class InMemoryAppointmentRepository implements AppointmentsRepository {
   public items: Appointment[] = []

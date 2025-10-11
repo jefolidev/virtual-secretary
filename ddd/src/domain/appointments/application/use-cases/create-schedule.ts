@@ -1,5 +1,5 @@
-import { left, right, type Either } from '@/core/either'
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { type Either, left, right } from '@src/core/either'
+import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import {
   Appointment,
   type AppointmentModalityType,

@@ -1,9 +1,9 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { faker } from '@faker-js/faker'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import {
   CancellationPolicy,
   type CancellationPolicyProps,
-} from '@/domain/appointments/enterprise/entities/cancellation-policy'
-import { faker } from '@faker-js/faker'
+} from '@src/domain/appointments/enterprise/entities/cancellation-policy'
 
 export function makeCancellationPolicy(
   override?: Partial<CancellationPolicyProps>,

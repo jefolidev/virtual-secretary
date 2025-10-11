@@ -1,5 +1,5 @@
-import { left, right, type Either } from '@/core/either'
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { type Either, left, right } from '@src/core/either'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'

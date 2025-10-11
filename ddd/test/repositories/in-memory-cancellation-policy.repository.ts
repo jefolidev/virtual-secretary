@@ -1,6 +1,6 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import type { CancellationPolicyRepository } from '@/domain/appointments/application/repositories/cancellation-policy.repository'
-import type { CancellationPolicy } from '@/domain/appointments/enterprise/entities/cancellation-policy'
+import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import type { CancellationPolicyRepository } from '@src/domain/appointments/application/repositories/cancellation-policy.repository'
+import type { CancellationPolicy } from '@src/domain/appointments/enterprise/entities/cancellation-policy'
 
 export class InMemoryCancellationPolicyRepository
   implements CancellationPolicyRepository

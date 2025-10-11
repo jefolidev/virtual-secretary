@@ -1,9 +1,9 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { faker } from '@faker-js/faker'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import {
   Client,
   type ClientProps,
-} from '@/domain/appointments/enterprise/entities/client'
-import { faker } from '@faker-js/faker'
+} from '@src/domain/appointments/enterprise/entities/client'
 
 export function makeClient(
   override?: Partial<ClientProps>,

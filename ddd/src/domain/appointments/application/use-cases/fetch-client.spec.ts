@@ -1,5 +1,5 @@
-import { makeClient } from 'test/factories/make-client'
-import { InMemoryClientRepository } from 'test/repositories/in-memory-client.repository'
+import { makeClient } from '@test/factories/make-client'
+import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
 import { FetchClientUseCase } from './fetch-client'
 
 let inMemoryClientRepository: InMemoryClientRepository
@@ -17,7 +17,7 @@ describe('Fetch Client', () => {
 
       await inMemoryClientRepository.create(client)
 
-      const response = await sut.execute({})
+      const response = await sut.execute(undefined)
 
       expect(response.isRight()).toBe(true)
       if (response.isRight()) {

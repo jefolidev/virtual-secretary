@@ -1,9 +1,14 @@
-import { right, type Either } from '@/core/either'
-import type { Appointment } from '../../enterprise/entities/appointment'
+import { type Either, right } from '@src/core/either'
+import type {
+  Appointment,
+  AppointmentStatusType,
+} from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import { NotFoundError } from './errors/resource-not-found-error'
+import type { NotFoundError } from './errors/resource-not-found-error'
 
-interface FetchScheuleUseCaseProps {}
+type FetchScheuleUseCaseProps = {
+  status?: AppointmentStatusType
+}
 
 type FetchScheduleUseCaseResponse = Either<
   NotFoundError,
@@ -13,7 +18,9 @@ type FetchScheduleUseCaseResponse = Either<
 export class FetchScheduleUseCase {
   constructor(private appointmentsRepository: AppointmentsRepository) {}
 
-  async execute({}: FetchScheuleUseCaseProps): Promise<FetchScheduleUseCaseResponse> {
+  async execute({
+    status,
+  }: FetchScheuleUseCaseProps): Promise<FetchScheduleUseCaseResponse> {
     const appointments = await this.appointmentsRepository.findMany()
 
     return right({ appointments })

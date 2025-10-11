@@ -24,5 +24,5 @@
 - Sessões padrão devem durar 50 minutos (configurável pelo profissional)
 - Sessões devem ter intervalos padrão de 10 minutos (configurável pelo profissional)
 - Agendamento deve respeitar disponibilidade do profissional e intervalos configurados
-- Cancelmaneto e remarcação devem seguir políticasx definidas
+- Cancelmaneto e remarcação devem seguir políticas definidas
 - Sistema deve registrar no-show quando cliente não comparece ou não confirma

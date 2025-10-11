@@ -1,10 +1,10 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { faker } from '@faker-js/faker'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 
 import {
   Appointment,
   type AppointmentProps,
-} from '@/domain/appointments/enterprise/entities/appointment'
+} from '@src/domain/appointments/enterprise/entities/appointment'
 
 export function makeAppointment(
   override?: Partial<AppointmentProps>,
@@ -17,7 +17,7 @@ export function makeAppointment(
       startDateTime: new Date(),
       endDateTime: new Date(),
       modality: 'ONLINE',
-      status: 'CANCELED',
+      status: 'CANCELLED',
       googleMeetLink: faker.internet.url(),
       price: 100,
       ...override,

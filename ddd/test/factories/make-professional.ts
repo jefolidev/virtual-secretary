@@ -1,9 +1,9 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { faker } from '@faker-js/faker'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import {
   Professional,
   type ProfessionalProps,
-} from '@/domain/appointments/enterprise/entities/professional'
-import { faker } from '@faker-js/faker'
+} from '@src/domain/appointments/enterprise/entities/professional'
 
 export function makeProfessional(
   override?: Partial<ProfessionalProps>,

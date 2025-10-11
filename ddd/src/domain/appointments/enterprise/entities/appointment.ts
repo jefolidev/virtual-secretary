@@ -1,6 +1,6 @@
-import { Entity } from '@/core/entities/entity'
-import type { Optional } from '@/core/entities/types/optional'
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { Entity } from '@src/core/entities/entity'
+import type { Optional } from '@src/core/entities/types/optional'
+import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
 
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'

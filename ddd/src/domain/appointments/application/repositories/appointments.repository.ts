@@ -1,4 +1,4 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import type { Appointment } from '../../enterprise/entities/appointment'
 
 export interface AppointmentsRepository {

@@ -1,4 +1,4 @@
-import { InMemoryAppointmentRepository } from 'test/repositories/in-memory-appointments.repository'
+import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
 import { FetchScheduleUseCase } from './fetch-schedules'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
@@ -11,7 +11,7 @@ describe('Fetch All Appointments', async () => {
   })
 
   it('should be able to fetch all appointments', async () => {
-    const response = await sut.execute({})
+    const response = await sut.execute(undefined)
 
     expect(response.isRight()).toBe(true)
 

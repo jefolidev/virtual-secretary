@@ -1,5 +1,6 @@
-import { makeAppointment } from 'test/factories/make-appointment'
-import { InMemoryAppointmentRepository } from 'test/repositories/in-memory-appointments.repository'
+/** biome-ignore-all lint/suspicious/noExplicitAny: false */
+import { makeAppointment } from '@test/factories/make-appointment'
+import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
 import { ValidationError } from './errors/validation-error'
 import { FetchScheduleByDateUseCase } from './fetch-schedule-by-date'
 

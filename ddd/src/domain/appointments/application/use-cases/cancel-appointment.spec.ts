@@ -1,11 +1,11 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { makeAppointment } from 'test/factories/make-appointment'
-import { makeCancellationPolicy } from 'test/factories/make-cancellation-policy'
-import { makeClient } from 'test/factories/make-client'
-import { makeProfessional } from 'test/factories/make-professional'
-import { InMemoryAppointmentRepository } from 'test/repositories/in-memory-appointments.repository'
-import { InMemoryClientRepository } from 'test/repositories/in-memory-client.repository'
-import { InMemoryProfessionalRepository } from 'test/repositories/in-memory-professional.repository'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { makeAppointment } from '@test/factories/make-appointment'
+import { makeCancellationPolicy } from '@test/factories/make-cancellation-policy'
+import { makeClient } from '@test/factories/make-client'
+import { makeProfessional } from '@test/factories/make-professional'
+import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
+import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
+import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemoryCancellationPolicyRepository } from './../../../../../test/repositories/in-memory-cancellation-policy.repository'
 import { CancelAppointmentUseCase } from './cancel-appointment'
 
@@ -31,7 +31,7 @@ describe('Cancel Appointment', () => {
   })
 
   it('should be able to cancel an appointment', async () => {
-    const client = makeClient({}, new UniqueEntityId('client-id'))
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
 
     inMemoryClientRepository.create(client)
 
