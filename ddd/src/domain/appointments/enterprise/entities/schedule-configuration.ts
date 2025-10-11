@@ -3,7 +3,7 @@ import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
 
-interface ScheduleConfigurationProps {
+export interface ScheduleConfigurationProps {
   professionalId: UniqueEntityId
   workingDays: number[]
   workingHours: { start: string; end: string }

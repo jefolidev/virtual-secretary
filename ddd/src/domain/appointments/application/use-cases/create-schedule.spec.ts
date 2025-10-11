@@ -1,15 +1,19 @@
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { makeAppointment } from '@test/factories/make-appointment'
 import { makeClient } from '@test/factories/make-client'
 import { makeProfessional } from '@test/factories/make-professional'
+import { makeScheduleConfiguration } from '@test/factories/make-schedule-configuration'
 import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
 import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
+import { InMemoryScheduleConfigurationRepository } from '@test/repositories/in-memory-schedule-configuration.repository'
 import { CreateAppointmentUseCase } from './create-schedule'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
 let inMemoryProfessionalRepository: InMemoryProfessionalRepository
 let inMemoryClientRepository: InMemoryClientRepository
+let inMemoryScheduleConfigurationRepository: InMemoryScheduleConfigurationRepository
 
 let sut: CreateAppointmentUseCase
 
@@ -18,25 +22,44 @@ describe('Create Appointment', () => {
     inMemoryClientRepository = new InMemoryClientRepository()
     inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
     inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
+    inMemoryScheduleConfigurationRepository =
+      new InMemoryScheduleConfigurationRepository()
     sut = new CreateAppointmentUseCase(
       inMemoryAppointmentRepository,
       inMemoryClientRepository,
-      inMemoryProfessionalRepository
+      inMemoryProfessionalRepository,
+      inMemoryScheduleConfigurationRepository
     )
   })
 
   it('should be able to create an appointment', async () => {
     const client = makeClient()
-    const professional = makeProfessional()
+    const professional = makeProfessional(
+      {},
+      new UniqueEntityId('professional-id')
+    )
+    const scheduleConfiguration = makeScheduleConfiguration(
+      {
+        professionalId: new UniqueEntityId('professional-id'),
+      },
+      new UniqueEntityId('schedule-configuration-id')
+    )
 
     await inMemoryClientRepository.create(client)
     await inMemoryProfessionalRepository.create(professional)
+    await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
+
+    professional.scheduleConfigurationId = new UniqueEntityId(
+      'schedule-configuration-id'
+    )
+
+    await inMemoryProfessionalRepository.save(professional)
 
     const response = await sut.execute({
       clientId: client.id,
       professionalId: professional.id,
-      startDateTime: new Date(),
-      endDateTime: new Date(),
+      startDateTime: new Date('11/10/2025 10:00'),
+      endDateTime: new Date('11/10/2025 11:00'),
       modality: 'ONLINE',
       googleMeetLink: 'https://meet.google.com/abc',
       price: 100,
@@ -56,11 +79,31 @@ describe('Create Appointment', () => {
 
   it('should not be able to create an appointment with overlapping schedule', async () => {
     const client = makeClient()
-    const professional = makeProfessional()
+    const professional = makeProfessional(
+      {},
+      new UniqueEntityId('professional-id')
+    )
+    const scheduleConfiguration = makeScheduleConfiguration(
+      {
+        professionalId: new UniqueEntityId('professional-id'),
+      },
+      new UniqueEntityId('schedule-configuration-id')
+    )
+
+    await inMemoryClientRepository.create(client)
+    await inMemoryProfessionalRepository.create(professional)
+    await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
+
+    professional.scheduleConfigurationId = new UniqueEntityId(
+      'schedule-configuration-id'
+    )
+
+    await inMemoryProfessionalRepository.save(professional)
+
     const appointment = makeAppointment({
       professionalId: professional.id,
       startDateTime: new Date('2023-01-01T10:00:00.000Z'),
-      endDateTime: new Date('2023-01-01T11:00:00.000Z'),
+      endDateTime: new Date('2023-01-01T11:01:00.000Z'),
     })
 
     await inMemoryClientRepository.create(client)
@@ -71,7 +114,7 @@ describe('Create Appointment', () => {
       clientId: client.id,
       professionalId: professional.id,
       startDateTime: new Date('2023-01-01T10:00:00.000Z'),
-      endDateTime: new Date('2023-01-01T11:00:00.000Z'),
+      endDateTime: new Date('2023-01-01T11:01:00.000Z'),
       modality: 'ONLINE',
       googleMeetLink: 'https://meet.google.com/abc',
       price: 100,

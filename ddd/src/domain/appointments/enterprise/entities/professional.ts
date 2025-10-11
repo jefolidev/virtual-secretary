@@ -6,6 +6,7 @@ export interface ProfessionalProps {
   userId: UniqueEntityId
   notificationSettingsId: UniqueEntityId
   cancellationPolicyId: UniqueEntityId
+  scheduleConfigurationId: UniqueEntityId
   name: string
   phone: string
   officeAddress: string
@@ -20,6 +21,15 @@ export class Professional extends Entity<ProfessionalProps> {
 
   get notificationSettingsId() {
     return this.props.notificationSettingsId
+  }
+
+  get scheduleConfigurationId() {
+    return this.props.scheduleConfigurationId
+  }
+
+  set scheduleConfigurationId(scheduleConfigurationId: UniqueEntityId) {
+    this.props.scheduleConfigurationId = scheduleConfigurationId
+    this.touch()
   }
 
   get cancellationPolicyId() {

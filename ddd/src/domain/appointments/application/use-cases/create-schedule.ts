@@ -1,5 +1,6 @@
 import { type Either, left, right } from '@src/core/either'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import dayjs from 'dayjs'
 import {
   Appointment,
   type AppointmentModalityType,
@@ -7,6 +8,7 @@ import {
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ScheduleConfigurationRepository } from './../repositories/schedule-configuration.repository'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 import { NotFoundError } from './errors/resource-not-found-error'
 
@@ -31,7 +33,8 @@ export class CreateAppointmentUseCase {
   constructor(
     private appointmentsRepository: AppointmentsRepository,
     private clientsRepository: ClientRepository,
-    private professionalRepository: ProfessionalRepository
+    private professionalRepository: ProfessionalRepository,
+    private scheduleConfigurationRepository: ScheduleConfigurationRepository
   ) {}
 
   async execute({
@@ -50,6 +53,15 @@ export class CreateAppointmentUseCase {
     const professional =
       await this.professionalRepository.findById(professionalId)
     if (!professional) {
+      return left(new NotFoundError('Professional not found'))
+    }
+
+    const professionalScheduleConfiguration =
+      await this.scheduleConfigurationRepository.findByProfessionalId(
+        professionalId
+      )
+
+    if (!professionalScheduleConfiguration) {
       return left(new NotFoundError('Professional not found'))
     }
 
@@ -73,6 +85,36 @@ export class CreateAppointmentUseCase {
       googleMeetLink,
       price: 100,
     })
+
+    const scheduleDurationMinute =
+      professionalScheduleConfiguration?.sessionDurationMinutes 
+
+    const scheduleDurationDiff = dayjs(endDateTime).diff(
+      dayjs(startDateTime),
+      'minute'
+    )
+
+    if (scheduleDurationDiff < scheduleDurationMinute) {
+      return left(
+        new NoDisponibilityError(
+          `Schedule duration must be at least ${professionalScheduleConfiguration?.sessionDurationMinutes} minutes`
+        )
+      )
+    }
+
+    const scheduleDiffInHours = dayjs(appointment.startDateTime).diff(
+      dayjs(),
+      'hour',
+      true
+    )
+
+    if (scheduleDiffInHours < 3) {
+      return left(
+        new NoDisponibilityError(
+          'You can only reschedule at least 3 hours in advance.'
+        )
+      )
+    }
 
     await this.appointmentsRepository.create(appointment)
 
