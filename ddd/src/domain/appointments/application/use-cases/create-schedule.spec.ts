@@ -11,19 +11,20 @@ import { CreateAppointmentUseCase } from './create-schedule'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
-let inMemoryProfessionalRepository: InMemoryProfessionalRepository
 let inMemoryClientRepository: InMemoryClientRepository
+let inMemoryProfessionalRepository: InMemoryProfessionalRepository
 let inMemoryScheduleConfigurationRepository: InMemoryScheduleConfigurationRepository
 
 let sut: CreateAppointmentUseCase
 
 describe('Create Appointment', () => {
   beforeEach(() => {
+    inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
     inMemoryClientRepository = new InMemoryClientRepository()
     inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
-    inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
     inMemoryScheduleConfigurationRepository =
       new InMemoryScheduleConfigurationRepository()
+
     sut = new CreateAppointmentUseCase(
       inMemoryAppointmentRepository,
       inMemoryClientRepository,
@@ -77,6 +78,50 @@ describe('Create Appointment', () => {
     }
   })
 
+  it('should not be able to create an appointment with less than configurated time', async () => {
+    const client = makeClient()
+    const professional = makeProfessional(
+      {},
+      new UniqueEntityId('professional-id')
+    )
+    const scheduleConfiguration = makeScheduleConfiguration(
+      {
+        professionalId: new UniqueEntityId('professional-id'),
+      },
+      new UniqueEntityId('schedule-configuration-id')
+    )
+
+    await inMemoryClientRepository.create(client)
+    await inMemoryProfessionalRepository.create(professional)
+    await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
+
+    professional.scheduleConfigurationId = new UniqueEntityId(
+      'schedule-configuration-id'
+    )
+
+    await inMemoryProfessionalRepository.save(professional)
+
+    const appointment = makeAppointment({
+      professionalId: professional.id,
+      startDateTime: new Date('2023-01-01T10:00:00.000Z'),
+      endDateTime: new Date('2023-01-01T11:00:30.000Z'),
+    })
+
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      clientId: client.id,
+      professionalId: professional.id,
+      startDateTime: new Date('2023-01-01T10:00:00.000Z'),
+      endDateTime: new Date('2023-01-01T11:01:00.000Z'),
+      modality: 'ONLINE',
+      googleMeetLink: 'https://meet.google.com/abc',
+      price: 100,
+    })
+
+    expect(response.isLeft()).toBe(true)
+  })
+
   it('should not be able to create an appointment with overlapping schedule', async () => {
     const client = makeClient()
     const professional = makeProfessional(
@@ -103,22 +148,10 @@ describe('Create Appointment', () => {
     const appointment = makeAppointment({
       professionalId: professional.id,
       startDateTime: new Date('2023-01-01T10:00:00.000Z'),
-      endDateTime: new Date('2023-01-01T11:01:00.000Z'),
+      endDateTime: new Date('2023-01-01T11:00:00.000Z'),
     })
 
-    await inMemoryClientRepository.create(client)
-    await inMemoryProfessionalRepository.create(professional)
     await inMemoryAppointmentRepository.create(appointment)
-
-    const response = await sut.execute({
-      clientId: client.id,
-      professionalId: professional.id,
-      startDateTime: new Date('2023-01-01T10:00:00.000Z'),
-      endDateTime: new Date('2023-01-01T11:01:00.000Z'),
-      modality: 'ONLINE',
-      googleMeetLink: 'https://meet.google.com/abc',
-      price: 100,
-    })
 
     const overlappingAppointments =
       await inMemoryAppointmentRepository.findOverlapping(
@@ -126,6 +159,16 @@ describe('Create Appointment', () => {
         new Date('2023-01-01T10:00:00.000Z'),
         new Date('2023-01-01T11:00:00.000Z')
       )
+
+    const response = await sut.execute({
+      clientId: client.id,
+      professionalId: professional.id,
+      startDateTime: new Date('2023-01-01T10:00:00.000Z'),
+      endDateTime: new Date('2023-01-01T11:00:00.000Z'),
+      modality: 'ONLINE',
+      googleMeetLink: 'https://meet.google.com/abc',
+      price: 100,
+    })
 
     expect(response.isLeft()).toBe(true)
     expect(response.value).toBeInstanceOf(NoDisponibilityError)

@@ -28,6 +28,7 @@ export class CreateProfessionalUseCase {
   }: CreateProfessionalUseCaseProps): Promise<CreateProfessionalUseCaseResponse> {
     const professional = await Professional.create({
       userId: new UniqueEntityId(),
+      scheduleConfigurationId: new UniqueEntityId(),
       name,
       phone,
       officeAddress,

@@ -44,6 +44,7 @@ export class CreateAppointmentUseCase {
     endDateTime,
     modality,
     googleMeetLink,
+    price,
   }: CreateAppointmentUseCaseProps): Promise<CreateAppointmentUseCaseResponse> {
     const client = await this.clientsRepository.findById(clientId)
     if (!client) {
@@ -76,19 +77,8 @@ export class CreateAppointmentUseCase {
       return left(new NoDisponibilityError('No disponibility'))
     }
 
-    const appointment = Appointment.create({
-      clientId,
-      professionalId,
-      startDateTime,
-      endDateTime,
-      modality,
-      googleMeetLink,
-      price: 100,
-    })
-
     const scheduleDurationMinute =
-      professionalScheduleConfiguration?.sessionDurationMinutes 
-
+      professionalScheduleConfiguration.sessionDurationMinutes
     const scheduleDurationDiff = dayjs(endDateTime).diff(
       dayjs(startDateTime),
       'minute'
@@ -97,16 +87,12 @@ export class CreateAppointmentUseCase {
     if (scheduleDurationDiff < scheduleDurationMinute) {
       return left(
         new NoDisponibilityError(
-          `Schedule duration must be at least ${professionalScheduleConfiguration?.sessionDurationMinutes} minutes`
+          `Schedule duration must be at least ${scheduleDurationMinute} minutes`
         )
       )
     }
 
-    const scheduleDiffInHours = dayjs(appointment.startDateTime).diff(
-      dayjs(),
-      'hour',
-      true
-    )
+    const scheduleDiffInHours = dayjs(startDateTime).diff(dayjs(), 'hour', true)
 
     if (scheduleDiffInHours < 3) {
       return left(
@@ -115,6 +101,16 @@ export class CreateAppointmentUseCase {
         )
       )
     }
+
+    const appointment = Appointment.create({
+      clientId,
+      professionalId,
+      startDateTime,
+      endDateTime,
+      modality,
+      googleMeetLink,
+      price,
+    })
 
     await this.appointmentsRepository.create(appointment)
 
