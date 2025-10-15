@@ -1,12 +1,12 @@
 import { Entity } from '@src/core/entities/entity'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
-import dayjs from 'dayjs'
 
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 export type AppointmentStatusType =
   | 'SCHEDULED'
   | 'CANCELLED'
+  | 'RESCHEDULED'
   | 'NO_SHOW'
   | 'COMPLETED'
 
@@ -20,7 +20,6 @@ export interface AppointmentProps {
   status: AppointmentStatusType
   price: number
   googleMeetLink?: string
-  isRescheduled: boolean
   rescheduleDateTime?: { start: Date; end: Date }
   createdAt: Date
   updatedAt?: Date
@@ -91,42 +90,33 @@ export class Appointment extends Entity<AppointmentProps> {
     this.props.googleMeetLink = googleMeetLink
   }
 
-  get isRescheduled() {
-    return this.props.isRescheduled
-  }
-
-  set isRescheduled(isRescheduled: boolean) {
-    if (this.props.status !== 'SCHEDULED') {
-      throw new Error('the schedule must still be as scheduled.')
-    }
-
-    this.props.isRescheduled = isRescheduled
-    this.touch()
-  }
-
   get rescheduleDateTime() {
     return this.props.rescheduleDateTime
   }
 
-  setAsRescheduled(rescheduleDateTime: { start: Date; end: Date }) {
-    if (!this.props.isRescheduled) {
-      throw new Error('Appointment must be marked as rescheduled first')
-    }
-
-    const start = dayjs(rescheduleDateTime.start)
-    const end = dayjs(rescheduleDateTime.end)
-
-    if (!start.isValid() || !end.isValid()) {
-      throw new Error('Invalid reschedule date')
-    }
-
-    if (start.isAfter(end)) {
-      throw new Error('Reschedule start must be before end')
-    }
-
-    this.props.rescheduleDateTime = rescheduleDateTime
-    this.touch()
+  isRescheduled() {
+    return this.props.status === 'RESCHEDULED'
   }
+
+  // setAsRescheduled(rescheduleDateTime: { start: Date; end: Date }) {
+  //   if (!this.props.isRescheduled) {
+  //     throw new Error('Appointment must be marked as rescheduled first')
+  //   }
+
+  //   const start = dayjs(rescheduleDateTime.start)
+  //   const end = dayjs(rescheduleDateTime.end)
+
+  //   if (!start.isValid() || !end.isValid()) {
+  //     throw new Error('Invalid reschedule date')
+  //   }
+
+  //   if (start.isAfter(end)) {
+  //     throw new Error('Reschedule start must be before end')
+  //   }
+
+  //   this.props.rescheduleDateTime = rescheduleDateTime
+  //   this.touch()
+  // }
 
   setRescheduleDateTime(rescheduleDateTime: { start: Date; end: Date }) {
     this.props.rescheduleDateTime = rescheduleDateTime
@@ -150,7 +140,7 @@ export class Appointment extends Entity<AppointmentProps> {
   }
 
   static create(
-    props: Optional<AppointmentProps, 'createdAt' | 'isRescheduled' | 'status'>,
+    props: Optional<AppointmentProps, 'createdAt' | 'status'>,
     id?: UniqueEntityId
   ) {
     const appointment = new Appointment(
@@ -158,7 +148,6 @@ export class Appointment extends Entity<AppointmentProps> {
         ...props,
         status: 'SCHEDULED',
         createdAt: props.createdAt ?? new Date(),
-        isRescheduled: props.isRescheduled ?? false,
       },
       id
     )
