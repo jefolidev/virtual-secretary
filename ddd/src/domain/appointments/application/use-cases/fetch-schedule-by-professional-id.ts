@@ -10,7 +10,7 @@ export interface FetchScheduleByProfessionalIdUseCaseProps {
 
 type FetchScheduleByProfessionalIdUseCaseResponse = Either<
   NotFoundError,
-  { appointments: Appointment[] | [] }
+  { appointments: Appointment[] }
 >
 
 export class FetchScheduleByProfessionalIdUseCase {

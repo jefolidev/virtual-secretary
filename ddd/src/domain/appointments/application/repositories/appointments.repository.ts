@@ -6,8 +6,8 @@ import type {
 
 export interface AppointmentsRepository {
   create(appointment: Appointment): Promise<void>
-  findMany(): Promise<Appointment[] | []>
-  findById(id: UniqueEntityId): Promise<Appointment | []>
+  findMany(): Promise<Appointment[]>
+  findById(id: UniqueEntityId): Promise<Appointment>
   findOverlapping(
     profissionalId: UniqueEntityId,
     startDate: Date,

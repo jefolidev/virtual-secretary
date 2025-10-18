@@ -9,7 +9,7 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
     await this.items.push(professional)
   }
 
-  async findMany(): Promise<Professional[] | []> {
+  async findMany(): Promise<Professional[]> {
     return (await this.items) ?? []
   }
 

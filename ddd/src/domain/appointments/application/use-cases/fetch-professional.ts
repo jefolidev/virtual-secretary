@@ -6,7 +6,7 @@ export type FetchProfessionalUseCaseProps = Record<string, never>
 
 export type FetchProfessionalUseCaseResponse = Either<
   null,
-  { professionals: Professional[] | [] }
+  { professionals: Professional[] }
 >
 
 export class FetchProfessionalUseCase {

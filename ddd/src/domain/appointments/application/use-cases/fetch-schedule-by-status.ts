@@ -12,7 +12,7 @@ export interface FetchScheduleByStatusUseCaseProps {
 
 type FetchScheduleByStatusUseCaseResponse = Either<
   NotFoundError,
-  { appointments: Appointment[] | [] }
+  { appointments: Appointment[] }
 >
 
 export class FetchScheduleByStatusUseCase {

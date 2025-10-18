@@ -5,7 +5,7 @@ import type { NotFoundError } from './errors/resource-not-found-error'
 
 type FetchScheduleUseCaseResponse = Either<
   NotFoundError,
-  { appointments: Appointment[] | [] }
+  { appointments: Appointment[] }
 >
 
 export class FetchScheduleUseCase {
