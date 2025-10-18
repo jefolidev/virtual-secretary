@@ -4,4 +4,7 @@ import type { CancellationPolicy } from '../../enterprise/entities/cancellation-
 export interface CancellationPolicyRepository {
   create(cancellationPolicy: CancellationPolicy): Promise<void>
   findById(id: UniqueEntityId): Promise<CancellationPolicy | null>
+  findByProfessionalId(
+    professionalId: UniqueEntityId
+  ): Promise<CancellationPolicy | null>
 }

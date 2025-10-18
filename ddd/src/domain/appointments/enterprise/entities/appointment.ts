@@ -88,10 +88,17 @@ export class Appointment extends Entity<AppointmentProps> {
 
   set googleMeetLink(googleMeetLink: string) {
     this.props.googleMeetLink = googleMeetLink
+    this.touch()
   }
 
   get rescheduleDateTime() {
     return this.props.rescheduleDateTime
+  }
+
+  reschedule(rescheduleDateTime: { start: Date; end: Date }) {
+    this.props.rescheduleDateTime = rescheduleDateTime
+    this.props.status = 'RESCHEDULED'
+    this.touch()
   }
 
   isRescheduled() {
@@ -117,11 +124,6 @@ export class Appointment extends Entity<AppointmentProps> {
   //   this.props.rescheduleDateTime = rescheduleDateTime
   //   this.touch()
   // }
-
-  setRescheduleDateTime(rescheduleDateTime: { start: Date; end: Date }) {
-    this.props.rescheduleDateTime = rescheduleDateTime
-    this.touch()
-  }
 
   get createdAt() {
     return this.props.createdAt

@@ -18,4 +18,14 @@ export class InMemoryCancellationPolicyRepository
 
     return cancellationPolicy ?? null
   }
+
+  async findByProfessionalId(
+    professionalId: UniqueEntityId
+  ): Promise<CancellationPolicy | null> {
+    const cancellationPolicy = await this.items.find((cancellationPolicy) =>
+      cancellationPolicy.professionalId.equals(professionalId)
+    )
+
+    return cancellationPolicy ?? null
+  }
 }
