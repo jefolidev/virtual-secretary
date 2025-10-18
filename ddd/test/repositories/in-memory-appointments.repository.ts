@@ -19,7 +19,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   async findManyByDate(
     startDate: Date,
     endDate: Date
-  ): Promise<Appointment[] | null> {
+  ): Promise<Appointment[] | []> {
     const appointment = await this.items.filter((appointment) => {
       return (
         appointment.startDateTime.getTime() >= startDate.getTime() &&
@@ -30,12 +30,12 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     return appointment
   }
 
-  async findById(id: UniqueEntityId): Promise<Appointment | null> {
+  async findById(id: UniqueEntityId): Promise<Appointment | []> {
     const appointment = await this.items.find((appointment) =>
       appointment.id.equals(id)
     )
 
-    return appointment ?? null
+    return appointment ?? []
   }
 
   async findOverlapping(
