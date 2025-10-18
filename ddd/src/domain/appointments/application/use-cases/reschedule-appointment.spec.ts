@@ -87,7 +87,7 @@ describe('Reschedule Appointment', () => {
   it('should not be able to reschedule an appointment if professional not allow', async () => {
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
 
-    inMemoryClientRepository.create(client)
+    await inMemoryClientRepository.create(client)
 
     const professional = makeProfessional(
       {
@@ -106,7 +106,59 @@ describe('Reschedule Appointment', () => {
       new UniqueEntityId('reschedulelation-policy-id')
     )
 
-    inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
+    await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
+
+    professional.cancellationPolicyId = new UniqueEntityId(
+      'reschedulelation-policy-id'
+    )
+
+    await inMemoryProfessionalRepository.save(professional)
+
+    const appointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: professional.id,
+      },
+      new UniqueEntityId('appointment-id')
+    )
+
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      endDateTime: new Date('2026-01-05T11:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NoDisponibilityError)
+    }
+  })
+
+  it('should not be able to reschedule an appointment if exist overlapping', async () => {
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
+
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {
+        cancellationPolicyId: new UniqueEntityId('reschedulelation-policy-id'),
+      },
+      new UniqueEntityId('professional-id')
+    )
+
+    await inMemoryProfessionalRepository.create(professional)
+
+    const reschedulelationPolicy = makeCancellationPolicy(
+      {
+        professionalId: new UniqueEntityId('professional-id'),
+      },
+      new UniqueEntityId('reschedulelation-policy-id')
+    )
+
+    await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
 
     professional.cancellationPolicyId = new UniqueEntityId(
       'reschedulelation-policy-id'
@@ -124,15 +176,35 @@ describe('Reschedule Appointment', () => {
 
     inMemoryAppointmentRepository.create(appointment)
 
+    const overlapAppointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: professional.id,
+        startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+        endDateTime: new Date('2026-01-05T11:00:00.000Z'),
+      },
+      new UniqueEntityId('overlap-appointment-id')
+    )
+
+    inMemoryAppointmentRepository.create(overlapAppointment)
+
     const response = await sut.execute({
       id: appointment.id.toString(),
       startDateTime: new Date('2026-01-05T10:00:00.000Z'),
       endDateTime: new Date('2026-01-05T11:00:00.000Z'),
     })
 
+    const overlappingAppointments =
+      await inMemoryAppointmentRepository.findOverlapping(
+        professional.id,
+        new Date('2026-01-05T10:00:00.000Z'),
+        new Date('2026-01-05T11:00:00.000Z')
+      )
+
     expect(response.isLeft()).toBe(true)
 
     if (response.isLeft()) {
+      expect(overlappingAppointments).toHaveLength(1)
       expect(response.value).toBeInstanceOf(NoDisponibilityError)
     }
   })
