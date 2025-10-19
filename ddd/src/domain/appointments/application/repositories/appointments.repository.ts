@@ -7,17 +7,17 @@ import type {
 export interface AppointmentsRepository {
   create(appointment: Appointment): Promise<void>
   findMany(): Promise<Appointment[]>
-  findById(id: UniqueEntityId): Promise<Appointment>
+  findById(id: UniqueEntityId): Promise<Appointment | null>
   findOverlapping(
     profissionalId: UniqueEntityId,
     startDate: Date,
     endDate: Date
-  ): Promise<Appointment[] | null>
+  ): Promise<Appointment[]>
   findManyByProfessionalId(
     professionalId: UniqueEntityId
   ): Promise<Appointment[]>
   findManyByClientId(clientId: UniqueEntityId): Promise<Appointment[]>
-  findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[] | null>
+  findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[]>
   save(appointment: Appointment): Promise<void>
   findManyByStatus(status: AppointmentStatusType): Promise<Appointment[]>
 }

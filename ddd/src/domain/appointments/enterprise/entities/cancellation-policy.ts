@@ -5,6 +5,7 @@ import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 export interface CancellationPolicyProps {
   professionalId: UniqueEntityId
   minHoursBeforeCancellation: number
+  minDaysBeforeNextAppointment: number
   cancelationFeePercentage: number
   allowReschedule: boolean
   description: string
@@ -19,6 +20,10 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
 
   get minHoursBeforeCancellation() {
     return this.props.minHoursBeforeCancellation
+  }
+
+  get minDaysBeforeNextAppointment() {
+    return this.props.minDaysBeforeNextAppointment
   }
 
   set minHoursBeforeCancellation(minHoursBeforeCancellation: number) {
@@ -84,6 +89,7 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
       {
         ...props,
         minHoursBeforeCancellation: props.minHoursBeforeCancellation ?? 24,
+        minDaysBeforeNextAppointment: props.minDaysBeforeNextAppointment ?? 6,
         createdAt: props.createdAt ?? new Date(),
       },
       id

@@ -27,16 +27,12 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     return appointment
   }
 
-  async findById(id: UniqueEntityId): Promise<Appointment> {
+  async findById(id: UniqueEntityId): Promise<Appointment | null> {
     const appointment = await this.items.find((appointment) =>
       appointment.id.equals(id)
     )
 
-    if (!appointment) {
-      throw new Error('Appointment not found')
-    }
-
-    return appointment
+    return appointment ?? null
   }
 
   async findOverlapping(
@@ -60,7 +56,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
       return appointment.professionalId.equals(professionalId)
     })
 
-    return appointment
+    return appointment ?? []
   }
 
   async findManyByClientId(clientId: UniqueEntityId): Promise<Appointment[]> {
@@ -68,7 +64,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
       return appointment.clientId.equals(clientId)
     })
 
-    return appointment
+    return appointment ?? []
   }
 
   async findManyByStatus(
@@ -78,7 +74,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
       return appointment.status === status
     })
 
-    return appointment
+    return appointment ?? []
   }
 
   async save(appointment: Appointment): Promise<void> {
