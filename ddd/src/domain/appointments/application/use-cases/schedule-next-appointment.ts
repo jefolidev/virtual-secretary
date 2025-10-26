@@ -1,11 +1,11 @@
 import dayjs from 'dayjs'
-import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 import { type Either, left, right } from './../../../../core/either'
 import { UniqueEntityId } from './../../../../core/entities/unique-entity-id'
+import { Appointment } from './../../enterprise/entities/appointment'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 import { NotAllowedError } from './errors/not-allowed-error'
 import { NotFoundError } from './errors/resource-not-found-error'
@@ -65,7 +65,7 @@ export class ScheduleNextAppointmentUseCase {
       )
 
     if (clientAppointments.length === 0) {
-      return left(new NotFoundError('This cliente has no appointments yet.'))
+      return left(new NotFoundError('This client has no appointments yet.'))
     }
 
     const lastFinishedAppointment = clientAppointments.find(
@@ -74,7 +74,7 @@ export class ScheduleNextAppointmentUseCase {
 
     if (!lastFinishedAppointment) {
       return left(
-        new NotFoundError('This cliente has no finished appointments.')
+        new NotFoundError('This client has no finished appointments.')
       )
     }
 
@@ -93,9 +93,19 @@ export class ScheduleNextAppointmentUseCase {
       )
     }
 
+    const appointment = Appointment.create({
+      clientId: new UniqueEntityId(clientId),
+      professionalId: new UniqueEntityId(professionalId),
+      startDateTime,
+      endDateTime,
+      modality: 'IN_PERSON',
+      status: 'SCHEDULED',
+      price: 100,
+    })
+
     const overlappingAppointments =
       await this.appointmentsRepository.findOverlapping(
-        new UniqueEntityId(professionalId),
+        appointment.professionalId,
         startDateTime,
         endDateTime
       )
@@ -104,6 +114,8 @@ export class ScheduleNextAppointmentUseCase {
       return left(new NoDisponibilityError('Overlapping appointments'))
     }
 
-    return right({ appointment: lastFinishedAppointment })
+    await this.appointmentsRepository.create(appointment)
+
+    return right({ appointment })
   }
 }
