@@ -18,7 +18,6 @@ export interface AppointmentProps {
   endDateTime: Date
   modality: AppointmentModalityType
   status: AppointmentStatusType
-  price: number
   googleMeetLink?: string
   rescheduleDateTime?: { start: Date; end: Date }
   createdAt: Date
@@ -72,14 +71,6 @@ export class Appointment extends Entity<AppointmentProps> {
   set status(status: AppointmentStatusType) {
     this.props.status = status
     this.touch()
-  }
-
-  get price() {
-    return this.props.price
-  }
-
-  set price(price: number) {
-    this.props.price = price
   }
 
   get googleMeetLink() {

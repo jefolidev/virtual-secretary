@@ -19,7 +19,6 @@ interface CreateAppointmentUseCaseProps {
   endDateTime: Date
   modality: AppointmentModalityType
   googleMeetLink?: string
-  price: number
 }
 
 type CreateAppointmentUseCaseResponse = Either<
@@ -44,7 +43,6 @@ export class CreateAppointmentUseCase {
     endDateTime,
     modality,
     googleMeetLink,
-    price,
   }: CreateAppointmentUseCaseProps): Promise<CreateAppointmentUseCaseResponse> {
     const client = await this.clientsRepository.findById(clientId)
     if (!client) {
@@ -109,7 +107,6 @@ export class CreateAppointmentUseCase {
       endDateTime,
       modality,
       googleMeetLink,
-      price,
     })
 
     await this.appointmentsRepository.create(appointment)

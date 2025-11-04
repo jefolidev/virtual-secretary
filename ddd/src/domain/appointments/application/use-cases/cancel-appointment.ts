@@ -84,10 +84,10 @@ export class CancelAppointmentUseCase {
       'hours'
     )
 
-    if (diffBetweenDates < minHoursBeforeCancellation) {
-      // TODO: APLICAR O BOUNDED CONTEXT AQUI QUANDO POSSUIR DOMINIO DE PAYMENT
-      appointment.price = (cancelationFeePercentage / 100) * appointment.price
-    }
+    // if (diffBetweenDates < minHoursBeforeCancellation) {
+    //   // TODO: APLICAR O BOUNDED CONTEXT AQUI QUANDO POSSUIR DOMINIO DE PAYMENT
+    //   appointment.price = (cancelationFeePercentage / 100) * appointment.price
+    // }
 
     if (dayjs(appointment.startDateTime).isBefore(dayjs())) {
       return left(

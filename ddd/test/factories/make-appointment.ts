@@ -19,7 +19,6 @@ export function makeAppointment(
       modality: 'ONLINE',
       status: 'CANCELLED',
       googleMeetLink: faker.internet.url(),
-      price: 100,
       ...override,
     },
     id

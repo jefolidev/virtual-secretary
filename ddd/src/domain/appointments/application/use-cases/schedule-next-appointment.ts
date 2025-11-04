@@ -100,7 +100,6 @@ export class ScheduleNextAppointmentUseCase {
       endDateTime,
       modality: 'IN_PERSON',
       status: 'SCHEDULED',
-      price: 100,
     })
 
     const overlappingAppointments =
