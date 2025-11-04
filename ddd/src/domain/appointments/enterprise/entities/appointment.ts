@@ -5,6 +5,7 @@ import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 export type AppointmentStatusType =
   | 'SCHEDULED'
+  | 'CONFIRMED'
   | 'CANCELLED'
   | 'RESCHEDULED'
   | 'NO_SHOW'
@@ -20,6 +21,7 @@ export interface AppointmentProps {
   status: AppointmentStatusType
   googleMeetLink?: string
   rescheduleDateTime?: { start: Date; end: Date }
+  isPaid: boolean
   createdAt: Date
   updatedAt?: Date
 }
@@ -86,13 +88,51 @@ export class Appointment extends Entity<AppointmentProps> {
     return this.props.rescheduleDateTime
   }
 
-  reschedule(rescheduleDateTime: { start: Date; end: Date }) {
+  get isPaid() {
+    return this.props.isPaid
+  }
+
+  public linkPayment(paymentId: UniqueEntityId): void {
+    if (this.props.paymentId) {
+      throw new Error('Schedule already has a payment id.')
+    }
+    this.props.paymentId = paymentId
+    this.touch()
+  }
+
+  public markAsPaid(): void {
+    if (this.props.isPaid) return
+    this.props.isPaid = true
+    this.touch()
+  }
+
+  public confirm(): void {
+    // 3.1. Não pode confirmar se já está cancelado, etc. (Regras de transição de status)
+    if (this.props.status !== 'SCHEDULED') {
+      throw new Error(
+        'Não é possível confirmar agendamentos em status de transição.'
+      )
+    }
+
+    this.props.status = 'CONFIRMED'
+    this.touch()
+  }
+
+  // 4. Regra de Timeout de Pagamento
+  public cancelDueToPaymentTimeout(): void {
+    if (this.props.status === 'SCHEDULED' && !this.props.isPaid) {
+      this.props.status = 'CANCELLED'
+      this.touch()
+    }
+  }
+
+  public reschedule(rescheduleDateTime: { start: Date; end: Date }) {
     this.props.rescheduleDateTime = rescheduleDateTime
     this.props.status = 'RESCHEDULED'
     this.touch()
   }
 
-  isRescheduled() {
+  public isRescheduled() {
     return this.props.status === 'RESCHEDULED'
   }
 
@@ -133,13 +173,14 @@ export class Appointment extends Entity<AppointmentProps> {
   }
 
   static create(
-    props: Optional<AppointmentProps, 'createdAt' | 'status'>,
+    props: Optional<AppointmentProps, 'createdAt' | 'status' | 'isPaid'>,
     id?: UniqueEntityId
   ) {
     const appointment = new Appointment(
       {
         ...props,
         status: 'SCHEDULED',
+        isPaid: props.isPaid ?? false,
         createdAt: props.createdAt ?? new Date(),
       },
       id
