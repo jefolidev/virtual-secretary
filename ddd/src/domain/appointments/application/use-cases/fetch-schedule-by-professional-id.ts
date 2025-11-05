@@ -1,8 +1,8 @@
 import { type Either, right } from '@src/core/either'
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import type { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { NotFoundError } from './errors/resource-not-found-error'
 
 export interface FetchScheduleByProfessionalIdUseCaseProps {
   professionalId: string

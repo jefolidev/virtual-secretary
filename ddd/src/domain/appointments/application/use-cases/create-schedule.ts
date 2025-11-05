@@ -1,6 +1,7 @@
 import { type Either, left, right } from '@src/core/either'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
+import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import {
   Appointment,
   type AppointmentModalityType,
@@ -10,7 +11,6 @@ import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 import type { ScheduleConfigurationRepository } from './../repositories/schedule-configuration.repository'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
-import { NotFoundError } from './errors/resource-not-found-error'
 
 interface CreateAppointmentUseCaseProps {
   clientId: UniqueEntityId

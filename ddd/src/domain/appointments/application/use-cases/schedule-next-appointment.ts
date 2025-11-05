@@ -1,4 +1,6 @@
 import dayjs from 'dayjs'
+import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
+import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import type { ClientRepository } from '../repositories/client.repository'
@@ -7,8 +9,6 @@ import { type Either, left, right } from './../../../../core/either'
 import { UniqueEntityId } from './../../../../core/entities/unique-entity-id'
 import { Appointment } from './../../enterprise/entities/appointment'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
-import { NotAllowedError } from './errors/not-allowed-error'
-import { NotFoundError } from './errors/resource-not-found-error'
 
 export interface ScheduleNextAppointmentUseCaseProps {
   professionalId: string

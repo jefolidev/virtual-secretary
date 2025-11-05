@@ -1,14 +1,14 @@
 import { type Either, left, right } from '@src/core/either'
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
+import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
+import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
-import { NotAllowedError } from './errors/not-allowed-error'
-import { NotFoundError } from './errors/resource-not-found-error'
 
 export interface RescheduleAppointmentUseCaseProps {
   id: string

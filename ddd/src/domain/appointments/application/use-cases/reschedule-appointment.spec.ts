@@ -7,8 +7,8 @@ import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appo
 import { InMemoryCancellationPolicyRepository } from '@test/repositories/in-memory-cancellation-policy.repository'
 import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
+import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
-import { NotAllowedError } from './errors/not-allowed-error'
 import { RescheduleAppointmentUseCase } from './reschedule-appointment'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository

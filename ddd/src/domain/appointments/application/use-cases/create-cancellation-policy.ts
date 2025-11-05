@@ -1,9 +1,9 @@
 import { type Either, left, right } from '@src/core/either'
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
-import { NotFoundError } from './errors/resource-not-found-error'
 import { ValidationError } from './errors/validation-error'
 
 interface CreateCancellationPolicyUseCaseProps {
