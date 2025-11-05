@@ -82,7 +82,10 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
   }
 
   static create(
-    props: Optional<ProfessionalProps, 'createdAt' | 'cancellationPolicyId'>,
+    props: Optional<
+      ProfessionalProps,
+      'createdAt' | 'cancellationPolicyId' | 'scheduleConfigurationId'
+    >,
     id?: UniqueEntityId
   ) {
     const professional = new Professional(
@@ -91,6 +94,9 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
         cancellationPolicyId:
           props.cancellationPolicyId ??
           new UniqueEntityId('cancellation-policy-id'),
+        scheduleConfigurationId:
+          props.scheduleConfigurationId ??
+          new UniqueEntityId('schedule-configuration-id'),
         createdAt: props.createdAt ?? new Date(),
       },
       id

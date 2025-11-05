@@ -4,8 +4,9 @@ import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import { Professional } from '../../enterprise/entities/professional'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
-import { ScheduleConfigurationList } from '../../enterprise/entities/schedule-configuration-list'
 import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
+import { WorkingDays } from '../../enterprise/entities/value-objects/working-days'
+import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 
 export interface CreateProfessionalUseCaseProps {
@@ -41,14 +42,13 @@ export class CreateProfessionalUseCase {
 
     const professional = await Professional.create({
       userId: new UniqueEntityId(),
-      scheduleConfigurationId: new UniqueEntityId(),
       name,
       phone,
       officeAddress,
       notificationSettings,
     })
 
-    const cancellationPolicy = CancellationPolicy.create(
+    const cancellationPolicy = await CancellationPolicy.create(
       {
         allowReschedule: true,
         cancelationFeePercentage: 0.5,
@@ -59,18 +59,20 @@ export class CreateProfessionalUseCase {
       },
       new UniqueEntityId('cancellation-policy-id')
     )
+    const workingDays = new WorkingDaysList([WorkingDays.create(0)])
 
-    const scheduleConfiguration = ScheduleConfiguration.create(
+    const scheduleConfiguration = await ScheduleConfiguration.create(
       {
         enableGoogleMeet: true,
-        holidays: [],
         professionalId: professional.id,
-        workingDays: new ScheduleConfigurationList(),
+        holidays: [],
+
         workingHours: {
           start: '08:00',
           end: '23:00',
         },
 
+        workingDays,
         bufferIntervalMinutes: 60,
         sessionDurationMinutes: 50,
       },

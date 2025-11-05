@@ -6,6 +6,6 @@ export interface ScheduleConfigurationRepository {
   findMany(): Promise<ScheduleConfiguration[]>
   findByProfessionalId(
     professionalId: UniqueEntityId
-  ): Promise<ScheduleConfiguration | undefined>
+  ): Promise<ScheduleConfiguration>
   save(scheduleconfiguration: ScheduleConfiguration): Promise<void>
 }

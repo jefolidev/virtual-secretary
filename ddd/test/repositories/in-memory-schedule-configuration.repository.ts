@@ -17,11 +17,15 @@ export class InMemoryScheduleConfigurationRepository
 
   async findByProfessionalId(
     professionalId: UniqueEntityId
-  ): Promise<ScheduleConfiguration | undefined> {
+  ): Promise<ScheduleConfiguration> {
     const scheduleConfigurations = await this.items.find(
       (scheduleconfiguration) =>
         scheduleconfiguration.professionalId.equals(professionalId)
     )
+
+    if (!scheduleConfigurations) {
+      throw new Error('schedule configuration not found')
+    }
 
     return scheduleConfigurations
   }

@@ -1,12 +1,12 @@
-import { Entity } from '@src/core/entities/entity'
+import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
-import type { ScheduleConfigurationList } from './schedule-configuration-list'
+import type { WorkingDaysList } from './value-objects/working-days-list'
 
 export interface ScheduleConfigurationProps {
   professionalId: UniqueEntityId
-  workingDays: ScheduleConfigurationList
+  workingDays: WorkingDaysList
   workingHours: { start: string; end: string }
   sessionDurationMinutes: number
   bufferIntervalMinutes: number
@@ -16,7 +16,7 @@ export interface ScheduleConfigurationProps {
   updatedAt?: Date
 }
 
-export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
+export class ScheduleConfiguration extends AggregateRoot<ScheduleConfigurationProps> {
   get professionalId() {
     return this.props.professionalId
   }
@@ -25,9 +25,9 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
     return this.props.workingDays
   }
 
-  set workingDays(workingDays: ScheduleConfigurationList) {
+  set workingDays(workingDays: WorkingDaysList) {
     if (workingDays.currentItems.length >= 7) {
-      throw new Error('workingDays must have 7 days')
+      throw new Error('Working days must have only 7 days')
     }
 
     this.props.workingDays = workingDays
