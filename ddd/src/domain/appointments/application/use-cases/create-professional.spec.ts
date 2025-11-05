@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker'
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
 import { InMemoryProfessionalRepository } from './../../../../../test/repositories/in-memory-professional.repository'
 import { CreateProfessionalUseCase } from './create-professional'
 
@@ -16,8 +17,6 @@ describe('Create Professional', () => {
     const response = await sut.execute({
       name: 'John Doe',
       phone: faker.phone.number(),
-      cancellationPolicyId: new UniqueEntityId('cancellation-id').toString(),
-      notificationSettingsId: new UniqueEntityId('notification-id').toString(),
       officeAddress: faker.location.streetAddress(),
     })
 
@@ -26,7 +25,20 @@ describe('Create Professional', () => {
     if (response.isRight()) {
       const { professional } = response.value
 
+      console.log('PROFISSA: ', professional)
       expect(professional.name).toBe('John Doe')
+      expect(professional.notificationSettings).toBeInstanceOf(
+        NotificationSettings
+      )
+      expect(professional.notificationSettings).toBeInstanceOf(
+        NotificationSettings
+      )
+      expect(professional.scheduleConfigurationId).toEqual(
+        new UniqueEntityId('schedule-configuration-id')
+      )
+      expect(professional.cancellationPolicyId).toEqual(
+        new UniqueEntityId('cancellation-policy-id')
+      )
     }
   })
 })

@@ -1,4 +1,4 @@
-import { Entity } from '@src/core/entities/entity'
+import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 
@@ -26,7 +26,7 @@ export interface AppointmentProps {
   updatedAt?: Date
 }
 
-export class Appointment extends Entity<AppointmentProps> {
+export class Appointment extends AggregateRoot<AppointmentProps> {
   get clientId() {
     return this.props.clientId
   }

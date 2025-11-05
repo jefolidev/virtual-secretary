@@ -1,4 +1,5 @@
 import type { Optional } from '@src/core/entities/types/optional'
+
 type NotificationChannel = 'EMAIL' | 'WHATSAPP'
 
 type NotificationType =

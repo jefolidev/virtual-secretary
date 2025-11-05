@@ -1,10 +1,11 @@
-import { Entity } from '@src/core/entities/entity'
+import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
-import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import type { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
   userId: UniqueEntityId
-  notificationSettingsId: UniqueEntityId
+  notificationSettings: NotificationSettings
   cancellationPolicyId: UniqueEntityId
   scheduleConfigurationId: UniqueEntityId
   name: string
@@ -14,13 +15,13 @@ export interface ProfessionalProps {
   updatedAt?: Date
 }
 
-export class Professional extends Entity<ProfessionalProps> {
+export class Professional extends AggregateRoot<ProfessionalProps> {
   get userId() {
     return this.props.userId
   }
 
-  get notificationSettingsId() {
-    return this.props.notificationSettingsId
+  get notificationSettings() {
+    return this.props.notificationSettings
   }
 
   get scheduleConfigurationId() {
@@ -81,11 +82,17 @@ export class Professional extends Entity<ProfessionalProps> {
   }
 
   static create(
-    props: Optional<ProfessionalProps, 'createdAt'>,
+    props: Optional<ProfessionalProps, 'createdAt' | 'cancellationPolicyId'>,
     id?: UniqueEntityId
   ) {
     const professional = new Professional(
-      { ...props, createdAt: props.createdAt ?? new Date() },
+      {
+        ...props,
+        cancellationPolicyId:
+          props.cancellationPolicyId ??
+          new UniqueEntityId('cancellation-policy-id'),
+        createdAt: props.createdAt ?? new Date(),
+      },
       id
     )
 
