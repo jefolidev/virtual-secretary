@@ -2,10 +2,11 @@ import { Entity } from '@src/core/entities/entity'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
+import type { ScheduleConfigurationList } from './schedule-configuration-list'
 
 export interface ScheduleConfigurationProps {
   professionalId: UniqueEntityId
-  workingDays: number[]
+  workingDays: ScheduleConfigurationList
   workingHours: { start: string; end: string }
   sessionDurationMinutes: number
   bufferIntervalMinutes: number
@@ -24,8 +25,8 @@ export class ScheduleConfiguration extends Entity<ScheduleConfigurationProps> {
     return this.props.workingDays
   }
 
-  set workingDays(workingDays: number[]) {
-    if (workingDays.length >= 7) {
+  set workingDays(workingDays: ScheduleConfigurationList) {
+    if (workingDays.currentItems.length >= 7) {
       throw new Error('workingDays must have 7 days')
     }
 

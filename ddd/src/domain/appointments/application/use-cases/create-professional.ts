@@ -4,6 +4,7 @@ import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import { Professional } from '../../enterprise/entities/professional'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
+import { ScheduleConfigurationList } from '../../enterprise/entities/schedule-configuration-list'
 import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 
@@ -64,7 +65,7 @@ export class CreateProfessionalUseCase {
         enableGoogleMeet: true,
         holidays: [],
         professionalId: professional.id,
-        workingDays: [],
+        workingDays: new ScheduleConfigurationList(),
         workingHours: {
           start: '08:00',
           end: '23:00',
