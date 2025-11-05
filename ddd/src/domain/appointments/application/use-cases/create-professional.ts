@@ -5,7 +5,6 @@ import { CancellationPolicy } from '../../enterprise/entities/cancellation-polic
 import { Professional } from '../../enterprise/entities/professional'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
-import { WorkingDays } from '../../enterprise/entities/value-objects/working-days'
 import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 
@@ -59,7 +58,6 @@ export class CreateProfessionalUseCase {
       },
       new UniqueEntityId('cancellation-policy-id')
     )
-    const workingDays = new WorkingDaysList([WorkingDays.create(0)])
 
     const scheduleConfiguration = await ScheduleConfiguration.create(
       {
@@ -72,12 +70,15 @@ export class CreateProfessionalUseCase {
           end: '23:00',
         },
 
-        workingDays,
         bufferIntervalMinutes: 60,
         sessionDurationMinutes: 50,
       },
       new UniqueEntityId('schedule-configuration-id')
     )
+
+    const workingDaysList = new WorkingDaysList([0, 1, 2, 3, 4, 5, 6])
+
+    scheduleConfiguration.workingDays = workingDaysList
 
     professional.cancellationPolicyId = cancellationPolicy.id
     professional.scheduleConfigurationId = scheduleConfiguration.id

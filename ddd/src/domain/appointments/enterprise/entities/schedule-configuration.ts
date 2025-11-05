@@ -2,7 +2,7 @@ import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
-import type { WorkingDaysList } from './value-objects/working-days-list'
+import { WorkingDaysList } from './value-objects/working-days-list'
 
 export interface ScheduleConfigurationProps {
   professionalId: UniqueEntityId
@@ -26,7 +26,7 @@ export class ScheduleConfiguration extends AggregateRoot<ScheduleConfigurationPr
   }
 
   set workingDays(workingDays: WorkingDaysList) {
-    if (workingDays.currentItems.length >= 7) {
+    if (workingDays.currentItems.length > 7) {
       throw new Error('Working days must have only 7 days')
     }
 
@@ -122,7 +122,10 @@ export class ScheduleConfiguration extends AggregateRoot<ScheduleConfigurationPr
   static create(
     props: Optional<
       ScheduleConfigurationProps,
-      'createdAt' | 'sessionDurationMinutes' | 'bufferIntervalMinutes'
+      | 'createdAt'
+      | 'sessionDurationMinutes'
+      | 'bufferIntervalMinutes'
+      | 'workingDays'
     >,
     id?: UniqueEntityId
   ) {
@@ -131,6 +134,7 @@ export class ScheduleConfiguration extends AggregateRoot<ScheduleConfigurationPr
         ...props,
         sessionDurationMinutes: 60,
         bufferIntervalMinutes: 10,
+        workingDays: props.workingDays ?? new WorkingDaysList([]),
         createdAt: new Date(),
       },
       id

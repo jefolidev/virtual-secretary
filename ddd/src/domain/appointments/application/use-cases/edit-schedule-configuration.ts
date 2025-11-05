@@ -57,7 +57,7 @@ export class EditScheduleConfigurationUseCase {
         scheduleConfiguration.id
       )
 
-    const workingDaysList = new WorkingDaysList(currentWorkingDays)
+    const workingDaysList = new WorkingDaysList([0, 1, 3, 4, 5])
 
     workingDaysList.update(workingDays.getItems())
 
