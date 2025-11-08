@@ -6,7 +6,6 @@ import type { ScheduleConfiguration } from '../../enterprise/entities/schedule-c
 import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
-import type { WorkingDaysRepository } from '../repositories/working-days-repository'
 
 export interface EditScheduleConfigurationUseCaseRequest {
   professionalId: string
@@ -28,8 +27,7 @@ export type EditScheduleConfigurationUseCaseResponse = Either<
 export class EditScheduleConfigurationUseCase {
   constructor(
     private professionalRepository: ProfessionalRepository,
-    private scheduleConfigurationRepository: ScheduleConfigurationRepository,
-    private workingDaysRepository: WorkingDaysRepository
+    private scheduleConfigurationRepository: ScheduleConfigurationRepository
   ) {}
 
   async execute({
@@ -47,14 +45,13 @@ export class EditScheduleConfigurationUseCase {
 
     if (!professional) return left(new NotFoundError('Professional not found.'))
 
+    if (!professional.id.equals(new UniqueEntityId(professionalId))) {
+      return left(new NotAllowedError())
+    }
+
     const scheduleConfiguration =
       await this.scheduleConfigurationRepository.findByProfessionalId(
         new UniqueEntityId(professionalId)
-      )
-
-    const currentWorkingDays =
-      await this.workingDaysRepository.findByScheduleConfigurationId(
-        scheduleConfiguration.id
       )
 
     const workingDaysList = new WorkingDaysList([0, 1, 3, 4, 5])
@@ -69,6 +66,7 @@ export class EditScheduleConfigurationUseCase {
     scheduleConfiguration.holidays = holidays
     scheduleConfiguration.sessionDurationMinutes = sessionDurationMinutes
     scheduleConfiguration.workingDays = workingDaysList
+    scheduleConfiguration.workingHours = workingHours
 
     await this.scheduleConfigurationRepository.save(scheduleConfiguration)
 

@@ -11,18 +11,16 @@ describe('Fetch Client', () => {
     sut = new FetchClientUseCase(inMemoryClientRepository)
   })
 
-  describe('Fetch Client', () => {
-    it('should be able to fetch a client', async () => {
-      const client = makeClient()
+  it('should be able to fetch a client', async () => {
+    const client = makeClient()
 
-      await inMemoryClientRepository.create(client)
+    await inMemoryClientRepository.create(client)
 
-      const response = await sut.execute()
+    const response = await sut.execute()
 
-      expect(response.isRight()).toBe(true)
-      if (response.isRight()) {
-        expect(response.value.clients).toHaveLength(1)
-      }
-    })
+    expect(response.isRight()).toBe(true)
+    if (response.isRight()) {
+      expect(response.value.clients).toHaveLength(1)
+    }
   })
 })

@@ -3,6 +3,7 @@ import {
   ScheduleConfiguration,
   type ScheduleConfigurationProps,
 } from '@src/domain/appointments/enterprise/entities/schedule-configuration'
+import { WorkingDaysList } from '@src/domain/appointments/enterprise/entities/value-objects/working-days-list'
 
 export function makeScheduleConfiguration(
   override?: Partial<ScheduleConfigurationProps>,
@@ -13,7 +14,7 @@ export function makeScheduleConfiguration(
       {
         professionalId: new UniqueEntityId(),
         enableGoogleMeet: true,
-        workingDays: [1, 2, 3, 4, 5],
+        workingDays: new WorkingDaysList([1, 2, 3, 4, 5]),
         workingHours: {
           start: '08:00',
           end: '17:00',

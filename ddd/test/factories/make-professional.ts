@@ -4,6 +4,7 @@ import {
   Professional,
   type ProfessionalProps,
 } from '@src/domain/appointments/enterprise/entities/professional'
+import { NotificationSettings } from '@src/domain/appointments/enterprise/entities/value-objects/notification-settings'
 
 export function makeProfessional(
   override?: Partial<ProfessionalProps>,
@@ -16,7 +17,19 @@ export function makeProfessional(
       name: faker.person.firstName(),
       phone: faker.phone.number(),
       cancellationPolicyId: new UniqueEntityId(),
-      notificationSettingsId: new UniqueEntityId(),
+      notificationSettings: new NotificationSettings({
+        channels: ['WHATSAPP', 'EMAIL'],
+        dailySummaryTime: '20:00',
+        enabledTypes: [
+          'NEW_APPOINTMENT',
+          'CANCELLATION',
+          'CONFIRMATION',
+          'CONFIRMED_LIST',
+          'DAILY_SUMMARY',
+          'PAYMENT_STATUS',
+        ],
+        reminderBeforeMinutes: 20,
+      }),
       officeAddress: faker.location.streetAddress(),
       ...override,
     },

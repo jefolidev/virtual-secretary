@@ -25,7 +25,6 @@ describe('Create Professional', () => {
     if (response.isRight()) {
       const { professional } = response.value
 
-      console.log('PROFISSA: ', professional)
       expect(professional.name).toBe('John Doe')
       expect(professional.notificationSettings).toBeInstanceOf(
         NotificationSettings

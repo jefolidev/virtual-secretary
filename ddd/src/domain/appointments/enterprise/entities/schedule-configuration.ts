@@ -2,7 +2,10 @@ import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
 import { WorkingDaysList } from './value-objects/working-days-list'
+
+dayjs.extend(customParseFormat)
 
 export interface ScheduleConfigurationProps {
   professionalId: UniqueEntityId
