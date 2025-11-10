@@ -7,4 +7,5 @@ export interface CancellationPolicyRepository {
   findByProfessionalId(
     professionalId: UniqueEntityId
   ): Promise<CancellationPolicy | null>
+  save(cancellationPolicy: CancellationPolicy): Promise<void>
 }

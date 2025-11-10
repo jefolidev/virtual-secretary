@@ -26,6 +26,10 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
     return this.props.minDaysBeforeNextAppointment
   }
 
+  set minDaysBeforeNextAppointment(minDaysBeforeNextAppointment: number) {
+    this.props.minDaysBeforeNextAppointment = minDaysBeforeNextAppointment
+  }
+
   set minHoursBeforeCancellation(minHoursBeforeCancellation: number) {
     if (minHoursBeforeCancellation < 0) {
       throw new Error('minHoursBeforeCancellation must be greater than 0')

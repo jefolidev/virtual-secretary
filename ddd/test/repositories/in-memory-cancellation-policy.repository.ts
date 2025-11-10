@@ -28,4 +28,12 @@ export class InMemoryCancellationPolicyRepository
 
     return cancellationPolicy ?? null
   }
+
+  async save(cancellationPolicy: CancellationPolicy): Promise<void> {
+    const itemIndex = this.items.findIndex(
+      (item) => item.id === cancellationPolicy.id
+    )
+
+    this.items[itemIndex] = cancellationPolicy
+  }
 }
