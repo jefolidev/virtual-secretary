@@ -2,25 +2,25 @@ import { type Either, left, right } from '@src/core/either'
 import { BadRequestError } from '@src/core/errors/bad-request'
 import { NotAllowedError } from '@src/core/errors/not-allowed-error'
 import { NotFoundError } from '@src/core/errors/resource-not-found-error'
+import { UniqueEntityId } from '../../../../core/entities/unique-entity-id'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
-import { UniqueEntityId } from './../../../../core/entities/unique-entity-id'
 
-export interface MarkAppointmentAsCompletedUseCaseRequest {
+export interface StartAppointmentUseCaseRequest {
   appointmentId: string
   professionalId: string
 }
 
-export type MarkAppointmentAsCompletedUseCaseResponse = Either<
+export type StartAppointmentUseCaseResponse = Either<
   NotAllowedError | NotFoundError | BadRequestError,
   {
     appointment: Appointment
   }
 >
 
-export class MarkAppointmentAsCompletedUseCase {
+export class StartAppointmentUseCase {
   constructor(
     readonly appointmentsRepository: AppointmentsRepository,
     readonly clientRepository: ClientRepository,
@@ -30,7 +30,7 @@ export class MarkAppointmentAsCompletedUseCase {
   async execute({
     appointmentId,
     professionalId,
-  }: MarkAppointmentAsCompletedUseCaseRequest) {
+  }: StartAppointmentUseCaseRequest) {
     const appointment = await this.appointmentsRepository.findById(
       new UniqueEntityId(appointmentId)
     )
@@ -52,18 +52,18 @@ export class MarkAppointmentAsCompletedUseCase {
     if (!appointment.professionalId.equals(new UniqueEntityId(professionalId)))
       return left(
         new NotAllowedError(
-          'You cannot mark appointment as completed if that is not yours.'
+          'You cannot start an appointment that is not yours.'
         )
       )
 
     if (appointment.status !== 'SCHEDULED')
       return left(
         new BadRequestError(
-          'You cannot cannot mark appointment as completed if is not scheduled.'
+          'You cannot start an appointment that is not scheduled.'
         )
       )
 
-    appointment.status = 'COMPLETED'
+    appointment.status = 'IN_PROGRESS'
     await this.appointmentsRepository.save(appointment)
 
     return right({

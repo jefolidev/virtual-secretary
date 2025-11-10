@@ -1,6 +1,6 @@
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
-import type { Professional } from '@src/domain/appointments/enterprise/entities/professional'
-import type { ProfessionalRepository } from './../../src/domain/appointments/application/repositories/professional-repository'
+import type { Professional } from '@src/domain/scheduling/enterprise/entities/professional'
+import type { ProfessionalRepository } from '../../src/domain/scheduling/application/repositories/professional-repository'
 
 export class InMemoryProfessionalRepository implements ProfessionalRepository {
   public items: Professional[] = []

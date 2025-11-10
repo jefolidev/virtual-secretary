@@ -2,11 +2,11 @@ import { type Either, left, right } from '@src/core/either'
 import { BadRequestError } from '@src/core/errors/bad-request'
 import { NotAllowedError } from '@src/core/errors/not-allowed-error'
 import { NotFoundError } from '@src/core/errors/resource-not-found-error'
+import { UniqueEntityId } from '../../../../core/entities/unique-entity-id'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
-import { UniqueEntityId } from './../../../../core/entities/unique-entity-id'
 
 export interface MarkAppointmentAsNoShowUseCaseRequest {
   appointmentId: string

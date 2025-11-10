@@ -3,7 +3,7 @@ import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import {
   Client,
   type ClientProps,
-} from '@src/domain/appointments/enterprise/entities/client'
+} from '@src/domain/scheduling/enterprise/entities/client'
 
 export function makeClient(
   override?: Partial<ClientProps>,

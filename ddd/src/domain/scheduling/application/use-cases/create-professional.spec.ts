@@ -1,7 +1,7 @@
 import { faker } from '@faker-js/faker'
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { InMemoryProfessionalRepository } from '../../../../../test/repositories/in-memory-professional.repository'
 import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
-import { InMemoryProfessionalRepository } from './../../../../../test/repositories/in-memory-professional.repository'
 import { CreateProfessionalUseCase } from './create-professional'
 
 let inMemoryProfessionalRepository: InMemoryProfessionalRepository

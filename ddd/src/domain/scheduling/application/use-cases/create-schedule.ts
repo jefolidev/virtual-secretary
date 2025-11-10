@@ -9,7 +9,7 @@ import {
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
-import type { ScheduleConfigurationRepository } from './../repositories/schedule-configuration.repository'
+import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 interface CreateAppointmentUseCaseProps {

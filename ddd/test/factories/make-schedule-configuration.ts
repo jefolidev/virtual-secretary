@@ -2,8 +2,8 @@ import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import {
   ScheduleConfiguration,
   type ScheduleConfigurationProps,
-} from '@src/domain/appointments/enterprise/entities/schedule-configuration'
-import { WorkingDaysList } from '@src/domain/appointments/enterprise/entities/value-objects/working-days-list'
+} from '@src/domain/scheduling/enterprise/entities/schedule-configuration'
+import { WorkingDaysList } from '@src/domain/scheduling/enterprise/entities/value-objects/working-days-list'
 
 export function makeScheduleConfiguration(
   override?: Partial<ScheduleConfigurationProps>,

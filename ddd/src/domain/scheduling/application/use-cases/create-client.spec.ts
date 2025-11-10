@@ -1,5 +1,5 @@
 import { faker } from '@faker-js/faker'
-import { InMemoryClientRepository } from './../../../../../test/repositories/in-memory-client.repository'
+import { InMemoryClientRepository } from '../../../../../test/repositories/in-memory-client.repository'
 import { CreateClietUseCase } from './create-client'
 
 let inMemoryClientRepository: InMemoryClientRepository

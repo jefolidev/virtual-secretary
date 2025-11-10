@@ -1,7 +1,7 @@
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { makeProfessional } from '@test/factories/make-professional'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
-import { InMemoryCancellationPolicyRepository } from './../../../../../test/repositories/in-memory-cancellation-policy.repository'
+import { InMemoryCancellationPolicyRepository } from '../../../../../test/repositories/in-memory-cancellation-policy.repository'
 import { CreateCancellationPolicyUseCase } from './create-cancellation-policy'
 import { ValidationError } from './errors/validation-error'
 

@@ -6,7 +6,7 @@ import { makeProfessional } from '@test/factories/make-professional'
 import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
 import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
-import { InMemoryCancellationPolicyRepository } from './../../../../../test/repositories/in-memory-cancellation-policy.repository'
+import { InMemoryCancellationPolicyRepository } from '../../../../../test/repositories/in-memory-cancellation-policy.repository'
 import { CancelAppointmentUseCase } from './cancel-appointment'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository

@@ -3,8 +3,8 @@ import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import {
   Professional,
   type ProfessionalProps,
-} from '@src/domain/appointments/enterprise/entities/professional'
-import { NotificationSettings } from '@src/domain/appointments/enterprise/entities/value-objects/notification-settings'
+} from '@src/domain/scheduling/enterprise/entities/professional'
+import { NotificationSettings } from '@src/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 
 export function makeProfessional(
   override?: Partial<ProfessionalProps>,

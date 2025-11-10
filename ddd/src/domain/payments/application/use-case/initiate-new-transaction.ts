@@ -3,13 +3,13 @@ import { type Either, left, right } from '@src/core/either'
 import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { NotAllowedError } from '@src/core/errors/not-allowed-error'
 import { NotFoundError } from '@src/core/errors/resource-not-found-error'
-import type { AppointmentsRepository } from '@src/domain/appointments/application/repositories/appointments.repository'
+import type { AppointmentsRepository } from '@src/domain/scheduling/application/repositories/appointments.repository'
+import type { ClientRepository } from '../../../scheduling/application/repositories/client.repository'
 import {
   type PaymentProvider,
   Transaction,
 } from '../../enterprise/entities/transaction'
 import type { TransactionRepository } from '../repositories/transaction.repository'
-import type { ClientRepository } from './../../../appointments/application/repositories/client.repository'
 import { InvalidAmountError } from './errors/invalid-amount'
 
 export interface InitiateNewTransactionUseCaseRequest {

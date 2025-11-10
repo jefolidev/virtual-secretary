@@ -1,9 +1,9 @@
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
-import type { AppointmentsRepository } from '@src/domain/appointments/application/repositories/appointments.repository'
+import type { AppointmentsRepository } from '@src/domain/scheduling/application/repositories/appointments.repository'
 import type {
   Appointment,
   AppointmentStatusType,
-} from '@src/domain/appointments/enterprise/entities/appointment'
+} from '@src/domain/scheduling/enterprise/entities/appointment'
 
 export class InMemoryAppointmentRepository implements AppointmentsRepository {
   public items: Appointment[] = []

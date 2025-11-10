@@ -1,6 +1,6 @@
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
-import type { ScheduleConfigurationRepository } from '@src/domain/appointments/application/repositories/schedule-configuration.repository'
-import type { ScheduleConfiguration } from '@src/domain/appointments/enterprise/entities/schedule-configuration'
+import type { ScheduleConfigurationRepository } from '@src/domain/scheduling/application/repositories/schedule-configuration.repository'
+import type { ScheduleConfiguration } from '@src/domain/scheduling/enterprise/entities/schedule-configuration'
 
 export class InMemoryScheduleConfigurationRepository
   implements ScheduleConfigurationRepository

@@ -1,6 +1,6 @@
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
-import type { ClientRepository } from '@src/domain/appointments/application/repositories/client.repository'
-import type { Client } from '@src/domain/appointments/enterprise/entities/client'
+import type { ClientRepository } from '@src/domain/scheduling/application/repositories/client.repository'
+import type { Client } from '@src/domain/scheduling/enterprise/entities/client'
 
 export class InMemoryClientRepository implements ClientRepository {
   public items: Client[] = []

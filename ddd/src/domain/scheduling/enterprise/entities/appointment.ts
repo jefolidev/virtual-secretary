@@ -9,6 +9,7 @@ export type AppointmentStatusType =
   | 'CANCELLED'
   | 'RESCHEDULED'
   | 'NO_SHOW'
+  | 'IN_PROGRESS'
   | 'COMPLETED'
 
 export interface AppointmentProps {
