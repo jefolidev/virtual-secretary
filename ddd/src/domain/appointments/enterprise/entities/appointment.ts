@@ -106,19 +106,6 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.touch()
   }
 
-  public confirm(): void {
-    // 3.1. Não pode confirmar se já está cancelado, etc. (Regras de transição de status)
-    if (this.props.status !== 'SCHEDULED') {
-      throw new Error(
-        'Não é possível confirmar agendamentos em status de transição.'
-      )
-    }
-
-    this.props.status = 'CONFIRMED'
-    this.touch()
-  }
-
-  // 4. Regra de Timeout de Pagamento
   public cancelDueToPaymentTimeout(): void {
     if (this.props.status === 'SCHEDULED' && !this.props.isPaid) {
       this.props.status = 'CANCELLED'
