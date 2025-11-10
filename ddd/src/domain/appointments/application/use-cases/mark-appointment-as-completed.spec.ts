@@ -56,7 +56,7 @@ describe('MarkAppointmentAsCompleted Appointment', () => {
     expect(response.isRight()).toBe(true)
 
     if (response.isRight()) {
-      expect(inMemoryAppointmentRepository.items[0]?.status).toBe('completed')
+      expect(inMemoryAppointmentRepository.items[0]?.status).toBe('COMPLETED')
 
       expect(inMemoryAppointmentRepository.items).toHaveLength(1)
       expect(inMemoryProfessionalRepository.items).toHaveLength(1)
@@ -139,7 +139,7 @@ describe('MarkAppointmentAsCompleted Appointment', () => {
     expect(response.isLeft()).toBe(true)
 
     if (response.isLeft()) {
-      expect(inMemoryAppointmentRepository.items[0]?.status).toBe('completed')
+      expect(inMemoryAppointmentRepository.items[0]?.status).toBe('COMPLETED')
 
       expect(response.value).toBeInstanceOf(BadRequestError)
     }
