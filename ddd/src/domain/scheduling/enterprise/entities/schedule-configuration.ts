@@ -135,8 +135,8 @@ export class ScheduleConfiguration extends AggregateRoot<ScheduleConfigurationPr
     const scheduleConfiguration = new ScheduleConfiguration(
       {
         ...props,
-        sessionDurationMinutes: 60,
-        bufferIntervalMinutes: 10,
+        sessionDurationMinutes: props.sessionDurationMinutes ?? 60,
+        bufferIntervalMinutes: props.bufferIntervalMinutes ?? 10,
         workingDays: props.workingDays ?? new WorkingDaysList([]),
         createdAt: new Date(),
       },

@@ -8,6 +8,9 @@ export interface AppointmentsRepository {
   create(appointment: Appointment): Promise<void>
   findMany(): Promise<Appointment[]>
   findById(id: UniqueEntityId): Promise<Appointment | null>
+  findByProfessionalId(
+    professionalId: UniqueEntityId
+  ): Promise<Appointment[] | null>
   findOverlapping(
     profissionalId: UniqueEntityId,
     startDate: Date,

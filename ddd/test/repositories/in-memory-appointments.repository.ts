@@ -49,6 +49,15 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     })
   }
 
+  async findByProfessionalId(
+    professionalId: UniqueEntityId
+  ): Promise<Appointment[] | null> {
+    const appointments = await this.items.filter((appointment) =>
+      appointment.id.equals(professionalId)
+    )
+    return appointments || null
+  }
+
   async findManyByProfessionalId(
     professionalId: UniqueEntityId
   ): Promise<Appointment[]> {
