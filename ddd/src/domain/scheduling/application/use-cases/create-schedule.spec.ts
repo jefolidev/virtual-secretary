@@ -59,8 +59,8 @@ describe('Create Appointment', () => {
     const response = await sut.execute({
       clientId: client.id,
       professionalId: professional.id,
-      startDateTime: new Date('11/12/2025 10:00'),
-      endDateTime: new Date('11/12/2025 11:00'),
+      startDateTime: new Date('11/12/2026 10:00'),
+      endDateTime: new Date('11/12/2026 11:00'),
       modality: 'ONLINE',
       googleMeetLink: 'https://meet.google.com/abc',
     })
