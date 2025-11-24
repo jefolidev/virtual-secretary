@@ -102,7 +102,7 @@ export class CancelAppointmentUseCase {
       return left(new AlreadyCanceledError())
     }
 
-    appointment.status = 'CANCELLED'
+    appointment.cancel()
 
     await this.appointmentsRepository.save(appointment)
 
