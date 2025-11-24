@@ -1,4 +1,5 @@
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { DomainEvents } from '@src/core/events/domain-events'
 import type { AppointmentsRepository } from '@src/domain/scheduling/application/repositories/appointments.repository'
 import type {
   Appointment,
@@ -10,6 +11,8 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
 
   async create(appointment: Appointment): Promise<void> {
     await this.items.push(appointment)
+
+    DomainEvents.dispatchEventsForAggregate(appointment.id)
   }
 
   async findMany(): Promise<Appointment[]> {
@@ -92,5 +95,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     )
 
     this.items[itemIndex] = appointment
+
+    DomainEvents.dispatchEventsForAggregate(appointment.id)
   }
 }

@@ -1,6 +1,7 @@
 import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { ScheduledAppointmentEvent } from '../events/scheduled-appointment-event'
 
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 export type AppointmentStatusType =
@@ -173,6 +174,11 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
       },
       id
     )
+
+    const isNewAppointment = !id
+
+    if (isNewAppointment)
+      appointment.addDomainEvent(new ScheduledAppointmentEvent(appointment))
 
     return appointment
   }
