@@ -15,6 +15,12 @@ export class InMemoryOrganizationRepository implements OrganizationRepository {
     return organization ?? null
   }
 
+  async findByOwnerId(id: UniqueEntityId): Promise<Organization | null> {
+    const organization = await this.items.find((org) => org.ownerId.equals(id))
+
+    return organization ?? null
+  }
+
   async save(organization: Organization): Promise<void> {
     const itemIndex = await this.items.findIndex((item) =>
       item.id.equals(organization.id)
