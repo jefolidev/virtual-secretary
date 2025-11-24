@@ -2,10 +2,16 @@ import { Entity } from '@src/core/entities/entity'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 
+export type NotificationReminderType =
+  | 'first_reminder'
+  | 'confirmation'
+  | 'final_reminder'
+
 export interface NotificationProps {
   recipientId: UniqueEntityId
   title: string
   content: string
+  reminderType?: NotificationReminderType
   createdAt: Date
   readAt?: Date
 }
@@ -29,6 +35,14 @@ export class Notification extends Entity<NotificationProps> {
 
   get readAt() {
     return this.props.readAt
+  }
+
+  get reminderType() {
+    return this.props.reminderType
+  }
+
+  set reminderType(reminderType: NotificationReminderType | undefined) {
+    this.props.reminderType = reminderType
   }
 
   read() {

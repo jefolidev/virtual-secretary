@@ -11,25 +11,25 @@ let inMemoryScheduleConfigurationRepository: InMemoryScheduleConfigurationReposi
 
 let sut: InitiateNewTransactionUseCase
 
-// describe('Create Transaction', () => {
-//   beforeEach(() => {
-//     inMemoryTransactionRepository = new InMemoryTransactionRepository()
-//     inMemoryClientRepository = new InMemoryClientRepository()
-//     inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
-//     inMemoryScheduleConfigurationRepository =
-//       new InMemoryScheduleConfigurationRepository()
+describe('Create Transaction', () => {
+  beforeEach(() => {
+    inMemoryTransactionRepository = new InMemoryTransactionRepository()
+    inMemoryClientRepository = new InMemoryClientRepository()
+    inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
+    inMemoryScheduleConfigurationRepository =
+      new InMemoryScheduleConfigurationRepository()
 
-//     sut = new InitiateNewTransactionUseCase(
-//       inMemoryAppointmentRepository,
-//       inMemoryTransactionRepository,
-//       inMemoryClientRepository
-//     )
-//   })
+    sut = new InitiateNewTransactionUseCase(
+      inMemoryAppointmentRepository,
+      inMemoryTransactionRepository,
+      inMemoryClientRepository
+    )
+  })
 
-//   it('should be able to create an transaction', async () => {
-//     expect(response.isRight()).toBe(true)
+  it.skip('should be able to create an transaction', async () => {
+    expect(response.isRight()).toBe(true)
 
-//     if (response.isRight()) {
-//     }
-//   })
-// })
+    if (response.isRight()) {
+    }
+  })
+})
