@@ -1,4 +1,3 @@
-import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemoryOrganizationRepository } from '../../../../../test/repositories/in-memory-organization.repository'
 import { CreateOrganizationUseCase } from './create-organization'
@@ -20,7 +19,7 @@ describe('Create Organization', () => {
   it('should be able to create a organization', async () => {
     const response = await sut.execute({
       name: 'Organization John Doe',
-      ownerId: new UniqueEntityId('organization-id'),
+      ownerId: 'organization-id',
     })
 
     expect(response.isRight()).toBe(true)

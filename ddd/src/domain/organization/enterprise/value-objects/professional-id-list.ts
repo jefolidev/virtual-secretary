@@ -3,6 +3,6 @@ import { WatchedList } from '@src/core/entities/watched-list'
 
 export class ProfessionalIdList extends WatchedList<UniqueEntityId> {
   public compareItems(a: UniqueEntityId, b: UniqueEntityId): boolean {
-    return a === b
+    return a.equals(b)
   }
 }
