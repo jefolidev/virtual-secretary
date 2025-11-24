@@ -20,7 +20,7 @@ export class InMemoryClientRepository implements ClientRepository {
   }
 
   async save(client: Client): Promise<void> {
-    const itemIndex = this.items.findIndex((item) => item.id === client.id)
+    const itemIndex = this.items.findIndex((item) => item.id.equals(client.id))
 
     this.items[itemIndex] = client
   }
