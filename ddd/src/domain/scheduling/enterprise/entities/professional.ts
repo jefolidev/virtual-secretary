@@ -4,7 +4,7 @@ import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import type { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
-  userId: UniqueEntityId
+  organizationId: UniqueEntityId
   notificationSettings: NotificationSettings
   cancellationPolicyId: UniqueEntityId
   scheduleConfigurationId: UniqueEntityId
@@ -16,8 +16,8 @@ export interface ProfessionalProps {
 }
 
 export class Professional extends AggregateRoot<ProfessionalProps> {
-  get userId() {
-    return this.props.userId
+  get organizationId() {
+    return this.props.organizationId
   }
 
   get notificationSettings() {
