@@ -64,6 +64,8 @@ export class ConfirmAppointmentUseCase {
       )
 
     appointment.confirm()
+    appointment.markAsPaid()
+
     await this.appointmentsRepository.save(appointment)
 
     return right({

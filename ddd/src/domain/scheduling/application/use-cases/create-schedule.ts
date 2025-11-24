@@ -10,19 +10,21 @@ import type { AppointmentsRepository } from '../repositories/appointments.reposi
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional-repository'
 import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
+import { InvalidValueError } from './errors/invalid-value-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 interface CreateAppointmentUseCaseProps {
   clientId: UniqueEntityId
   professionalId: UniqueEntityId
   startDateTime: Date
+  amount: number
   endDateTime: Date
   modality: AppointmentModalityType
   googleMeetLink?: string
 }
 
 type CreateAppointmentUseCaseResponse = Either<
-  NoDisponibilityError | NotFoundError,
+  NoDisponibilityError | NotFoundError | InvalidValueError,
   {
     appointment: Appointment
   }
@@ -42,6 +44,7 @@ export class CreateAppointmentUseCase {
     startDateTime,
     endDateTime,
     modality,
+    amount,
     googleMeetLink,
   }: CreateAppointmentUseCaseProps): Promise<CreateAppointmentUseCaseResponse> {
     const client = await this.clientsRepository.findById(clientId)
@@ -100,6 +103,10 @@ export class CreateAppointmentUseCase {
       )
     }
 
+    if (amount < 0) {
+      return left(new InvalidValueError("Negative value isn't allowed."))
+    }
+
     const appointment = Appointment.create({
       clientId,
       professionalId,
@@ -107,6 +114,7 @@ export class CreateAppointmentUseCase {
       endDateTime,
       modality,
       googleMeetLink,
+      amount,
     })
 
     await this.appointmentsRepository.create(appointment)

@@ -62,6 +62,7 @@ describe('Create Appointment', () => {
       startDateTime: new Date('11/12/2026 10:00'),
       endDateTime: new Date('11/12/2026 11:00'),
       modality: 'ONLINE',
+      amount: 200,
       googleMeetLink: 'https://meet.google.com/abc',
     })
 
@@ -116,6 +117,7 @@ describe('Create Appointment', () => {
       startDateTime: new Date('2023-01-01T10:00:00.000Z'),
       endDateTime: new Date('2023-01-01T11:01:00.000Z'),
       modality: 'ONLINE',
+      amount: 200,
       googleMeetLink: 'https://meet.google.com/abc',
     })
 
@@ -166,6 +168,7 @@ describe('Create Appointment', () => {
       startDateTime: new Date('2023-01-01T10:00:00.000Z'),
       endDateTime: new Date('2023-01-01T11:00:00.000Z'),
       modality: 'ONLINE',
+      amount: 200,
       googleMeetLink: 'https://meet.google.com/abc',
     })
 
