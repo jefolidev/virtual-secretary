@@ -1,10 +1,12 @@
 import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { ProfessionalIdList } from '../value-objects/professional-id-list'
 import type { Slug } from '../value-objects/slug'
 
 export interface OrganizationProps {
   ownerId: UniqueEntityId
+  professionalsIds: ProfessionalIdList
   name: string
   slug: Slug
   isActive: boolean
@@ -20,6 +22,10 @@ export class Organization extends AggregateRoot<OrganizationProps> {
   set name(name: string) {
     this.props.name = name
     this.touch()
+  }
+
+  get professionalsIds() {
+    return this.props.professionalsIds.currentItems
   }
 
   get slug() {
@@ -52,19 +58,21 @@ export class Organization extends AggregateRoot<OrganizationProps> {
     return this.props.createdAt
   }
 
-  addProfessional(professionalId: UniqueEntityId) {}
-
   private touch() {
     this.props.updatedAt = new Date()
   }
 
   static create(
-    props: Optional<OrganizationProps, 'isActive' | 'createdAt'>,
+    props: Optional<
+      OrganizationProps,
+      'isActive' | 'createdAt' | 'professionalsIds'
+    >,
     id?: UniqueEntityId
   ) {
     const organization = new Organization(
       {
         ...props,
+        professionalsIds: props.professionalsIds ?? new ProfessionalIdList(),
         isActive: props.isActive ?? true,
         createdAt: props.createdAt ?? new Date(),
       },

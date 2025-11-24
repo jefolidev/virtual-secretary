@@ -4,7 +4,7 @@ import { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import type { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
-  organizationId: UniqueEntityId
+  organizationId?: UniqueEntityId
   notificationSettings: NotificationSettings
   cancellationPolicyId: UniqueEntityId
   scheduleConfigurationId: UniqueEntityId
