@@ -2,6 +2,7 @@ import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
 import { CanceledAppointmentEvent } from '../events/canceled-appointment'
+import { ConfirmedAppointmentEvent } from '../events/confirmed-appointment'
 import { ScheduledAppointmentEvent } from '../events/scheduled-appointment-event'
 
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
@@ -130,6 +131,21 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
   public isRescheduled() {
     return this.props.status === 'RESCHEDULED'
+  }
+
+  public confirm() {
+    if (this.isCompletedOrInProgress()) {
+      throw new Error('Cannot cancel a completed or in progress appointment')
+    }
+
+    if (this.props.status === 'CONFIRMED') {
+      return
+    }
+
+    this.props.status = 'CONFIRMED'
+    this.touch()
+
+    this.addDomainEvent(new ConfirmedAppointmentEvent(this))
   }
 
   public cancel() {

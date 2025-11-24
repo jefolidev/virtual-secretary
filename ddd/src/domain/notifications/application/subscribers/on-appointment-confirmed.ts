@@ -2,11 +2,12 @@ import { DomainEvents } from '@src/core/events/domain-events'
 import type { EventHandler } from '@src/core/events/event-handler'
 import type { ClientRepository } from '@src/domain/scheduling/application/repositories/client.repository'
 import type { ProfessionalRepository } from '@src/domain/scheduling/application/repositories/professional-repository'
-import { CanceledAppointmentEvent } from '@src/domain/scheduling/enterprise/events/canceled-appointment'
+import { ConfirmedAppointmentEvent } from '@src/domain/scheduling/enterprise/events/confirmed-appointment'
+import type { ScheduledAppointmentEvent } from '@src/domain/scheduling/enterprise/events/scheduled-appointment-event'
 import dayjs from 'dayjs'
 import type { SendNotificationUseCase } from '../use-cases/send-notification'
 
-export class OnAppointmentCanceled implements EventHandler {
+export class OnAppointmentConfirmed implements EventHandler {
   constructor(
     private professionalRepository: ProfessionalRepository,
     private clientRepository: ClientRepository,
@@ -17,14 +18,14 @@ export class OnAppointmentCanceled implements EventHandler {
 
   setupSubscriptions(): void {
     DomainEvents.register(
-      this.sendCanceledAppointmentNotification.bind(this),
-      CanceledAppointmentEvent.name
+      this.sendConfirmedAppointmentNotification.bind(this),
+      ConfirmedAppointmentEvent.name
     )
   }
 
-  private async sendCanceledAppointmentNotification({
+  private async sendConfirmedAppointmentNotification({
     appointment,
-  }: CanceledAppointmentEvent) {
+  }: ScheduledAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
       appointment.professionalId
     )
@@ -34,8 +35,8 @@ export class OnAppointmentCanceled implements EventHandler {
     if (professional && client) {
       await this.sendNotification.execute({
         recipientId: professional.id.toString(),
-        title: `Consulta cancelada`,
-        content: `O paciente ${client.name.toUpperCase()} cancelou a consulta do dia ${dayjs(appointment.startDateTime).format('DD/MM/YYYY')}.`,
+        title: `Consulta confirmada`,
+        content: `O paciente ${client.name.toUpperCase()} confirmou a consulta do dia ${dayjs(appointment.startDateTime).format('DD/MM/YYYY')}.`,
       })
     }
   }

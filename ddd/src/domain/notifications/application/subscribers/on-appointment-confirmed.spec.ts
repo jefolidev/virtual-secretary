@@ -11,7 +11,7 @@ import {
   type SendNotificationUseCaseRequest,
   type SendNotificationUseCaseResponse,
 } from '../use-cases/send-notification'
-import { OnAppointmentCanceled } from './on-appointment-canceled'
+import { OnAppointmentConfirmed } from './on-appointment-confirmed'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
 let inMemoryProfessionalRepository: InMemoryProfessionalRepository
@@ -25,7 +25,7 @@ let sendNotificationExecuteSpy: MockInstance<
   ) => Promise<SendNotificationUseCaseResponse>
 >
 
-describe('On Appointment Canceled', () => {
+describe('On Appointment Confirmed', () => {
   beforeEach(() => {
     inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
     inMemoryClientRepository = new InMemoryClientRepository()
@@ -38,14 +38,14 @@ describe('On Appointment Canceled', () => {
 
     sendNotificationExecuteSpy = vi.spyOn(sendNotificationUseCase, 'execute')
 
-    new OnAppointmentCanceled(
+    new OnAppointmentConfirmed(
       inMemoryProfessionalRepository,
       inMemoryClientRepository,
       sendNotificationUseCase
     )
   })
 
-  it('should send a notification when appointment be canceled', async () => {
+  it('should send a notification when appointment be confirmed', async () => {
     const professional = makeProfessional()
     const client = makeClient()
 
@@ -59,7 +59,7 @@ describe('On Appointment Canceled', () => {
 
     await inMemoryAppointmentRepository.create(appointment)
 
-    appointment.cancel()
+    appointment.confirm()
 
     inMemoryAppointmentRepository.save(appointment)
 

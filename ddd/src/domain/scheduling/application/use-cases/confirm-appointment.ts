@@ -63,7 +63,7 @@ export class ConfirmAppointmentUseCase {
         )
       )
 
-    appointment.status = 'CONFIRMED'
+    appointment.confirm()
     await this.appointmentsRepository.save(appointment)
 
     return right({
