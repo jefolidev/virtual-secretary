@@ -32,6 +32,11 @@ export class Organization extends AggregateRoot<OrganizationProps> {
     return this.props.slug
   }
 
+  set slug(slug: Slug) {
+    this.props.slug = slug
+    this.touch()
+  }
+
   get ownerId() {
     return this.props.ownerId
   }
