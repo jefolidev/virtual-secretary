@@ -12,7 +12,11 @@ export class InMemoryOrganizationRepository implements OrganizationRepository {
   async findById(id: UniqueEntityId): Promise<Organization | null> {
     const organization = await this.items.find((org) => org.id.equals(id))
 
-    return organization ?? null
+    if (!organization) {
+      return null
+    }
+
+    return organization
   }
 
   async findMany(): Promise<Organization[] | null> {
