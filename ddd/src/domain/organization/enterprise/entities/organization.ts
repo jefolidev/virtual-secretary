@@ -1,6 +1,8 @@
 import { AggregateRoot } from '@src/core/entities/aggregate'
 import type { Optional } from '@src/core/entities/types/optional'
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { AddedProfessionalToOrganizationEvent } from '../events/added-professional-organization'
+import { RemovedProfessionalFromOrganizationEvent } from '../events/remove-professional-organization'
 import { ProfessionalIdList } from '../value-objects/professional-id-list'
 import { Slug } from '../value-objects/slug'
 
@@ -63,17 +65,33 @@ export class Organization extends AggregateRoot<OrganizationProps> {
     return this.props.createdAt
   }
 
-  addProfessional(professionalId: UniqueEntityId): void {
+  public addProfessional(professionalId: UniqueEntityId): void {
     this.props.professionalsIds.add(professionalId)
     this.touch()
+
+    this.addDomainEvent(
+      new AddedProfessionalToOrganizationEvent(
+        this.id,
+        professionalId,
+        this.name
+      )
+    )
   }
 
-  removeProfessional(professionalId: UniqueEntityId): void {
+  public removeProfessional(professionalId: UniqueEntityId): void {
     this.props.professionalsIds.remove(professionalId)
     this.touch()
+
+    this.addDomainEvent(
+      new RemovedProfessionalFromOrganizationEvent(
+        this.id,
+        professionalId,
+        this.name
+      )
+    )
   }
 
-  hasProfessional(professionalId: UniqueEntityId): boolean {
+  public hasProfessional(professionalId: UniqueEntityId): boolean {
     return this.props.professionalsIds.exists(professionalId)
   }
 

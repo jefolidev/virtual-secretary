@@ -1,4 +1,5 @@
 import type { UniqueEntityId } from '@src/core/entities/unique-entity-id'
+import { DomainEvents } from '@src/core/events/domain-events'
 import type { Organization } from '@src/domain/organization/enterprise/entities/organization'
 import type { OrganizationRepository } from './../../src/domain/organization/application/repositories/organization.repository'
 
@@ -7,6 +8,8 @@ export class InMemoryOrganizationRepository implements OrganizationRepository {
 
   async create(organization: Organization): Promise<void> {
     await this.items.push(organization)
+
+    DomainEvents.dispatchEventsForAggregate(organization.id)
   }
 
   async findById(id: UniqueEntityId): Promise<Organization | null> {
@@ -35,5 +38,6 @@ export class InMemoryOrganizationRepository implements OrganizationRepository {
     )
 
     this.items[itemIndex] = organization
+    DomainEvents.dispatchEventsForAggregate(organization.id)
   }
 }

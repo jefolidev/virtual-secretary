@@ -24,8 +24,6 @@ export class OnAppointmentScheduled implements EventHandler {
 
   private async sendNewAppointmentNotification({
     appointment,
-    getAggregateId,
-    ocurredAt,
   }: ScheduledAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
       appointment.professionalId
