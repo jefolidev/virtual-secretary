@@ -6,18 +6,27 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"includes": ["**", "!!**/dist", "!!node_modules"]
+		"includes": [
+			"**",
+			"!!**/dist",
+			"!!node_modules",
+			"!!prisma"
+		]
 	},
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab",
 		"lineWidth": 100,
 		"bracketSpacing": true,
-		"includes": ["!node_modules/**"]
+		"includes": [
+			"!node_modules/**"
+		]
 	},
 	"linter": {
 		"enabled": true,
-		"includes": ["!node_modules/**"],
+		"includes": [
+			"!node_modules/**"
+		],
 		"rules": {
 			"recommended": true,
 			"complexity": {
