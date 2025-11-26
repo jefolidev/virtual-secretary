@@ -1,0 +1,25 @@
+@baseUrl = http://localhost:3333
+
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+
+{
+  "name": "Jeferson Franco de Oliveira",
+  "email": "jeferson@email.com.br",
+  "password": "uma_senha_forte123",
+  "cpf": "07609254371",
+  "phone": "998877665",
+  "address": {
+    "addressLine1": "Rua Exemplo, 123",
+    "addressLine2": "Apto 101",
+    "neighborhood": "Bairro Central",
+    "city": "Fortaleza",
+    "state": "CE",
+    "postalCode": "60000000",
+    "country": "Brasil"
+  }
+}
+### 
+
+GET {{baseUrl}}/accounts
+Content-Type: application/json
