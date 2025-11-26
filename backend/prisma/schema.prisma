@@ -119,7 +119,7 @@ model CancellationPolicy {
 model ScheduleConfiguration {
   id                     String     @id @default(uuid())
   professionalId         String     @unique @map("professional_id")
-  // workingDays 
+  // workingDays TODO - Corrigir e ver como implementar o List
   workingHours           Json       @map("working_hours")
   sessionDurationMinutes Int        @map("session_duration_minutes")
   bufferIntervalMinutes  Int        @map("buffer_interval_minutes")
