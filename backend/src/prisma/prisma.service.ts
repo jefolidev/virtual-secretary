@@ -1,20 +1,39 @@
-import { Injectable, OnModuleDestroy, OnModuleInit } from "@nestjs/common"
-import { PrismaPg } from "@prisma/adapter-pg"
-import { PrismaClient } from "@prisma/generated/client"
+import { Env } from '@/env'
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaClient } from '@prisma/generated/client'
 import { Pool } from 'pg'
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
-  constructor() {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
+  constructor(private readonly configService: ConfigService<Env, true>) {
+    const databaseURL = configService.get('DATABASE_URL')
 
-    const databaseURL =  process.env.DATABASE_URL || "postgresql://postgres:postgres@localhost:5432/virtual-secretary-db?schema=public"
+    if (!databaseURL) {
+      throw new Error('DATABASE_URL is not defined in environment variables')
+    }
+
     const pool = new Pool({
       connectionString: databaseURL,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
     })
 
     const adapter = new PrismaPg(pool)
 
-    super({adapter, log: ["error", "warn"], errorFormat: "pretty"})
+    const nodeEnv =
+      configService.get('NODE_ENV', { infer: true }) || 'development'
+
+    super({
+      adapter,
+      log: nodeEnv === 'development' ? ['query', 'error', 'warn'] : ['error'],
+      errorFormat: 'pretty',
+    })
   }
 
   async onModuleInit() {
