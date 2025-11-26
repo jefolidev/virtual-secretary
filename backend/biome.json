@@ -8,6 +8,7 @@
 	"files": {
 		"includes": [
 			"**",
+			"!!biome.json",
 			"!!**/dist",
 			"!!node_modules",
 			"!!prisma"
@@ -16,10 +17,11 @@
 	"formatter": {
 		"enabled": true,
 		"indentStyle": "tab",
-		"lineWidth": 100,
+		"lineWidth": 80,
 		"bracketSpacing": true,
 		"includes": [
-			"!node_modules/**"
+			"!node_modules/**",
+			"!!biome.json"
 		]
 	},
 	"linter": {
@@ -38,15 +40,24 @@
 		}
 	},
 	"javascript": {
+		"parser": {
+			"unsafeParameterDecoratorsEnabled": true
+		},
 		"formatter": {
-			"quoteStyle": "double"
+			"enabled": true,
+			"quoteStyle": "double",
+			"bracketSpacing": true,
+			"semicolons": "asNeeded",
+			"lineWidth": 60,
+			"quoteProperties": "asNeeded",
+			"trailingCommas": "es5"
 		}
 	},
 	"assist": {
 		"enabled": true,
 		"actions": {
 			"source": {
-				"organizeImports": "on"
+				"organizeImports": "off"
 			}
 		}
 	}
