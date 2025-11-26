@@ -22,6 +22,7 @@ export interface AppointmentProps {
   startDateTime: Date
   endDateTime: Date
   modality: AppointmentModalityType
+  agreedPrice: number
   status: AppointmentStatusType
   googleMeetLink?: string
   rescheduleDateTime?: { start: Date; end: Date }
@@ -69,6 +70,14 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   set modality(modality: AppointmentModalityType) {
     this.props.modality = modality
     this.touch()
+  }
+
+   get agreedPrice() {
+    return this.props.agreedPrice
+  }
+
+  set agreedPrice(agreedPrice: number) {
+     this.props.agreedPrice = agreedPrice
   }
 
   get status() {

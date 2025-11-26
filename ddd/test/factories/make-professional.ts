@@ -12,7 +12,6 @@ export function makeProfessional(
 ) {
   const professional: Professional = Professional.create(
     {
-      userId: new UniqueEntityId(),
       scheduleConfigurationId: new UniqueEntityId(),
       name: faker.person.firstName(),
       phone: faker.phone.number(),
@@ -30,6 +29,7 @@ export function makeProfessional(
         ],
         reminderBeforeMinutes: 20,
       }),
+      sessionPrice: 2000,
       officeAddress: faker.location.streetAddress(),
       ...override,
     },

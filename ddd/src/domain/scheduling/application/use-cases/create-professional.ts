@@ -12,6 +12,7 @@ export interface CreateProfessionalUseCaseProps {
   name: string
   phone: string
   officeAddress: string
+  sessionPrice: number
 }
 
 type CreateProfessionalUseCaseResponse = Either<
@@ -26,6 +27,7 @@ export class CreateProfessionalUseCase {
     name,
     phone,
     officeAddress,
+    sessionPrice
   }: CreateProfessionalUseCaseProps): Promise<CreateProfessionalUseCaseResponse> {
     const notificationSettings = NotificationSettings.create({
       channels: ['EMAIL', 'WHATSAPP'],
@@ -40,11 +42,11 @@ export class CreateProfessionalUseCase {
     })
 
     const professional = await Professional.create({
-      userId: new UniqueEntityId(),
       name,
       phone,
       officeAddress,
       notificationSettings,
+      sessionPrice,
     })
 
     const cancellationPolicy = await CancellationPolicy.create(

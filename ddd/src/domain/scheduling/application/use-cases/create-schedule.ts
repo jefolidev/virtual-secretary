@@ -115,6 +115,7 @@ export class CreateAppointmentUseCase {
       modality,
       googleMeetLink,
       amount,
+      agreedPrice: professional.sessionPrice
     })
 
     await this.appointmentsRepository.create(appointment)

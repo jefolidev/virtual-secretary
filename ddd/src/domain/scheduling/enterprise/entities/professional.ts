@@ -10,6 +10,7 @@ export interface ProfessionalProps {
   scheduleConfigurationId: UniqueEntityId
   name: string
   phone: string
+  sessionPrice: number
   officeAddress: string
   createdAt: Date
   updatedAt?: Date
@@ -59,6 +60,15 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     this.props.phone = phone
     this.touch()
   }
+
+  get sessionPrice() {
+    return this.props.sessionPrice
+  }
+
+  set sessionPrice(sessionPrice: number) {
+    this.props.sessionPrice = sessionPrice
+  }
+
 
   get officeAddress() {
     return this.props.officeAddress

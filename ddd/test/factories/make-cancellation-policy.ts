@@ -16,6 +16,7 @@ export function makeCancellationPolicy(
       description: faker.lorem.sentence(),
       minHoursBeforeCancellation: 3,
       professionalId: new UniqueEntityId(),
+      minDaysBeforeNextAppointment: 2,
       ...override,
     },
     id
