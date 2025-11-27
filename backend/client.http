@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:3333
+@authToken  = {{authenticate.response.body.access_token}}
 
 # @name authenticate
 POST {{baseUrl}}/sessions
@@ -6,7 +7,7 @@ Content-Type: application/json
 
 {
   "email": "jeferson@email.com.br",
-  "password": "uma_senha_forte123"
+  "password": "SenhaForte123"
 }
 
 ###
@@ -17,9 +18,10 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson1@email.com.br",
+  "email": "jeferson2@email.com.br",
   "password": "SenhaForte123",
   "cpf": "11144477735",
+  "role": "PROFESSIONAL",
   "phone": "998877666",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
@@ -32,6 +34,14 @@ Content-Type: application/json
   }
 }
 ### 
+
+POST {{baseUrl}}/organization
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{}
+
+###
 
 GET {{baseUrl}}/accounts
 Content-Type: application/json

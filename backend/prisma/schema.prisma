@@ -30,7 +30,7 @@ model User {
   email     String    @unique
   cpf       String    @unique
   phone     String    @unique
-  role      Role      @default(CLIENT)
+  role      Role
   password  String
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
@@ -67,7 +67,7 @@ model Appointment {
 
 model Professional {
   id                      String        @id @default(uuid())
-  organizationId          String        @map("organization_id")
+  organizationId          String?       @map("organization_id")
   cancellationPolicyId    String        @map("cancellation_policy_id")
   notificationSettingsId  String        @map("notification_settings_id")
   scheduleConfigurationId String        @map("schedule_configuration_id")
@@ -81,9 +81,9 @@ model Professional {
   cancellationPollicy   CancellationPolicy?
   scheduleConfiguration ScheduleConfiguration?
 
-  userId       String       @unique @map("user_id")
-  user         User         @relation(fields: [userId], references: [id])
-  organization Organization @relation(fields: [organizationId], references: [id])
+  userId       String        @unique @map("user_id")
+  user         User          @relation(fields: [userId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
 
   @@map("professionals")
 }
@@ -145,13 +145,13 @@ model Client {
 }
 
 model Address {
-  id           String @id @default(uuid())
-  addressLine1 String @map("address_line_1")
+  id           String  @id @default(uuid())
+  addressLine1 String  @map("address_line_1")
   addressLine2 String? @map("address_line_2")
   neighborhood String
   city         String
   state        String
-  postalCode   String @map("postal_code")
+  postalCode   String  @map("postal_code")
   country      String
 
   organizations Organization[]

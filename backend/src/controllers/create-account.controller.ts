@@ -27,6 +27,7 @@ const createAccountBodySchema = z.object({
     .string()
     .min(9, 'Phone must have at least 9 characters')
     .max(9, 'Phone must have just 9 characters'),
+  role: z.enum(['CLIENT', 'PROFESSIONAL']),
   address: z.object({
     addressLine1: z.string().min(1, 'Address must be provided'),
     addressLine2: z.string().optional(),
@@ -57,40 +58,28 @@ export class CreateAccountController {
   @HttpCode(201)
   @UsePipes(new ZodValidationPipe(createAccountBodySchema))
   async handle(@Body() body: CreateAccountBodySchema) {
-    const { cpf, email, name, phone, password, address } = body
+    const { cpf, email, name, phone, password, address, role } = body
 
-    const userWithSameEmail = await this.prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findFirst({
       where: {
-        email,
+        OR: [{ email }, { cpf }, { phone }],
       },
     })
 
-    const userWithSameCpf = await this.prisma.user.findUnique({
-      where: {
-        cpf,
-      },
-    })
-
-    const userWithSamePhone = await this.prisma.user.findUnique({
-      where: {
-        phone,
-      },
-    })
-
-    if (userWithSameEmail) {
-      throw new ConflictException(
-        'User with same e-mail address already exists.'
-      )
-    }
-
-    if (userWithSameCpf) {
-      throw new ConflictException('User with same cpf address already exists.')
-    }
-
-    if (userWithSamePhone) {
-      throw new ConflictException(
-        'User with same phone address already exists.'
-      )
+    if (existingUser) {
+      if (existingUser.email === email) {
+        throw new ConflictException(
+          'User with same e-mail address already exists.'
+        )
+      }
+      if (existingUser.cpf === cpf) {
+        throw new ConflictException('User with same CPF already exists.')
+      }
+      if (existingUser.phone === phone) {
+        throw new ConflictException(
+          'User with same phone number already exists.'
+        )
+      }
     }
 
     const isStrongPassword = checkPasswordStrong(password)
@@ -109,6 +98,7 @@ export class CreateAccountController {
         data: {
           cpf,
           email,
+          role,
           name,
           phone,
           password: hashedPassword,
