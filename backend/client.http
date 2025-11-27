@@ -17,10 +17,10 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson@email.com.br",
-  "password": "uma_senha_forte123",
-  "cpf": "07609254371",
-  "phone": "998877665",
+  "email": "jeferson1@email.com.br",
+  "password": "SenhaForte123",
+  "cpf": "11144477735",
+  "phone": "998877666",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",

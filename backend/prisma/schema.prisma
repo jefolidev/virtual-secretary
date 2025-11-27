@@ -147,7 +147,7 @@ model Client {
 model Address {
   id           String @id @default(uuid())
   addressLine1 String @map("address_line_1")
-  addressLine2 String @map("address_line_2")
+  addressLine2 String? @map("address_line_2")
   neighborhood String
   city         String
   state        String
