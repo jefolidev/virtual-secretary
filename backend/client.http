@@ -20,9 +20,9 @@ Content-Type: application/json
   "name": "Jeferson Franco de Oliveira",
   "email": "jeferson2@email.com.br",
   "password": "SenhaForte123",
-  "cpf": "11144477735",
+  "cpf": "07609254371",
   "role": "PROFESSIONAL",
-  "phone": "998877666",
+  "phone": "998877663",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -39,7 +39,20 @@ POST {{baseUrl}}/organization
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
-{}
+{
+  "name": "John Doe`s Organization 2",
+  "cnpj": "12.343.678/0001-95",
+  "professionalsIds": ["e9a6844f-7c31-4a6a-af97-f347d1415a93"],
+  "address": {
+    "addressLine1": "Rua Exemplo, 123",
+    "addressLine2": "Apto 101",
+    "neighborhood": "Bairro Central",
+    "city": "Fortaleza",
+    "state": "CE",
+    "postalCode": "60000000",
+    "country": "Brasil"
+  }
+}
 
 ###
 

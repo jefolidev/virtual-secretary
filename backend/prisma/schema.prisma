@@ -10,6 +10,7 @@ datasource db {
 model Organization {
   id        String    @id @default(uuid())
   name      String
+  cnpj      String    @unique
   slug      String    @unique
   isActive  Boolean   @default(true) @map("is_active")
   createdAt DateTime  @default(now())
@@ -18,8 +19,7 @@ model Organization {
   ownerId       String
   professionals Professional[]
 
-  officeAdressId String  @map("office_address_id")
-  address        Address @relation(fields: [officeAdressId], references: [id])
+  address Address?
 
   @@map("organizations")
 }
@@ -35,9 +35,13 @@ model User {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  client       Client?
-  professional Professional?
-  address      Address?
+  address Address?
+
+  professional   Professional? @relation(fields: [professionalId], references: [id])
+  professionalId String?       @unique @map("professional_id")
+
+  client   Client? @relation(fields: [clientId], references: [id])
+  clientId String? @unique @map("client_id")
 
   @@map("users")
 }
@@ -66,66 +70,64 @@ model Appointment {
 }
 
 model Professional {
-  id                      String        @id @default(uuid())
-  organizationId          String?       @map("organization_id")
-  cancellationPolicyId    String        @map("cancellation_policy_id")
-  notificationSettingsId  String        @map("notification_settings_id")
-  scheduleConfigurationId String        @map("schedule_configuration_id")
-  sessionPrice            Decimal       @map("session_price")
-  appointments            Appointment[]
+  id             String        @id @default(uuid())
+  organizationId String?       @map("organization_id")
+  sessionPrice   Decimal       @map("session_price")
+  appointments   Appointment[]
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  notificationSettings  NotificationSettings?
-  cancellationPollicy   CancellationPolicy?
-  scheduleConfiguration ScheduleConfiguration?
+  notificationSettings   NotificationSettings? @relation(fields: [notificationSettingsId], references: [id])
+  notificationSettingsId String?               @unique @map("notification_settings_id")
 
-  userId       String        @unique @map("user_id")
-  user         User          @relation(fields: [userId], references: [id])
+  cancellationPollicy   CancellationPolicy? @relation(fields: [cancellationPollicyId], references: [id])
+  cancellationPollicyId String?             @unique @map("cancellation_pollicy_id")
+
+  scheduleConfiguration   ScheduleConfiguration? @relation(fields: [scheduleConfigurationId], references: [id])
+  scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
+
   organization Organization? @relation(fields: [organizationId], references: [id])
+  users        User?
 
   @@map("professionals")
 }
 
 model NotificationSettings {
   id                    String                @id @default(uuid())
-  channels              NotificationChannel[]
-  enabledTypes          NotificationType[]    @map("enabled_types")
-  reminderBeforeMinutes Int                   @map("reminder_before_minutes")
-  dailySummaryTime      String                @map("daily_summary_time")
+  channels              NotificationChannel[] @default([EMAIL, WHATSAPP])
+  enabledTypes          NotificationType[]    @default([CONFIRMATION, CANCELLATION]) @map("enabled_types")
+  reminderBeforeMinutes Int                   @default(10) @map("reminder_before_minutes")
+  dailySummaryTime      String                @default("12:00") @map("daily_summary_time")
 
-  professionalId String       @unique @map("professional_id")
-  professional   Professional @relation(fields: [professionalId], references: [id])
+  professional Professional?
 
   @@map("notification_settings")
 }
 
 model CancellationPolicy {
   id                           String  @id @default(uuid())
-  minHoursBeforeCancellation   Int     @map("min_hours_before_cancellation")
-  minDaysBeforeNextAppointment Int     @map("min_days_before_next_appointment")
-  cancellationFeePercentage    Decimal @map("cancellation_fee_percentage")
-  allowReschedule              Boolean @map("allow_reschedule")
-  description                  String
+  minHoursBeforeCancellation   Int     @default(6) @map("min_hours_before_cancellation")
+  minDaysBeforeNextAppointment Int     @default(1) @map("min_days_before_next_appointment")
+  cancellationFeePercentage    Decimal @default(0.6) @map("cancellation_fee_percentage")
+  allowReschedule              Boolean @default(false) @map("allow_reschedule")
+  description                  String?
 
-  professionalId String       @unique @map("professional_id")
-  professionals  Professional @relation(fields: [professionalId], references: [id])
+  professional Professional?
 
   @@map("cancellation_policy")
 }
 
 model ScheduleConfiguration {
   id                     String     @id @default(uuid())
-  professionalId         String     @unique @map("professional_id")
   // workingDays TODO - Corrigir e ver como implementar o List
-  workingHours           Json       @map("working_hours")
-  sessionDurationMinutes Int        @map("session_duration_minutes")
-  bufferIntervalMinutes  Int        @map("buffer_interval_minutes")
+  workingHours           Json?      @map("working_hours")
+  sessionDurationMinutes Int        @default(60) @map("session_duration_minutes")
+  bufferIntervalMinutes  Int        @default(10) @map("buffer_interval_minutes")
   holidays               DateTime[]
-  enableGoogleMeet       Boolean    @map("enable_google_meet")
+  enableGoogleMeet       Boolean    @default(false) @map("enable_google_meet")
 
-  professionals Professional @relation(fields: [professionalId], references: [id])
+  professional Professional?
 
   @@map("schedule_configuration")
 }
@@ -138,8 +140,7 @@ model Client {
   updatedAt        DateTime?          @updatedAt @map("updated_at")
   appointments     Appointment[]
 
-  userId String @unique @map("user_id")
-  user   User   @relation(fields: [userId], references: [id])
+  users User?
 
   @@map("clients")
 }
@@ -154,9 +155,11 @@ model Address {
   postalCode   String  @map("postal_code")
   country      String
 
-  organizations Organization[]
-  userId        String         @unique @map("user_id")
-  user          User           @relation(fields: [userId], references: [id])
+  organizationId String?       @unique @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  userId String? @unique @map("user_id")
+  user   User?   @relation(fields: [userId], references: [id])
 
   @@map("addresses")
 }

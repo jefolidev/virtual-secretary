@@ -1,6 +1,6 @@
 import {
   ArgumentMetadata,
-  BadGatewayException,
+  BadRequestException,
   PipeTransform,
 } from '@nestjs/common'
 import { ZodError, ZodType } from 'zod'
@@ -14,13 +14,13 @@ export class ZodValidationPipe implements PipeTransform {
       this.schema.parse(value)
     } catch (error) {
       if (error instanceof ZodError)
-        throw new BadGatewayException({
+        throw new BadRequestException({
           message: 'Validation failed',
           statusCode: 400,
           errors: fromZodError(error),
         })
 
-      throw new BadGatewayException('Validation failed')
+      throw new BadRequestException('Validation failed')
     }
     return value
   }

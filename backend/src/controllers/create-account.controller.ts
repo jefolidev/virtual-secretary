@@ -12,34 +12,10 @@ import {
   UsePipes,
 } from '@nestjs/common'
 import { hash } from 'bcryptjs'
-import { cpf as cpfParser } from 'cpf-cnpj-validator'
-import z from 'zod'
-
-const createAccountBodySchema = z.object({
-  name: z.string().min(2, 'Name must have more than 2 characters.'),
-  email: z.email('Invalid email'),
-  password: z.string().refine(checkPasswordStrong, {
-    message:
-      'A senha deve ter pelo menos 8 caracteres, uma letra maiúscula, uma minúscula e um número',
-  }),
-  cpf: z.string().refine((value) => cpfParser.isValid(value), 'Invalid CPF'),
-  phone: z
-    .string()
-    .min(9, 'Phone must have at least 9 characters')
-    .max(9, 'Phone must have just 9 characters'),
-  role: z.enum(['CLIENT', 'PROFESSIONAL']),
-  address: z.object({
-    addressLine1: z.string().min(1, 'Address must be provided'),
-    addressLine2: z.string().optional(),
-    neighborhood: z.string().min(1, 'Neighborhood must be provided'),
-    city: z.string().min(1, 'City must be provided'),
-    state: z.string().min(1, 'State must be provided'),
-    postalCode: z.string().min(8, 'Postal code must be provided'),
-    country: z.string().min(1, 'Country must be provided').default('Brasil'),
-  }),
-})
-
-type CreateAccountBodySchema = z.infer<typeof createAccountBodySchema>
+import {
+  CreateAccountBodySchema,
+  createAccountBodySchema,
+} from './dto/create-account.dto'
 
 @Controller('/accounts')
 export class CreateAccountController {
@@ -50,6 +26,8 @@ export class CreateAccountController {
     return await this.prisma.user.findMany({
       include: {
         address: true,
+        client: true,
+        professional: true,
       },
     })
   }
@@ -93,28 +71,57 @@ export class CreateAccountController {
 
     const hashedPassword = await hash(password, 8)
 
-    const userWithAddress = await this.prisma.$transaction(async (tx) => {
-      await tx.user.create({
-        data: {
-          cpf,
-          email,
-          role,
-          name,
-          phone,
-          password: hashedPassword,
-          address: {
-            create: {
-              addressLine1: address.addressLine1,
-              addressLine2: address.addressLine2,
-              neighborhood: address.neighborhood,
-              city: address.city,
-              state: address.state,
-              postalCode: address.postalCode,
-              country: address.country,
-            },
+    // const professionalId = randomUUID()
+    // const clientId = randomUUID()
+
+    const userWithAddress = await this.prisma.user.create({
+      data: {
+        cpf,
+        email,
+        role,
+        name,
+        phone,
+        client:
+          role === 'CLIENT'
+            ? {
+                create: {},
+              }
+            : undefined,
+        professional:
+          role === 'PROFESSIONAL'
+            ? {
+                create: {
+                  cancellationPollicy: {
+                    create: {},
+                  },
+                  notificationSettings: {
+                    create: {},
+                  },
+                  scheduleConfiguration: {
+                    create: {},
+                  },
+                  sessionPrice: 0,
+                },
+              }
+            : undefined,
+        password: hashedPassword,
+        address: {
+          create: {
+            addressLine1: address.addressLine1,
+            addressLine2: address.addressLine2,
+            neighborhood: address.neighborhood,
+            city: address.city,
+            state: address.state,
+            postalCode: address.postalCode,
+            country: address.country,
           },
         },
-      })
+      },
+      include: {
+        address: true,
+        professional: true,
+        client: true,
+      },
     })
     return userWithAddress
   }
