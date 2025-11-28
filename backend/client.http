@@ -6,7 +6,7 @@ POST {{baseUrl}}/sessions
 Content-Type: application/json
 
 {
-  "email": "jeferson@email.com.br",
+  "email": "jeferson2@email.com.br",
   "password": "SenhaForte123"
 }
 
@@ -18,11 +18,11 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson2@email.com.br",
+  "email": "jeferson@email.com.br",
   "password": "SenhaForte123",
-  "cpf": "07609254371",
-  "role": "PROFESSIONAL",
-  "phone": "998877663",
+  "cpf": "69494005350",
+  "role": "CLIENT",
+  "phone": "998877661",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -42,7 +42,7 @@ Authorization: Bearer {{authToken}}
 {
   "name": "John Doe`s Organization 2",
   "cnpj": "12.343.678/0001-95",
-  "professionalsIds": ["e9a6844f-7c31-4a6a-af97-f347d1415a93"],
+  "professionalsIds": ["a3832635-5411-4c1f-aeb6-906ee1b028d2"],
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -56,5 +56,18 @@ Authorization: Bearer {{authToken}}
 
 ###
 
-GET {{baseUrl}}/accounts
+GET {{baseUrl}}/organizations
 Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+GET {{baseUrl}}/professionals
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+GET {{baseUrl}}/clients
+Content-Type: application/json
+Authorization: Bearer {{authToken}}

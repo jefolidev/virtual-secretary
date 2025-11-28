@@ -6,7 +6,6 @@ import {
   Body,
   ConflictException,
   Controller,
-  Get,
   HttpCode,
   Post,
   UsePipes,
@@ -20,17 +19,6 @@ import {
 @Controller('/accounts')
 export class CreateAccountController {
   constructor(private readonly prisma: PrismaService) {}
-
-  @Get()
-  async getUsers() {
-    return await this.prisma.user.findMany({
-      include: {
-        address: true,
-        client: true,
-        professional: true,
-      },
-    })
-  }
 
   @Post()
   @HttpCode(201)
