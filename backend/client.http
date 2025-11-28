@@ -18,11 +18,11 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson@email.com.br",
+  "email": "jeferson3@email.com.br",
   "password": "SenhaForte123",
-  "cpf": "69494005350",
+  "cpf": "60444032037",
   "role": "CLIENT",
-  "phone": "998877661",
+  "phone": "998877662",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -68,6 +68,6 @@ Authorization: Bearer {{authToken}}
 
 ###
 
-GET {{baseUrl}}/clients
+GET {{baseUrl}}/clients?page=1
 Content-Type: application/json
 Authorization: Bearer {{authToken}}

@@ -1,6 +1,6 @@
 import { CurrentUser } from '@/auth/current-user-decorator'
 import { JwtAuthGuard, UserPayload } from '@/auth/jwt.strategy'
-import { ZodValidationPipe } from '@/pipes/zod-validation-pipe'
+import { ZodValidationPipe } from '@/pipes/zod-validation.pipe'
 import { PrismaService } from '@/prisma/prisma.service'
 import { Slug } from '@/utils/slug'
 import {
