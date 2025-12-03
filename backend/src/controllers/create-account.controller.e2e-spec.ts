@@ -1,75 +1,50 @@
 import { AppModule } from '@/app.module'
-import { envSchema } from '@/env'
-import { PrismaService } from '@/prisma/prisma.service' // <-- Make sure this import is present
+import { PrismaService } from '@/prisma/prisma.service'
 import { INestApplication } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
 import { Test } from '@nestjs/testing'
-import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '@prisma/generated/client'
 import { randomUUID } from 'node:crypto'
-import { Pool } from 'pg'
 import request from 'supertest'
-
-// Note: This needs to be imported if it's not global, otherwise the E2E tests won't know the type.
-// You might need to adjust the path based on your project structure.
 
 describe('Create account | E2E', () => {
   let app: INestApplication
-  let prisma: PrismaService // The injected service instance
+  let prisma: PrismaService
 
   beforeEach(async () => {
-    // process.env.DATABASE_URL is correctly set by the global-setup file
-    // to include the unique schema ID.
     const databaseUrl = process.env.DATABASE_URL
 
     if (!databaseUrl) {
       throw new Error('DATABASE_URL is not defined. Check your global setup.')
     }
 
-    // 1. Configure the database connection for the unique test schema
-    const pool = new Pool({ connectionString: databaseUrl })
-    const adapter = new PrismaPg(pool)
-
-    // We create the actual PrismaClient configured to use the test schema
-    const configuredClient = new PrismaClient({ adapter })
-
     const moduleRef = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot({
-          isGlobal: true,
-          envFilePath: '.env',
-          validate: (env) => envSchema.parse(env),
-        }),
-        AppModule,
-      ],
-    })
-      // 2. CORRECT OVERRIDE: Override the PrismaService class token
-      // with the manually created and configured client instance.
-      .overrideProvider(PrismaService)
-      .useValue(configuredClient)
-      .compile()
-
-    // 3. Get the instance (which is now our configured client)
-    // We cast it to PrismaService type to satisfy the application context.
-    prisma = moduleRef.get<PrismaService>(PrismaService)
+      imports: [AppModule],
+    }).compile()
 
     app = moduleRef.createNestApplication()
+
+    prisma = moduleRef.get(PrismaService)
+    console.log(process.env.DATABASE_URL)
+
     await app.init()
   })
 
   afterEach(async () => {
     await app.close()
-    // The database connection cleanup (dropping the schema) happens
-    // in the global-teardown (or afterAll in the setup file).
   })
 
   test('[POST] /accounts', async () => {
-    const uniqueEmail = `johndoe${randomUUID()}@example.com`
+    const databaseUrl = process.env.DATABASE_URL
+    const url = new URL(databaseUrl!)
+    const schema = url.searchParams.get('schema')
 
-    // Generate a unique, 11-digit string for the CPF to avoid 409 Conflicts.
-    const uniqueCpf = Math.floor(Math.random() * 100000000000)
-      .toString()
-      .padStart(11, '0')
+    if (schema) {
+      await prisma.$executeRawUnsafe(`SET search_path TO "${schema}"`)
+    }
+
+    const schemaCheck = await prisma.$queryRaw`SELECT current_schema()`
+    console.log('[TEST DEBUG] Current Schema while test:', schemaCheck)
+
+    const uniqueEmail = `johndoe${randomUUID()}@example.com`
 
     const response = await request(app.getHttpServer())
       .post('/accounts')
@@ -77,7 +52,7 @@ describe('Create account | E2E', () => {
         name: 'John Doe',
         email: uniqueEmail,
         password: 'SenhaForte123',
-        cpf: '71264124368', // <--- Using the unique CPF here
+        cpf: '71264124368',
         role: 'CLIENT',
         phone: '999999999',
         address: {
@@ -90,10 +65,11 @@ describe('Create account | E2E', () => {
           country: 'Brasil',
         },
       })
+    console.log('[TEST DEBUG] Current Schema after test:', schemaCheck)
 
+    console.log(response.body)
     expect(response.statusCode).toBe(201)
 
-    // Optional: Verify the account was created in the test schema
     const accountInDb = await prisma.user.findUnique({
       where: { email: uniqueEmail },
     })
