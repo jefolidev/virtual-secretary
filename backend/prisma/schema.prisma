@@ -1,6 +1,7 @@
 generator client {
-  provider = "prisma-client"
-  output   = "./generated/"
+  provider     = "prisma-client"
+  moduleFormat = "cjs"
+  output       = "./generated/"
 }
 
 datasource db {
@@ -37,10 +38,10 @@ model User {
 
   address Address?
 
-  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+  professional   Professional? @relation(fields: [professionalId], references: [id])
   professionalId String?       @unique @map("professional_id")
 
-  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client   Client? @relation(fields: [clientId], references: [id])
   clientId String? @unique @map("client_id")
 
   @@map("users")
@@ -78,16 +79,16 @@ model Professional {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  notificationSettings   NotificationSettings? @relation(fields: [notificationSettingsId], references: [id], onDelete: Cascade)
+  notificationSettings   NotificationSettings? @relation(fields: [notificationSettingsId], references: [id])
   notificationSettingsId String?               @unique @map("notification_settings_id")
 
-  cancellationPollicy   CancellationPolicy? @relation(fields: [cancellationPollicyId], references: [id], onDelete: Cascade)
+  cancellationPollicy   CancellationPolicy? @relation(fields: [cancellationPollicyId], references: [id])
   cancellationPollicyId String?             @unique @map("cancellation_pollicy_id")
 
-  scheduleConfiguration   ScheduleConfiguration? @relation(fields: [scheduleConfigurationId], references: [id], onDelete: Cascade)
+  scheduleConfiguration   ScheduleConfiguration? @relation(fields: [scheduleConfigurationId], references: [id])
   scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
 
-  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization? @relation(fields: [organizationId], references: [id])
   users        User?
 
   @@map("professionals")
