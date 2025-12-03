@@ -37,10 +37,10 @@ model User {
 
   address Address?
 
-  professional   Professional? @relation(fields: [professionalId], references: [id])
+  professional   Professional? @relation(fields: [professionalId], references: [id], onDelete: Cascade)
   professionalId String?       @unique @map("professional_id")
 
-  client   Client? @relation(fields: [clientId], references: [id])
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
   clientId String? @unique @map("client_id")
 
   @@map("users")
@@ -78,16 +78,16 @@ model Professional {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  notificationSettings   NotificationSettings? @relation(fields: [notificationSettingsId], references: [id])
+  notificationSettings   NotificationSettings? @relation(fields: [notificationSettingsId], references: [id], onDelete: Cascade)
   notificationSettingsId String?               @unique @map("notification_settings_id")
 
-  cancellationPollicy   CancellationPolicy? @relation(fields: [cancellationPollicyId], references: [id])
+  cancellationPollicy   CancellationPolicy? @relation(fields: [cancellationPollicyId], references: [id], onDelete: Cascade)
   cancellationPollicyId String?             @unique @map("cancellation_pollicy_id")
 
-  scheduleConfiguration   ScheduleConfiguration? @relation(fields: [scheduleConfigurationId], references: [id])
+  scheduleConfiguration   ScheduleConfiguration? @relation(fields: [scheduleConfigurationId], references: [id], onDelete: Cascade)
   scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
 
-  organization Organization? @relation(fields: [organizationId], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   users        User?
 
   @@map("professionals")
