@@ -3,19 +3,28 @@ import type {
   AppointmentStatusType,
 } from '../../enterprise/entities/appointment'
 
-export interface AppointmentsRepository {
-  create(appointment: Appointment): Promise<void>
-  findMany(): Promise<Appointment[]>
-  findById(id: string): Promise<Appointment | null>
-  findByProfessionalId(professionalId: string): Promise<Appointment | null>
-  findOverlapping(
+export abstract class AppointmentsRepository {
+  abstract create(appointment: Appointment): Promise<void>
+  abstract findMany(): Promise<Appointment[]>
+  abstract findById(id: string): Promise<Appointment | null>
+  abstract findByProfessionalId(
+    professionalId: string
+  ): Promise<Appointment | null>
+  abstract findOverlapping(
     profissionalId: string,
     startDate: Date,
     endDate: Date
   ): Promise<Appointment[]>
-  findManyByProfessionalId(professionalId: string): Promise<Appointment[]>
-  findManyByClientId(clientId: string): Promise<Appointment[]>
-  findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[]>
-  save(appointment: Appointment): Promise<void>
-  findManyByStatus(status: AppointmentStatusType): Promise<Appointment[]>
+  abstract findManyByProfessionalId(
+    professionalId: string
+  ): Promise<Appointment[]>
+  abstract findManyByClientId(clientId: string): Promise<Appointment[]>
+  abstract findManyByDate(
+    startDate: Date,
+    endDate: Date
+  ): Promise<Appointment[]>
+  abstract save(appointment: Appointment): Promise<void>
+  abstract findManyByStatus(
+    status: AppointmentStatusType
+  ): Promise<Appointment[]>
 }

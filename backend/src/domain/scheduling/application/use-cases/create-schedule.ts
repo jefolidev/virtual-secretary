@@ -1,24 +1,24 @@
 import { Either, left, right } from '@/core/either'
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { BadRequestError } from '@/core/errors/bad-request'
+import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import {
   Appointment,
   type AppointmentModalityType,
 } from '../../enterprise/entities/appointment'
-import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
-import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
+import { AppointmentsRepository } from '../repositories/appointments.repository'
+import { ClientRepository } from '../repositories/client.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
+import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { InvalidValueError } from './errors/invalid-value-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 interface CreateAppointmentUseCaseProps {
-  clientId: UniqueEntityId
-  professionalId: UniqueEntityId
+  clientId: string
+  professionalId: string
   startDateTime: Date
-  amount: number
-  endDateTime: Date
   modality: AppointmentModalityType
   googleMeetLink?: string
 }
@@ -30,6 +30,7 @@ type CreateAppointmentUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class CreateAppointmentUseCase {
   constructor(
     private appointmentsRepository: AppointmentsRepository,
@@ -42,9 +43,7 @@ export class CreateAppointmentUseCase {
     clientId,
     professionalId,
     startDateTime,
-    endDateTime,
     modality,
-    amount,
     googleMeetLink,
   }: CreateAppointmentUseCaseProps): Promise<CreateAppointmentUseCaseResponse> {
     const client = await this.clientsRepository.findById(clientId.toString())
@@ -65,26 +64,31 @@ export class CreateAppointmentUseCase {
       )
 
     if (!professionalScheduleConfiguration) {
-      return left(new NotFoundError('Professional not found'))
+      return left(
+        new NotFoundError('Professional schedule configuration not found')
+      )
     }
+
+    const scheduleDurationMinute =
+      professionalScheduleConfiguration.sessionDurationMinutes
+    const scheduleDurationDiff = dayjs(startDateTime)
+      .add(scheduleDurationMinute, 'minutes')
+      .diff(dayjs(startDateTime), 'minute')
+
+    const endScheduleTime = dayjs(startDateTime)
+      .add(scheduleDurationMinute, 'minutes')
+      .toDate()
 
     const overlappingAppointments =
       await this.appointmentsRepository.findOverlapping(
         professionalId.toString(),
         startDateTime,
-        endDateTime
+        endScheduleTime
       )
 
     if (overlappingAppointments!.length > 0) {
       return left(new NoDisponibilityError('No disponibility'))
     }
-
-    const scheduleDurationMinute =
-      professionalScheduleConfiguration.sessionDurationMinutes
-    const scheduleDurationDiff = dayjs(endDateTime).diff(
-      dayjs(startDateTime),
-      'minute'
-    )
 
     if (scheduleDurationDiff < scheduleDurationMinute) {
       return left(
@@ -104,18 +108,19 @@ export class CreateAppointmentUseCase {
       )
     }
 
-    if (amount < 0) {
-      return left(new InvalidValueError("Negative value isn't allowed."))
+    if (dayjs(endScheduleTime).isBefore(startDateTime)) {
+      return left(
+        new BadRequestError('End date cannot be before than start date.')
+      )
     }
 
     const appointment = Appointment.create({
-      clientId,
-      professionalId,
+      clientId: new UniqueEntityId(clientId),
+      professionalId: new UniqueEntityId(professionalId),
       startDateTime,
-      endDateTime,
+      endDateTime: endScheduleTime,
       modality,
       googleMeetLink,
-      amount,
       agreedPrice: professional.sessionPrice,
     })
 

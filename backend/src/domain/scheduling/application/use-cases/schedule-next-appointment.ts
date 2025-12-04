@@ -96,7 +96,6 @@ export class ScheduleNextAppointmentUseCase {
       endDateTime,
       modality: 'IN_PERSON',
       agreedPrice: 0,
-      amount: 0,
       status: 'SCHEDULED',
     })
 

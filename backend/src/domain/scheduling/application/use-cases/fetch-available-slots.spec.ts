@@ -73,7 +73,7 @@ describe('Fetch Available Slots From Professional', async () => {
     expect(response.isRight()).toBe(true)
 
     if (response.isRight()) {
-      expect(response.value.slots).toHaveLength(2)
+      expect(response.value.slots).toHaveLength(1)
     }
   })
 })

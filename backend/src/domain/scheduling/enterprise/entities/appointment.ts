@@ -26,7 +26,6 @@ export interface AppointmentProps {
   status: AppointmentStatusType
   googleMeetLink?: string
   rescheduleDateTime?: { start: Date; end: Date }
-  amount: number
   isPaid: boolean
   createdAt: Date
   updatedAt?: Date | null
@@ -100,10 +99,6 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
   get rescheduleDateTime() {
     return this.props.rescheduleDateTime
-  }
-
-  get amount() {
-    return this.props.amount
   }
 
   get isPaid() {

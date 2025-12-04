@@ -1,12 +1,12 @@
 import type { Professional } from '../../enterprise/entities/professional'
 
-export interface ProfessionalRepository {
-  create(professional: Professional): Promise<void>
-  findMany(): Promise<Professional[]>
-  findById(id: string): Promise<Professional | null>
-  assignCancellationPolicy(
+export abstract class ProfessionalRepository {
+  abstract create(professional: Professional): Promise<void>
+  abstract findMany(): Promise<Professional[]>
+  abstract findById(id: string): Promise<Professional | null>
+  abstract assignCancellationPolicy(
     professionalId: string,
     cancellationPolicyId: string
   ): Promise<void>
-  save(professional: Professional): Promise<void>
+  abstract save(professional: Professional): Promise<void>
 }

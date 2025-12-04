@@ -1,8 +1,10 @@
 import type { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 
-export interface ScheduleConfigurationRepository {
-  create(scheduleconfiguration: ScheduleConfiguration): Promise<void>
-  findMany(): Promise<ScheduleConfiguration[]>
-  findByProfessionalId(professionalId: string): Promise<ScheduleConfiguration>
-  save(scheduleconfiguration: ScheduleConfiguration): Promise<void>
+export abstract class ScheduleConfigurationRepository {
+  abstract create(scheduleconfiguration: ScheduleConfiguration): Promise<void>
+  abstract findMany(): Promise<ScheduleConfiguration[]>
+  abstract findByProfessionalId(
+    professionalId: string
+  ): Promise<ScheduleConfiguration>
+  abstract save(scheduleconfiguration: ScheduleConfiguration): Promise<void>
 }
