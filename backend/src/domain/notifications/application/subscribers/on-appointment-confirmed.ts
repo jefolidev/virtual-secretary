@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events'
 import type { EventHandler } from '@/core/events/event-handler'
 import type { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional-repository'
+import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { ConfirmedAppointmentEvent } from '@/domain/scheduling/enterprise/events/confirmed-appointment'
 import type { ScheduledAppointmentEvent } from '@/domain/scheduling/enterprise/events/scheduled-appointment-event'
 import dayjs from 'dayjs'

@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events'
 import type { EventHandler } from '@/core/events/event-handler'
 import { RemovedProfessionalFromOrganizationEvent } from '@/domain/organization/enterprise/events/remove-professional-organization'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional-repository'
+import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import type { SendNotificationUseCase } from '../use-cases/send-notification'
 
 export class OnProfessionalRemovedFromOrganization implements EventHandler {

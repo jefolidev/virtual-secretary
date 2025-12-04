@@ -1,6 +1,6 @@
 import { Either, right } from '@/core/either'
 import type { Professional } from '../../enterprise/entities/professional'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 
 export type FetchProfessionalUseCaseProps = Record<string, never>
 

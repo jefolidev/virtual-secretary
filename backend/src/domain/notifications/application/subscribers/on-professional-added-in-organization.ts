@@ -2,7 +2,7 @@ import { DomainEvents } from '@/core/events/domain-events'
 import type { EventHandler } from '@/core/events/event-handler'
 import type { SendNotificationUseCase } from '@/domain/notifications/application/use-cases/send-notification'
 import { AddedProfessionalToOrganizationEvent } from '@/domain/organization/enterprise/events/added-professional-organization'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional-repository'
+import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 
 export class OnProfessionalAddedToOrganization implements EventHandler {
   constructor(

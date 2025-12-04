@@ -1,7 +1,7 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional-repository'
+import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import type { Organization } from '../../enterprise/entities/organization'
 import { Slug } from '../../enterprise/value-objects/slug'
 import type { OrganizationRepository } from '../repositories/organization.repository'

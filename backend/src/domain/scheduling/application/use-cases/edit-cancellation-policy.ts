@@ -4,7 +4,7 @@ import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import type { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface EditCancellationPolicyUseCaseRequest {
   professionalId: string

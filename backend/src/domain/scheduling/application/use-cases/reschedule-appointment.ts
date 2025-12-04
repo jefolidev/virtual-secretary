@@ -7,7 +7,7 @@ import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 export interface RescheduleAppointmentUseCaseProps {

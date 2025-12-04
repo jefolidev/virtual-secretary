@@ -6,7 +6,7 @@ import { UniqueEntityId } from '../../../../core/entities/unique-entity-id'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface StartAppointmentUseCaseRequest {
   appointmentId: string

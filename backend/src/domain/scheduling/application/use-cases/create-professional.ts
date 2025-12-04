@@ -6,7 +6,7 @@ import { Professional } from '../../enterprise/entities/professional'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
 import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface CreateProfessionalUseCaseProps {
   name: string

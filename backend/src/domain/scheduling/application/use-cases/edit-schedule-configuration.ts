@@ -4,7 +4,7 @@ import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import type { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 
 export interface EditScheduleConfigurationUseCaseRequest {

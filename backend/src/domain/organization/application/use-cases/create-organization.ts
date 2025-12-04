@@ -1,6 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional-repository'
+import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { Organization } from '../../enterprise/entities/organization'
 import { ProfessionalIdList } from '../../enterprise/value-objects/professional-id-list'
 import { Slug } from '../../enterprise/value-objects/slug'

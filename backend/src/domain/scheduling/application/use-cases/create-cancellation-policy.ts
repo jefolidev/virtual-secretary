@@ -3,7 +3,7 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 import { ValidationError } from './errors/validation-error'
 
 interface CreateCancellationPolicyUseCaseProps {

@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events'
 import type { EventHandler } from '@/core/events/event-handler'
 import type { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional-repository'
+import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { CanceledAppointmentEvent } from '@/domain/scheduling/enterprise/events/canceled-appointment'
 import dayjs from 'dayjs'
 import type { SendNotificationUseCase } from '../use-cases/send-notification'

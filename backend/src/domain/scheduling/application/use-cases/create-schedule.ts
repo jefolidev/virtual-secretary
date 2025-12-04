@@ -8,7 +8,7 @@ import {
 } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { InvalidValueError } from './errors/invalid-value-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'

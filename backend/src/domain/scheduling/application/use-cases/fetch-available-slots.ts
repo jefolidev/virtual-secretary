@@ -6,7 +6,7 @@ import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import utc from 'dayjs/plugin/utc'
 import type { Professional } from '../../enterprise/entities/professional'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { ProfessionalRepository } from '../repositories/professional-repository'
+import type { ProfessionalRepository } from '../repositories/professional.repository'
 import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { UniqueEntityId } from './../../../../core/entities/unique-entity-id'
 
