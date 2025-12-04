@@ -7,14 +7,14 @@ export default defineConfig({
     globals: true,
     root: './',
     alias: {
-      '@src': './src',
-      '@test': './test',
+      '@src': '/src',
+      '@test': '/test',
     },
   },
   resolve: {
     alias: {
-      '@src': './src',
-      '@test': './test',
+      '@src': '/src',
+      '@test': '/test',
     },
   },
 

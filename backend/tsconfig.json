@@ -18,6 +18,9 @@
       ],
       "@prisma/*": [
         "./prisma/*"
+      ],
+      "@test/*": [
+        "./test/*"
       ]
     },
     "incremental": true,
