@@ -8,7 +8,7 @@ import { WorkingDaysList } from './value-objects/working-days-list'
 dayjs.extend(customParseFormat)
 
 export interface ScheduleConfigurationProps {
-  professionalId: UniqueEntityId
+  professionalId: UniqueEntityId | undefined
   workingDays: WorkingDaysList
   workingHours: { start: string; end: string }
   sessionDurationMinutes: number

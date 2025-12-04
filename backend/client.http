@@ -21,7 +21,7 @@ Content-Type: application/json
   "email": "jeferson3@email.com.br",
   "password": "SenhaForte123",
   "cpf": "60444032037",
-  "role": "CLIENT",
+  "role": "PROFESSIONAL",
   "phone": "998877662",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
@@ -31,6 +31,9 @@ Content-Type: application/json
     "state": "CE",
     "postalCode": "60000000",
     "country": "Brasil"
+  },
+  "professionalData": {
+    "sessionPrice": 40.00
   }
 }
 ### 

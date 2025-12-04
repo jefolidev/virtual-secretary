@@ -5,10 +5,6 @@ import { ScheduleConfiguration as PrismaScheduleConfiguration } from '@prisma/ge
 
 export class PrismaScheduleConfigurationMapper {
   static toDomain(raw: PrismaScheduleConfiguration): ScheduleConfiguration {
-    if (!raw.professionalId) {
-      throw new Error('Something is wrong with professional Id')
-    }
-
     const rawWorkingDays = raw.workingDays || []
 
     const numericWorkingDays = rawWorkingDays.map(mapPrismaWeekDayToNumber)
@@ -21,13 +17,11 @@ export class PrismaScheduleConfigurationMapper {
         workingHours: { start: raw.workStartHour, end: raw.workEndHour },
         holidays: raw.holidays || [],
         enableGoogleMeet: raw.enableGoogleMeet,
-
+        professionalId: undefined,
         sessionDurationMinutes: raw.sessionDurationMinutes,
         bufferIntervalMinutes: raw.bufferIntervalMinutes,
-
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt || null,
-        professionalId: new UniqueEntityId(raw.professionalId),
       },
       new UniqueEntityId(raw.id)
     )

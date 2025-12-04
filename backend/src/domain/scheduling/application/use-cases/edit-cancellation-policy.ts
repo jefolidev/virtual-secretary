@@ -56,6 +56,10 @@ export class EditCancellationPolicyUseCase {
         new NotFoundError('Cancellation policy could not be founded.')
       )
 
+    if (!cancellationPolicy.professionalId) {
+      return left(new NotFoundError())
+    }
+
     if (!cancellationPolicy.professionalId.equals(professional.id))
       return left(new NotAllowedError())
 

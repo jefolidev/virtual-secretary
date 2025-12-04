@@ -10,6 +10,7 @@ import { type Either, left, right } from './../../../../core/either'
 export interface CreateOrganizationUseCaseRequest {
   ownerId: string
   name: string
+  cnpj: string
 }
 
 type CreateOrganizationUseCaseResponse = Either<
@@ -28,6 +29,7 @@ export class CreateOrganizationUseCase {
   async execute({
     name,
     ownerId,
+    cnpj,
   }: CreateOrganizationUseCaseRequest): Promise<CreateOrganizationUseCaseResponse> {
     const professional = await this.professionalRepository.findById(
       ownerId.toString()
@@ -42,6 +44,7 @@ export class CreateOrganizationUseCase {
       ownerId: new UniqueEntityId(ownerId),
       slug: Slug.createFromText(name),
       professionalsIds: new ProfessionalIdList(),
+      cnpj,
     })
 
     await this.organizationRepository.create(organization)

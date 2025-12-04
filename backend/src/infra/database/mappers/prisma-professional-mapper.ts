@@ -23,8 +23,8 @@ export class PrismaProfessionalMapper {
         phone: raw.users.phone,
         createdAt: raw.createdAt,
         sessionPrice: Number(raw.sessionPrice),
-        cancellationPolicyId: raw.cancellationPollicyId
-          ? new UniqueEntityId(raw.cancellationPollicyId)
+        cancellationPolicyId: raw.cancellationPolicyId
+          ? new UniqueEntityId(raw.cancellationPolicyId)
           : undefined,
         organizationId: raw.organizationId
           ? new UniqueEntityId(raw.organizationId)

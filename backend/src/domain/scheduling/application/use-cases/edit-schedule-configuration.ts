@@ -58,6 +58,10 @@ export class EditScheduleConfigurationUseCase {
 
     workingDaysList.update(workingDays.getItems())
 
+    if (!scheduleConfiguration.professionalId) {
+      return left(new NotFoundError())
+    }
+
     if (!scheduleConfiguration.professionalId.equals(professional.id))
       return left(new NotAllowedError())
 

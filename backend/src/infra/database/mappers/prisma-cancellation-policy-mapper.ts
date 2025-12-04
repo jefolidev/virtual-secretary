@@ -4,10 +4,6 @@ import { CancellationPolicy as PrismaCancellationPolicy } from '@prisma/generate
 
 export class PrismaCancellationPolicyMapper {
   static toDomain(raw: PrismaCancellationPolicy): CancellationPolicy {
-    if (!raw.professionalId) {
-      throw new Error('Something is wrong with professional Id')
-    }
-
     return CancellationPolicy.create(
       {
         allowReschedule: raw.allowReschedule,
@@ -16,7 +12,7 @@ export class PrismaCancellationPolicyMapper {
         minDaysBeforeNextAppointment: raw.minDaysBeforeNextAppointment,
         createdAt: raw.createdAt,
         minHoursBeforeCancellation: raw.minHoursBeforeCancellation,
-        professionalId: new UniqueEntityId(raw.professionalId),
+        professionalId: undefined,
         updatedAt: raw.updatedAt || null,
       },
       new UniqueEntityId(raw.id)

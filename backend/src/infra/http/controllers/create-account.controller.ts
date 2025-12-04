@@ -59,6 +59,9 @@ export class CreateAccountController {
 
     const hashedPassword = await hash(password, 8)
 
+    // const professionalId = randomUUID()
+    // const clientId = randomUUID()
+
     const userWithAddress = await this.prisma.user.create({
       data: {
         cpf,
@@ -76,26 +79,10 @@ export class CreateAccountController {
           role === 'PROFESSIONAL'
             ? {
                 create: {
-                  cancellationPollicy: {
-                    create: {
-                      description: 'Política de cancelamento padrão.',
-                    },
-                  },
-                  notificationSettings: {
-                    create: {},
-                  },
-                  scheduleConfiguration: {
-                    create: {
-                      holidays: [],
-                      workStartHour: '00:00',
-                      workEndHour: '23:59',
-                    },
-                  },
                   sessionPrice: 0,
                 },
               }
             : undefined,
-
         password: hashedPassword,
         address: {
           create: {

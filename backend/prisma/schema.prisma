@@ -82,8 +82,8 @@ model Professional {
   notificationSettings   NotificationSettings? @relation(fields: [notificationSettingsId], references: [id])
   notificationSettingsId String?               @unique @map("notification_settings_id")
 
-  cancellationPollicy   CancellationPolicy? @relation(fields: [cancellationPollicyId], references: [id])
-  cancellationPollicyId String?             @unique @map("cancellation_pollicy_id")
+  cancellationPolicy   CancellationPolicy? @relation(fields: [cancellationPolicyId], references: [id])
+  cancellationPolicyId String?             @unique @map("cancellation_policy_id")
 
   scheduleConfiguration   ScheduleConfiguration? @relation(fields: [scheduleConfigurationId], references: [id])
   scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
@@ -116,8 +116,7 @@ model CancellationPolicy {
   createdAt                    DateTime  @default(now()) @map("created_at")
   updatedAt                    DateTime? @map("updated_at")
 
-  professionalId String?
-  professional   Professional?
+  professional Professional?
 
   @@map("cancellation_policy")
 }
@@ -134,8 +133,7 @@ model ScheduleConfiguration {
   createdAt              DateTime   @default(now()) @map("created_at")
   updatedAt              DateTime?  @map("updated_at")
 
-  professionalId String?
-  professional   Professional?
+  professional Professional?
 
   @@map("schedule_configuration")
 }
