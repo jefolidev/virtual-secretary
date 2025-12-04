@@ -1,4 +1,4 @@
-import { Env } from '@/env'
+import { Env } from '@/infra/env'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { AuthGuard, PassportStrategy } from '@nestjs/passport'

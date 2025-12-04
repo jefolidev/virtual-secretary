@@ -7,6 +7,7 @@ import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appo
 import { InMemoryCancellationPolicyRepository } from '@test/repositories/in-memory-cancellation-policy.repository'
 import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 import { ScheduleNextAppointmentUseCase } from './schedule-next-appointment'
@@ -223,10 +224,8 @@ describe('Schedule Next Appointment', () => {
     }
   })
   it('should not be able to reschedule an appointment if reschedule has less than 6 days', async () => {
-    const MOCK_CURRENT_DATE = new Date('2025-09-04T10:00:00.000Z')
     const NEW_RESCHEDULE_START_DATE = new Date('2025-09-09T10:00:00.000Z')
     const ORIGINAL_APPOINTMENT_START_DATE = new Date('2025-09-01T10:00:00.000Z')
-    vi.setSystemTime(MOCK_CURRENT_DATE)
 
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
     await inMemoryClientRepository.create(client)

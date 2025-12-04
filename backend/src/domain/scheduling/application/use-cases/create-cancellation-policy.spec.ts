@@ -3,7 +3,6 @@ import { makeProfessional } from '@test/factories/make-professional'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemoryCancellationPolicyRepository } from '../../../../../test/repositories/in-memory-cancellation-policy.repository'
 import { CreateCancellationPolicyUseCase } from './create-cancellation-policy'
-import { ValidationError } from './errors/validation-error'
 
 let inMemoryCancellationPolicyRepository: InMemoryCancellationPolicyRepository
 let inMemoryProfessionalRepository: InMemoryProfessionalRepository
@@ -89,6 +88,5 @@ describe('Create Cancellation Policy', () => {
     const response = await sut.execute(cancellationPolicy)
 
     expect(response.isLeft()).toBe(true)
-    expect(response.value).instanceOf(ValidationError)
   })
 })

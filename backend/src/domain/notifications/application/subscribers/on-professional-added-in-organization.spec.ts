@@ -4,6 +4,7 @@ import { InMemoryOrganizationRepository } from '@test/repositories/in-memory-org
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemorySendNotificationRepository } from '@test/repositories/in-memory-send-notification.repository'
 import type { MockInstance } from 'vitest'
+import { beforeEach, describe, it, vi } from 'vitest'
 import {
   SendNotificationUseCase,
   type SendNotificationUseCaseRequest,
