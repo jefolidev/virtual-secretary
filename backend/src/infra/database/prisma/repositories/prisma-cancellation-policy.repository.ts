@@ -2,7 +2,7 @@ import { CancellationPolicyRepository } from '@/domain/scheduling/application/re
 import { CancellationPolicy } from '@/domain/scheduling/enterprise/entities/cancellation-policy'
 import { Injectable } from '@nestjs/common'
 
-@Injectable({})
+@Injectable()
 export class PrismaCancellationPolicyRepository
   implements CancellationPolicyRepository
 {

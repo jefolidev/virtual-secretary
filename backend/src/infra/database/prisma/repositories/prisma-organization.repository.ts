@@ -2,7 +2,7 @@ import { OrganizationRepository } from '@/domain/organization/application/reposi
 import { Organization } from '@/domain/organization/enterprise/entities/organization'
 import { Injectable } from '@nestjs/common'
 
-@Injectable({})
+@Injectable()
 export class PrismaOrganizationRepository implements OrganizationRepository {
   create(organization: Organization): Promise<void> {
     throw new Error('Method not implemented.')

@@ -52,7 +52,6 @@ export class PrismaAppointmentMapper {
         },
         status: raw.status as AppointmentStatusType,
         updatedAt: raw.updatedAt,
-        amount: 0,
       },
       new UniqueEntityId(raw.id)
     )
