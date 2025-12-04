@@ -26,7 +26,7 @@ export class UpdateOrganizationOwnerUseCase {
     newOwnerId,
   }: UpdateOrganizationOwnerUseCaseRequest): Promise<UpdateOrganizationOwnerUseCaseResponse> {
     const organization = await this.organizationRepository.findByOwnerId(
-      new UniqueEntityId(currentOwnerId)
+      currentOwnerId.toString()
     )
 
     if (!organization) {

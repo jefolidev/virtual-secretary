@@ -29,7 +29,7 @@ export interface AppointmentProps {
   amount: number
   isPaid: boolean
   createdAt: Date
-  updatedAt?: Date
+  updatedAt?: Date | null
 }
 
 export class Appointment extends AggregateRoot<AppointmentProps> {

@@ -26,10 +26,12 @@ export class OnAppointmentScheduled implements EventHandler {
     appointment,
   }: ScheduledAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
-      appointment.professionalId
+      appointment.professionalId.toString()
     )
 
-    const client = await this.clientRepository.findById(appointment.clientId)
+    const client = await this.clientRepository.findById(
+      appointment.clientId.toString()
+    )
 
     if (professional && client) {
       await this.sendNotification.execute({

@@ -23,7 +23,7 @@ export class OnProfessionalRemovedFromOrganization implements EventHandler {
     event: RemovedProfessionalFromOrganizationEvent
   ) {
     const professional = await this.professionalRepository.findById(
-      event.professionalId
+      event.professionalId.toString()
     )
 
     if (professional) {

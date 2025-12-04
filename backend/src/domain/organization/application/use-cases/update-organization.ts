@@ -1,4 +1,3 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
@@ -29,7 +28,7 @@ export class UpdateOrganizationUseCase {
     organizationId,
   }: UpdateOrganizationUseCaseRequest): Promise<UpdateOrganizationUseCaseResponse> {
     const organization = await this.organizationRepository.findById(
-      new UniqueEntityId(organizationId)
+      organizationId.toString()
     )
 
     if (!organization) {
@@ -37,7 +36,7 @@ export class UpdateOrganizationUseCase {
     }
 
     const professional = await this.professionalRepository.findById(
-      organization.ownerId
+      organization.ownerId.toString()
     )
 
     if (!professional || !organization.ownerId.equals(professional.id)) {

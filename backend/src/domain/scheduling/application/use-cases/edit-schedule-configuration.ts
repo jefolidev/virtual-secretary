@@ -40,7 +40,7 @@ export class EditScheduleConfigurationUseCase {
     workingHours,
   }: EditScheduleConfigurationUseCaseRequest) {
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(professionalId)
+      professionalId
     )
 
     if (!professional) return left(new NotFoundError('Professional not found.'))
@@ -51,7 +51,7 @@ export class EditScheduleConfigurationUseCase {
 
     const scheduleConfiguration =
       await this.scheduleConfigurationRepository.findByProfessionalId(
-        new UniqueEntityId(professionalId)
+        professionalId
       )
 
     const workingDaysList = new WorkingDaysList([0, 1, 3, 4, 5])

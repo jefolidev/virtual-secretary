@@ -1,18 +1,19 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { CancellationPolicyRepository } from '@/domain/scheduling/application/repositories/cancellation-policy.repository'
 import { CancellationPolicy } from '@/domain/scheduling/enterprise/entities/cancellation-policy'
+import { Injectable } from '@nestjs/common'
 
-class PrismaCancellationPolicyRepository
+@Injectable({})
+export class PrismaCancellationPolicyRepository
   implements CancellationPolicyRepository
 {
   create(cancellationPolicy: CancellationPolicy): Promise<void> {
     throw new Error('Method not implemented.')
   }
-  findById(id: UniqueEntityId): Promise<CancellationPolicy | null> {
+  findById(id: string): Promise<CancellationPolicy | null> {
     throw new Error('Method not implemented.')
   }
   findByProfessionalId(
-    professionalId: UniqueEntityId
+    professionalId: string
   ): Promise<CancellationPolicy | null> {
     throw new Error('Method not implemented.')
   }

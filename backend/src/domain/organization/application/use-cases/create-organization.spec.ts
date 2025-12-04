@@ -29,7 +29,7 @@ describe('Create Organization', () => {
 
       expect(organization.name).toBe('Organization John Doe')
       expect(organization.isActive).toBe(true)
-      expect(organization.ownerId.toString()).toBe('organization-id')
+      expect(organization.ownerId.toString().toString()).toBe('organization-id')
       expect(organization.slug.value).toBe('organization-john-doe')
     }
   })

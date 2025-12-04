@@ -23,7 +23,7 @@ export class OnProfessionalAddedToOrganization implements EventHandler {
     event: AddedProfessionalToOrganizationEvent
   ) {
     const professional = await this.professionalRepo.findById(
-      event.professionalId
+      event.professionalId.toString()
     )
 
     if (professional) {

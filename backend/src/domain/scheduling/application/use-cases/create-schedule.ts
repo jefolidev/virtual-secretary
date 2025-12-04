@@ -47,13 +47,13 @@ export class CreateAppointmentUseCase {
     amount,
     googleMeetLink,
   }: CreateAppointmentUseCaseProps): Promise<CreateAppointmentUseCaseResponse> {
-    const client = await this.clientsRepository.findById(clientId)
+    const client = await this.clientsRepository.findById(clientId.toString())
     if (!client) {
       return left(new NotFoundError('Client not found'))
     }
 
     const professional = await this.professionalRepository.findById(
-      professionalId
+      professionalId.toString()
     )
     if (!professional) {
       return left(new NotFoundError('Professional not found'))
@@ -61,7 +61,7 @@ export class CreateAppointmentUseCase {
 
     const professionalScheduleConfiguration =
       await this.scheduleConfigurationRepository.findByProfessionalId(
-        professionalId
+        professionalId.toString()
       )
 
     if (!professionalScheduleConfiguration) {
@@ -70,7 +70,7 @@ export class CreateAppointmentUseCase {
 
     const overlappingAppointments =
       await this.appointmentsRepository.findOverlapping(
-        professionalId,
+        professionalId.toString(),
         startDateTime,
         endDateTime
       )

@@ -1,5 +1,4 @@
 import { Either, left, right } from '@/core/either'
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
 import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
@@ -36,9 +35,7 @@ export class RescheduleAppointmentUseCase {
     startDateTime,
     endDateTime,
   }: RescheduleAppointmentUseCaseProps): Promise<RescheduleAppointmentUseCaseResponse> {
-    const appointment = await this.appointmentsRepository.findById(
-      new UniqueEntityId(id)
-    )
+    const appointment = await this.appointmentsRepository.findById(id)
 
     if (!appointment) {
       return left(new NotFoundError('Appointment not found'))
@@ -60,7 +57,9 @@ export class RescheduleAppointmentUseCase {
       )
     }
 
-    const client = await this.clientRepository.findById(appointment.clientId)
+    const client = await this.clientRepository.findById(
+      appointment.clientId.toString()
+    )
 
     if (!client) {
       return left(new NotFoundError('Client not found'))
@@ -75,7 +74,7 @@ export class RescheduleAppointmentUseCase {
     }
 
     const professional = await this.professionalRepository.findById(
-      appointment.professionalId
+      appointment.professionalId.toString()
     )
 
     if (!professional) {
@@ -84,7 +83,7 @@ export class RescheduleAppointmentUseCase {
 
     const professionalCancellationPolicy =
       await this.cancellationPollicyRepository.findByProfessionalId(
-        professional.id
+        professional.id.toString()
       )
 
     if (!professionalCancellationPolicy?.allowReschedule) {
@@ -94,7 +93,7 @@ export class RescheduleAppointmentUseCase {
 
     const overlappingAppointments =
       await this.appointmentsRepository.findOverlapping(
-        professional.id,
+        professional.id.toString(),
         startDateTime,
         endDateTime
       )

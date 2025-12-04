@@ -1,5 +1,4 @@
 import { Either, left, right } from '@/core/either'
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
@@ -37,7 +36,7 @@ export class CreateCancellationPolicyUseCase {
     description,
   }: CreateCancellationPolicyUseCaseProps): Promise<CreateCancellationPolicyUseCaseResponse> {
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(professionalId)
+      professionalId
     )
 
     if (!professional) {

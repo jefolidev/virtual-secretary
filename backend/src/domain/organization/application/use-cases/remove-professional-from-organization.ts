@@ -25,7 +25,7 @@ export class RemoveProfessionalFromOrganizationUseCase {
     professionalId,
   }: RemoveProfessionalUseCaseRequest): Promise<RemoveProfessionalFromOrganizationResponse> {
     const organization = await this.organizationRepository.findById(
-      new UniqueEntityId(organizationId)
+      organizationId.toString()
     )
 
     if (!organization) return left(new NotFoundError('Organization'))

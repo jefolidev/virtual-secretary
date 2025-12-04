@@ -1,4 +1,4 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { DomainEvents } from '@/core/events/domain-events'
 import type { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import type {
@@ -30,22 +30,22 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     return appointment
   }
 
-  async findById(id: UniqueEntityId): Promise<Appointment | null> {
+  async findById(id: string): Promise<Appointment | null> {
     const appointment = await this.items.find((appointment) =>
-      appointment.id.equals(id)
+      appointment.id.equals(new UniqueEntityId(id))
     )
 
     return appointment ?? null
   }
 
   async findOverlapping(
-    professionalId: UniqueEntityId,
+    professionalId: string,
     startDate: Date,
     endDate: Date
   ): Promise<Appointment[]> {
     return this.items.filter((appointment) => {
       return (
-        appointment.professionalId.equals(professionalId) &&
+        appointment.professionalId.toString().equals(professionalId) &&
         appointment.startDateTime < endDate &&
         appointment.endDateTime > startDate
       )
@@ -53,7 +53,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   }
 
   async findByProfessionalId(
-    professionalId: UniqueEntityId
+    professionalId: string
   ): Promise<Appointment[] | null> {
     const appointments = await this.items.filter((appointment) =>
       appointment.id.equals(professionalId)
@@ -62,7 +62,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   }
 
   async findManyByProfessionalId(
-    professionalId: UniqueEntityId
+    professionalId: string
   ): Promise<Appointment[]> {
     const appointment = await this.items.filter((appointment) => {
       return appointment.professionalId.equals(professionalId)
@@ -71,9 +71,9 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     return appointment ?? []
   }
 
-  async findManyByClientId(clientId: UniqueEntityId): Promise<Appointment[]> {
+  async findManyByClientId(clientId: string): Promise<Appointment[]> {
     const appointment = await this.items.filter((appointment) => {
-      return appointment.clientId.equals(clientId)
+      return appointment.clientId.equals(clientId.toString())
     })
 
     return appointment ?? []

@@ -33,8 +33,10 @@ describe('Update Organization Owner', () => {
     if (response.isRight()) {
       const { organization: updatedOrganization } = response.value
 
-      expect(updatedOrganization.ownerId.toString()).toBe(newOwnerId)
-      expect(updatedOrganization.ownerId.toString()).not.toBe(currentOwnerId)
+      expect(updatedorganization.ownerId.toString().toString()).toBe(newOwnerId)
+      expect(updatedorganization.ownerId.toString().toString()).not.toBe(
+        currentOwnerId
+      )
     }
   })
 

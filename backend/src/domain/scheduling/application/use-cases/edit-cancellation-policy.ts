@@ -37,7 +37,7 @@ export class EditCancellationPolicyUseCase {
     description,
   }: EditCancellationPolicyUseCaseRequest) {
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(professionalId)
+      professionalId
     )
 
     if (!professional) return left(new NotFoundError('Professional not found.'))
@@ -48,7 +48,7 @@ export class EditCancellationPolicyUseCase {
 
     const cancellationPolicy =
       await this.cancellationPolicyRepository.findByProfessionalId(
-        new UniqueEntityId(professionalId)
+        professionalId
       )
 
     if (!cancellationPolicy)

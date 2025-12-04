@@ -30,7 +30,7 @@ export class CreateOrganizationUseCase {
     ownerId,
   }: CreateOrganizationUseCaseRequest): Promise<CreateOrganizationUseCaseResponse> {
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(ownerId)
+      ownerId.toString()
     )
 
     if (!professional) {

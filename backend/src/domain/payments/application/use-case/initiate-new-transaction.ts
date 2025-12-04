@@ -41,14 +41,12 @@ export class InitiateNewTransactionUseCase {
     paymentProviderType,
   }: InitiateNewTransactionUseCaseRequest): Promise<InitiateNewTransactionUseCaseResponse> {
     const appointment = await this.appointmentRepository.findById(
-      new UniqueEntityId(appointmentId)
+      appointmentId.toString()
     )
 
     if (!appointment) return left(new NotFoundError('Appointment not found.'))
 
-    const client = await this.clientRepository.findById(
-      new UniqueEntityId(clientId)
-    )
+    const client = await this.clientRepository.findById(clientId.toString())
 
     if (!client) return left(new NotFoundError('Client not found.'))
 

@@ -1,11 +1,10 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 
 export interface CancellationPolicyRepository {
   create(cancellationPolicy: CancellationPolicy): Promise<void>
-  findById(id: UniqueEntityId): Promise<CancellationPolicy | null>
+  findById(id: string): Promise<CancellationPolicy | null>
   findByProfessionalId(
-    professionalId: UniqueEntityId
+    professionalId: string
   ): Promise<CancellationPolicy | null>
   save(cancellationPolicy: CancellationPolicy): Promise<void>
 }

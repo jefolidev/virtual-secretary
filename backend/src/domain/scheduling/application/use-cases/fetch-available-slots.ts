@@ -8,7 +8,6 @@ import type { Professional } from '../../enterprise/entities/professional'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ProfessionalRepository } from '../repositories/professional.repository'
 import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
-import { UniqueEntityId } from './../../../../core/entities/unique-entity-id'
 
 dayjs.extend(utc)
 dayjs.extend(isSameOrAfter)
@@ -41,21 +40,23 @@ export class FetchAvailableSlotsUseCase {
     endDate,
   }: FetchAvailableSlotsUseCaseRequest): Promise<FetchAvailableSlotsUseCaseResponse> {
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(professionalId)
+      professionalId
     )
 
     if (!professional) return left(new NotFoundError('Professional not found!'))
 
     const scheduleConfiguration =
       await this.scheduleConfiguration.findByProfessionalId(
-        new UniqueEntityId(professional.id.toString())
+        professional.id.toString()
       )
 
     if (!scheduleConfiguration)
       return left(new NotFoundError('Schedule configuration not found!'))
 
     const appointmentByProfessional =
-      await this.appointmentRepository.findByProfessionalId(professional.id)
+      await this.appointmentRepository.findByProfessionalId(
+        professional.id.toString()
+      )
 
     const appointmentsInPeriod = appointmentByProfessional
       ? appointmentByProfessional.filter(

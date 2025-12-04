@@ -25,11 +25,11 @@ export class AddProfessionalToOrganizationUseCase {
     professionalId,
   }: AddProfessionalToOrganizationUseCaseRequest): Promise<AddProfessionalToOrganizationUseCaseResponse> {
     const organization = await this.organizationRepository.findById(
-      new UniqueEntityId(organizationId)
+      organizationId.toString()
     )
 
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(professionalId)
+      professionalId.toString()
     )
 
     if (!organization) {

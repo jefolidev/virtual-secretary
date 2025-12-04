@@ -1,8 +1,8 @@
 import { Either, left, right } from '@/core/either'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { BadRequestError } from '@/core/errors/bad-request'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import { UniqueEntityId } from '../../../../core/entities/unique-entity-id'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 import type { ClientRepository } from '../repositories/client.repository'
@@ -32,7 +32,7 @@ export class MarkAppointmentAsCompletedUseCase {
     professionalId,
   }: MarkAppointmentAsCompletedUseCaseRequest) {
     const appointment = await this.appointmentsRepository.findById(
-      new UniqueEntityId(appointmentId)
+      appointmentId.toString()
     )
 
     if (!appointment) return left(new NotFoundError('Appointment not found!'))
@@ -40,12 +40,12 @@ export class MarkAppointmentAsCompletedUseCase {
     const { clientId } = appointment
 
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(professionalId)
+      professionalId
     )
 
     if (!professional) return left(new NotFoundError('Professional not found!'))
 
-    const client = await this.clientRepository.findById(clientId)
+    const client = await this.clientRepository.findById(clientId.toString())
 
     if (!client) return left(new NotFoundError('Client not found!'))
 

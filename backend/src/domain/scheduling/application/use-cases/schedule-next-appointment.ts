@@ -1,6 +1,6 @@
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
 import { type Either, left, right } from '../../../../core/either'
-import { UniqueEntityId } from '../../../../core/entities/unique-entity-id'
 import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { Appointment } from '../../enterprise/entities/appointment'
@@ -36,22 +36,18 @@ export class ScheduleNextAppointmentUseCase {
     startDateTime,
     endDateTime,
   }: ScheduleNextAppointmentUseCaseProps): Promise<ScheduleNextAppointmentUseCaseResponse> {
-    const client = await this.clientRepository.findById(
-      new UniqueEntityId(clientId)
-    )
+    const client = await this.clientRepository.findById(clientId.toString())
 
     if (!client) return left(new NotFoundError('Client not found'))
 
     const professional = await this.professionalRepository.findById(
-      new UniqueEntityId(professionalId)
+      professionalId
     )
 
     if (!professional) return left(new NotFoundError('Professional not found'))
 
     const professionalCancellationPolicy =
-      await this.cancellationPolicy.findByProfessionalId(
-        new UniqueEntityId(professionalId)
-      )
+      await this.cancellationPolicy.findByProfessionalId(professionalId)
 
     if (!professionalCancellationPolicy) {
       return left(
@@ -60,9 +56,7 @@ export class ScheduleNextAppointmentUseCase {
     }
 
     const clientAppointments =
-      await this.appointmentsRepository.findManyByClientId(
-        new UniqueEntityId(clientId)
-      )
+      await this.appointmentsRepository.findManyByClientId(clientId.toString())
 
     if (clientAppointments.length === 0) {
       return left(new NotFoundError('This client has no appointments yet.'))
@@ -108,7 +102,7 @@ export class ScheduleNextAppointmentUseCase {
 
     const overlappingAppointments =
       await this.appointmentsRepository.findOverlapping(
-        appointment.professionalId,
+        appointment.professionalId.toString().toString(),
         startDateTime,
         endDateTime
       )

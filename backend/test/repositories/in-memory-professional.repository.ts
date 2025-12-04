@@ -13,9 +13,9 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
     return (await this.items) ?? []
   }
 
-  async findById(id: UniqueEntityId): Promise<Professional | null> {
+  async findById(id: string): Promise<Professional | null> {
     const professional = await this.items.find((professional) =>
-      professional.id.equals(id)
+      professional.id.equals(new UniqueEntityId(id))
     )
 
     return professional ?? null

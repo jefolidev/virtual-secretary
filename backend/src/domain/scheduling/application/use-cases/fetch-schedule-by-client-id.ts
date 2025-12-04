@@ -1,5 +1,4 @@
 import { Either, right } from '@/core/either'
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
@@ -20,7 +19,7 @@ export class FetchScheduleByClientIdUseCase {
     clientId,
   }: FetchScheduleByClientIdUseCaseProps): Promise<FetchScheduleByClientIdUseCaseResponse> {
     const appointments = await this.appointmentsRepository.findManyByClientId(
-      new UniqueEntityId(clientId)
+      clientId.toString()
     )
 
     return right({ appointments })

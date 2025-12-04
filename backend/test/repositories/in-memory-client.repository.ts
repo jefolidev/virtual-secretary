@@ -1,4 +1,4 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import type { Client } from '@/domain/scheduling/enterprise/entities/client'
 
@@ -13,8 +13,10 @@ export class InMemoryClientRepository implements ClientRepository {
     return await this.items
   }
 
-  async findById(id: UniqueEntityId): Promise<Client | null> {
-    const client = await this.items.find((client) => client.id.equals(id))
+  async findById(id: string): Promise<Client | null> {
+    const client = await this.items.find((client) =>
+      client.id.equals(new UniqueEntityId(id))
+    )
 
     return client ?? null
   }

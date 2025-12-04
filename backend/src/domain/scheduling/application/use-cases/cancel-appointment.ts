@@ -1,5 +1,4 @@
 import { Either, left, right } from '@/core/either'
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import dayjs from 'dayjs'
 import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
@@ -34,17 +33,17 @@ export class CancelAppointmentUseCase {
   async execute({
     id,
   }: CancelAppointmentUseCaseProps): Promise<CancelAppointmentUseCaseResponse> {
-    const appointment = await this.appointmentsRepository.findById(
-      new UniqueEntityId(id)
-    )
+    const appointment = await this.appointmentsRepository.findById(id)
 
     if (!appointment) {
       return left(new NotFoundError('Appointment not found'))
     }
 
-    const client = await this.clientRepository.findById(appointment.clientId)
+    const client = await this.clientRepository.findById(
+      appointment.clientId.toString()
+    )
     const professional = await this.professionalRepository.findById(
-      appointment.professionalId
+      appointment.professionalId.toString()
     )
 
     if (!client) {
@@ -67,7 +66,7 @@ export class CancelAppointmentUseCase {
     const cancellationPolicyId = professional.cancellationPolicyId.toString()
 
     const cancellationPolicy = await this.cancellationPolicyRepository.findById(
-      new UniqueEntityId(cancellationPolicyId)
+      cancellationPolicyId
     )
 
     if (!cancellationPolicy) {
