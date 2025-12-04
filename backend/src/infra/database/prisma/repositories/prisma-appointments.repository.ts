@@ -11,15 +11,24 @@ import { PrismaService } from '../prisma.service'
 export class PrismaAppointmentsRepository implements AppointmentsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(appointment: Appointment): Promise<void> {
-    throw new Error('Method not implemented.')
+  async create(appointment: Appointment): Promise<void> {
+    const data = PrismaAppointmentMapper.toPrisma(appointment)
+
+    await this.prisma.appointment.create({
+      data,
+    })
   }
-  findMany(): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+  async findMany(): Promise<Appointment[]> {
+    const appointments = await this.prisma.appointment.findMany()
+    if (appointments.length === 0) {
+      return []
+    }
+
+    return appointments.map(PrismaAppointmentMapper.toDomain)
   }
 
   async findById(id: string): Promise<Appointment | null> {
-    const appointment = await this.prisma.appointment.findUnique({
+    const appointment = await this.prisma.appointment.findFirst({
       where: {
         id,
       },
@@ -31,29 +40,113 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
     return PrismaAppointmentMapper.toDomain(appointment)
   }
-  findByProfessionalId(professionalId: string): Promise<Appointment[] | null> {
-    throw new Error('Method not implemented.')
+
+  async findByProfessionalId(
+    professionalId: string
+  ): Promise<Appointment | null> {
+    const appointment = await this.prisma.appointment.findFirst({
+      where: {
+        professionalId,
+      },
+    })
+
+    if (!appointment) {
+      return null
+    }
+
+    return PrismaAppointmentMapper.toDomain(appointment)
   }
-  findOverlapping(
-    profissionalId: string,
+
+  async findOverlapping(
+    professionalId: string,
     startDate: Date,
     endDate: Date
   ): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        professionalId,
+        startDateTime: { lt: endDate },
+        endDateTime: { gt: startDate },
+      },
+    })
+    if (appointments.length === 0) {
+      return []
+    }
+
+    return appointments.map(PrismaAppointmentMapper.toDomain)
   }
-  findManyByProfessionalId(professionalId: string): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+
+  async findManyByProfessionalId(
+    professionalId: string
+  ): Promise<Appointment[]> {
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        professionalId,
+      },
+    })
+
+    if (appointments.length === 0) {
+      return []
+    }
+
+    return appointments.map(PrismaAppointmentMapper.toDomain)
   }
-  findManyByClientId(clientId: string): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+
+  async findManyByClientId(clientId: string): Promise<Appointment[]> {
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        clientId,
+      },
+    })
+
+    if (appointments.length === 0) {
+      return []
+    }
+
+    return appointments.map(PrismaAppointmentMapper.toDomain)
   }
-  findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+
+  async findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[]> {
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        startDateTime: startDate,
+        endDateTime: endDate,
+      },
+    })
+
+    if (appointments.length === 0) {
+      return []
+    }
+
+    return appointments.map(PrismaAppointmentMapper.toDomain)
   }
-  save(appointment: Appointment): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  async findManyByStatus(
+    status: AppointmentStatusType
+  ): Promise<Appointment[]> {
+    const appointments = await this.prisma.appointment.findMany({
+      where: {
+        status,
+      },
+    })
+
+    if (appointments.length === 0) {
+      return []
+    }
+
+    return appointments.map(PrismaAppointmentMapper.toDomain)
   }
-  findManyByStatus(status: AppointmentStatusType): Promise<Appointment[]> {
-    throw new Error('Method not implemented.')
+
+  async save(appointment: Appointment): Promise<void> {
+    const data = PrismaAppointmentMapper.toPrisma(appointment)
+
+    await Promise.all([
+      this.prisma.appointment.update({
+        where: {
+          id: appointment.id.toString(),
+        },
+        data,
+      }),
+    ])
   }
 }
