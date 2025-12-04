@@ -1,9 +1,9 @@
 import type { Organization } from '../../enterprise/entities/organization'
 
-export interface OrganizationRepository {
-  create(organization: Organization): Promise<void>
-  findById(id: string): Promise<Organization | null>
-  findMany(): Promise<Organization[] | null>
-  findByOwnerId(id: string): Promise<Organization | null>
-  save(organization: Organization): Promise<void>
+export abstract class OrganizationRepository {
+  abstract create(organization: Organization): Promise<void>
+  abstract findById(id: string): Promise<Organization | null>
+  abstract findMany(): Promise<Organization[] | null>
+  abstract findByOwnerId(id: string): Promise<Organization | null>
+  abstract save(organization: Organization): Promise<void>
 }
