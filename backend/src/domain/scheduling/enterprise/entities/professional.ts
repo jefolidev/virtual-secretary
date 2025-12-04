@@ -1,19 +1,17 @@
 import { AggregateRoot } from '@/core/entities/aggregate'
 import type { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import type { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
   organizationId?: UniqueEntityId
-  notificationSettings: NotificationSettings
+  notificationSettingsId: UniqueEntityId
   cancellationPolicyId: UniqueEntityId
   scheduleConfigurationId: UniqueEntityId
   name: string
   phone: string
   sessionPrice: number
-  officeAddress: string
   createdAt: Date
-  updatedAt?: Date
+  updatedAt?: Date | null
 }
 
 export class Professional extends AggregateRoot<ProfessionalProps> {
@@ -21,8 +19,8 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     return this.props.organizationId
   }
 
-  get notificationSettings() {
-    return this.props.notificationSettings
+  get notificationSettingsId() {
+    return this.props.notificationSettingsId
   }
 
   get scheduleConfigurationId() {
@@ -69,15 +67,6 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     this.props.sessionPrice = sessionPrice
   }
 
-  get officeAddress() {
-    return this.props.officeAddress
-  }
-
-  set officeAddress(officeAddress: string) {
-    this.props.officeAddress = officeAddress
-    this.touch()
-  }
-
   get createdAt() {
     return this.props.createdAt
   }
@@ -93,7 +82,10 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
   static create(
     props: Optional<
       ProfessionalProps,
-      'createdAt' | 'cancellationPolicyId' | 'scheduleConfigurationId'
+      | 'createdAt'
+      | 'cancellationPolicyId'
+      | 'scheduleConfigurationId'
+      | 'notificationSettingsId'
     >,
     id?: UniqueEntityId
   ) {
@@ -106,6 +98,9 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
         scheduleConfigurationId:
           props.scheduleConfigurationId ??
           new UniqueEntityId('schedule-configuration-id'),
+        notificationSettingsId:
+          props.notificationSettingsId ??
+          new UniqueEntityId('notifcation-settings-id'),
         createdAt: props.createdAt ?? new Date(),
       },
       id

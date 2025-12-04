@@ -11,7 +11,6 @@ import type { ProfessionalRepository } from '../repositories/professional.reposi
 export interface CreateProfessionalUseCaseProps {
   name: string
   phone: string
-  officeAddress: string
   sessionPrice: number
 }
 
@@ -26,7 +25,6 @@ export class CreateProfessionalUseCase {
   async execute({
     name,
     phone,
-    officeAddress,
     sessionPrice,
   }: CreateProfessionalUseCaseProps): Promise<CreateProfessionalUseCaseResponse> {
     const notificationSettings = NotificationSettings.create({
@@ -44,8 +42,6 @@ export class CreateProfessionalUseCase {
     const professional = await Professional.create({
       name,
       phone,
-      officeAddress,
-      notificationSettings,
       sessionPrice,
     })
 

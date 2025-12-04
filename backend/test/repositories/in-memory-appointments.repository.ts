@@ -45,7 +45,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   ): Promise<Appointment[]> {
     return this.items.filter((appointment) => {
       return (
-        appointment.professionalId.toString().equals(professionalId) &&
+        appointment.professionalId.equals(new UniqueEntityId(professionalId)) &&
         appointment.startDateTime < endDate &&
         appointment.endDateTime > startDate
       )
@@ -56,7 +56,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     professionalId: string
   ): Promise<Appointment[] | null> {
     const appointments = await this.items.filter((appointment) =>
-      appointment.id.equals(professionalId)
+      appointment.id.equals(new UniqueEntityId(professionalId))
     )
     return appointments || null
   }
@@ -65,7 +65,9 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     professionalId: string
   ): Promise<Appointment[]> {
     const appointment = await this.items.filter((appointment) => {
-      return appointment.professionalId.equals(professionalId)
+      return appointment.professionalId.equals(
+        new UniqueEntityId(professionalId)
+      )
     })
 
     return appointment ?? []
@@ -73,7 +75,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
 
   async findManyByClientId(clientId: string): Promise<Appointment[]> {
     const appointment = await this.items.filter((appointment) => {
-      return appointment.clientId.equals(clientId.toString())
+      return appointment.clientId.equals(new UniqueEntityId(clientId))
     })
 
     return appointment ?? []

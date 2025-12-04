@@ -1,4 +1,4 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { DomainEvents } from '@/core/events/domain-events'
 import type { Organization } from '@/domain/organization/enterprise/entities/organization'
 import type { OrganizationRepository } from './../../src/domain/organization/application/repositories/organization.repository'
@@ -12,8 +12,10 @@ export class InMemoryOrganizationRepository implements OrganizationRepository {
     DomainEvents.dispatchEventsForAggregate(organization.id)
   }
 
-  async findById(id: UniqueEntityId): Promise<Organization | null> {
-    const organization = await this.items.find((org) => org.id.equals(id))
+  async findById(id: string): Promise<Organization | null> {
+    const organization = await this.items.find((org) =>
+      org.id.equals(new UniqueEntityId(id))
+    )
 
     if (!organization) {
       return null
@@ -26,8 +28,10 @@ export class InMemoryOrganizationRepository implements OrganizationRepository {
     return (await this.items) ?? []
   }
 
-  async findByOwnerId(id: UniqueEntityId): Promise<Organization | null> {
-    const organization = await this.items.find((org) => org.ownerId.equals(id))
+  async findByOwnerId(id: string): Promise<Organization | null> {
+    const organization = await this.items.find((org) =>
+      org.ownerId.equals(new UniqueEntityId(id))
+    )
 
     return organization ?? null
   }

@@ -1,4 +1,4 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { ScheduleConfigurationRepository } from '@/domain/scheduling/application/repositories/schedule-configuration.repository'
 import type { ScheduleConfiguration } from '@/domain/scheduling/enterprise/entities/schedule-configuration'
 
@@ -16,11 +16,13 @@ export class InMemoryScheduleConfigurationRepository
   }
 
   async findByProfessionalId(
-    professionalId: UniqueEntityId
+    professionalId: string
   ): Promise<ScheduleConfiguration> {
     const scheduleConfigurations = await this.items.find(
       (scheduleconfiguration) =>
-        scheduleconfiguration.professionalId.equals(professionalId)
+        scheduleconfiguration.professionalId.equals(
+          new UniqueEntityId(professionalId)
+        )
     )
 
     if (!scheduleConfigurations) {

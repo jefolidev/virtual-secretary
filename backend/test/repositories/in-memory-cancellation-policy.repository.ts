@@ -1,4 +1,4 @@
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { CancellationPolicyRepository } from '@/domain/scheduling/application/repositories/cancellation-policy.repository'
 import type { CancellationPolicy } from '@/domain/scheduling/enterprise/entities/cancellation-policy'
 
@@ -11,19 +11,21 @@ export class InMemoryCancellationPolicyRepository
     await this.items.push(cancellationPolicy)
   }
 
-  async findById(id: UniqueEntityId): Promise<CancellationPolicy | null> {
+  async findById(id: string): Promise<CancellationPolicy | null> {
     const cancellationPolicy = await this.items.find((cancellationPolicy) =>
-      cancellationPolicy.id.equals(id)
+      cancellationPolicy.id.equals(new UniqueEntityId(id))
     )
 
     return cancellationPolicy ?? null
   }
 
   async findByProfessionalId(
-    professionalId: UniqueEntityId
+    professionalId: string
   ): Promise<CancellationPolicy | null> {
     const cancellationPolicy = await this.items.find((cancellationPolicy) =>
-      cancellationPolicy.professionalId.equals(professionalId)
+      cancellationPolicy.professionalId.equals(
+        new UniqueEntityId(professionalId)
+      )
     )
 
     return cancellationPolicy ?? null

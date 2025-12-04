@@ -10,7 +10,7 @@ export interface CancellationPolicyProps {
   allowReschedule: boolean
   description: string
   createdAt: Date
-  updatedAt?: Date
+  updatedAt?: Date | null
 }
 
 export class CancellationPolicy extends Entity<CancellationPolicyProps> {
@@ -19,7 +19,7 @@ export class CancellationPolicy extends Entity<CancellationPolicyProps> {
   }
 
   get minHoursBeforeCancellation() {
-    return this.props.minHoursBeforeCancellation
+    return this.props.minHoursBeforeCancellation ?? 6
   }
 
   get minDaysBeforeNextAppointment() {

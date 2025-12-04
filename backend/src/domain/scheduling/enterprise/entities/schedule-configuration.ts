@@ -16,7 +16,7 @@ export interface ScheduleConfigurationProps {
   holidays: Date[]
   enableGoogleMeet: boolean
   createdAt: Date
-  updatedAt?: Date
+  updatedAt?: Date | null
 }
 
 export class ScheduleConfiguration extends AggregateRoot<ScheduleConfigurationProps> {

@@ -197,7 +197,7 @@ describe('Reschedule Appointment', () => {
 
     const overlappingAppointments =
       await inMemoryAppointmentRepository.findOverlapping(
-        professional.id,
+        professional.id.toString(),
         new Date('2026-01-05T10:00:00.000Z'),
         new Date('2026-01-05T11:00:00.000Z')
       )

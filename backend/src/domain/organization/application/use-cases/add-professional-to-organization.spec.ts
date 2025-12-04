@@ -64,7 +64,7 @@ describe('Add Professional Into An Organization', () => {
     }
 
     const updatedOrganization = await inMemoryOrganizationRepository.findById(
-      organization.id
+      organization.id.toString()
     )
 
     expect(updatedOrganization?.professionalsIds).toHaveLength(5)

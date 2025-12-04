@@ -88,7 +88,7 @@ describe('Schedule Next Appointment', () => {
 
     if (response.isRight()) {
       const oldAppointment = await inMemoryAppointmentRepository.findById(
-        new UniqueEntityId('appointment-id')
+        'appointment-id'
       )
 
       expect(oldAppointment!.status).toBe('COMPLETED')
@@ -211,7 +211,7 @@ describe('Schedule Next Appointment', () => {
 
     const overlappingAppointments =
       await inMemoryAppointmentRepository.findOverlapping(
-        professional.id,
+        professional.id.toString(),
         new Date('2026-01-05T10:00:00.000Z'),
         new Date('2026-01-05T11:00:00.000Z')
       )

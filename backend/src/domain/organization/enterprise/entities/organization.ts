@@ -10,6 +10,7 @@ export interface OrganizationProps {
   ownerId: UniqueEntityId
   professionalsIds: ProfessionalIdList
   name: string
+  cnpj: string
   slug: Slug
   isActive: boolean
   createdAt: Date
