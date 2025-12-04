@@ -85,11 +85,11 @@ model Professional {
   cancellationPolicy   CancellationPolicy? @relation(fields: [cancellationPolicyId], references: [id])
   cancellationPolicyId String?             @unique @map("cancellation_policy_id")
 
-  scheduleConfiguration   ScheduleConfiguration? @relation(fields: [scheduleConfigurationId], references: [id])
-  scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
-
   organization Organization? @relation(fields: [organizationId], references: [id])
   users        User?
+
+  scheduleConfiguration   ScheduleConfiguration?
+  scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
 
   @@map("professionals")
 }
@@ -133,7 +133,8 @@ model ScheduleConfiguration {
   createdAt              DateTime   @default(now()) @map("created_at")
   updatedAt              DateTime?  @map("updated_at")
 
-  professional Professional?
+  professional   Professional @relation(fields: [professionalId], references: [id])
+  professionalId String       @unique @map("professional_id")
 
   @@map("schedule_configuration")
 }
