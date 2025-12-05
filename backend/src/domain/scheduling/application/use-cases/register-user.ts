@@ -1,9 +1,11 @@
 import { Either, left, right } from '@/core/either'
 import { Injectable } from '@nestjs/common'
+import { Address, AddressProps } from '../../enterprise/entities/address'
 import { Client } from '../../enterprise/entities/client'
 import { Professional } from '../../enterprise/entities/professional'
-import { AddressProps, User } from '../../enterprise/entities/user'
+import { User } from '../../enterprise/entities/user'
 import { HashGenerator } from '../cryptography/hash-generator'
+import { AddressRepository } from '../repositories/address.repository'
 import { ClientRepository } from '../repositories/client.repository'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 import { UserRepository } from '../repositories/user.repository'
@@ -14,8 +16,8 @@ interface RegisterUserUseCaseRequest {
   email: string
   password: string
   phone: string
-  address: AddressProps
   cpf: string
+  address: AddressProps
   role: 'PROFESSIONAL' | 'CLIENT'
 }
 
@@ -27,19 +29,24 @@ export class RegisterUserUseCase {
     private readonly userRepository: UserRepository,
     private readonly hashGenerator: HashGenerator,
     private readonly clientRepository: ClientRepository,
-    private readonly professionalRepository: ProfessionalRepository
+    private readonly professionalRepository: ProfessionalRepository,
+    private readonly addressRepository: AddressRepository
   ) {}
 
   async execute({
-    address,
     name,
     email,
     password,
     phone,
     cpf,
+    address,
     role,
   }: RegisterUserUseCaseRequest): Promise<RegisterUserUseCaseResponse> {
     const userWithSameEmail = await this.userRepository.findByEmail(email)
+
+    const userAddress = Address.create(address)
+
+    await this.addressRepository.create(userAddress)
 
     let professional: Professional | undefined = undefined
     let client: Client | undefined = undefined
@@ -50,7 +57,7 @@ export class RegisterUserUseCase {
         phone,
         sessionPrice: 0,
       })
-      // persist professional before creating the user so FK constraints are satisfied
+
       await this.professionalRepository.create(professional)
     }
 
@@ -60,7 +67,7 @@ export class RegisterUserUseCase {
         phone,
         appointmentHistory: [],
       })
-      // persist client before creating the user so FK constraints are satisfied
+
       await this.clientRepository.create(client)
     }
 
@@ -71,7 +78,7 @@ export class RegisterUserUseCase {
     const hashedPassword = await this.hashGenerator.hash(password)
 
     const user = User.create({
-      address,
+      addressId: userAddress.id,
       name,
       email,
       password: hashedPassword,

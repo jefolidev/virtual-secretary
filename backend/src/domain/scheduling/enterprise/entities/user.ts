@@ -2,20 +2,10 @@ import { Entity } from '@/core/entities/entity'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Optional } from '@prisma/client/runtime/client'
 
-export interface AddressProps {
-  addressLine1: string
-  addressLine2?: string
-  neighborhood: string
-  city: string
-  state: string
-  postalCode: string
-  country: string
-}
-
 export interface UserProps {
   clientId?: UniqueEntityId
   professionalId?: UniqueEntityId
-  address: AddressProps
+  addressId: UniqueEntityId
   name: string
   email: string
   phone: string
@@ -103,12 +93,12 @@ export class User extends Entity<UserProps> {
     {
       clientId,
       professionalId,
+      addressId,
       cpf,
       email,
       name,
       password,
       phone,
-      address,
       role,
       createdAt,
     }: Optional<UserProps, 'createdAt' | 'updatedAt'>,
@@ -124,7 +114,7 @@ export class User extends Entity<UserProps> {
         password,
         role,
         phone,
-        address,
+        addressId,
         createdAt: createdAt ?? new Date(),
       },
       id

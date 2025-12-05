@@ -1,3 +1,4 @@
+import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
 import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
@@ -25,6 +26,7 @@ import { FetchProfessionalController } from './controllers/fetch-professionals.c
     FetchProfessionalController,
   ],
   providers: [
+    AuthenticateStudentUseCase,
     CreateAppointmentUseCase,
     CreateClientUseCase,
     CreateProfessionalUseCase,
