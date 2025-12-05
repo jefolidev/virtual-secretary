@@ -1,10 +1,10 @@
 import { Either, right } from '@/core/either'
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { Injectable } from '@nestjs/common'
 import {
   Client,
   type PeriodPreferenceType,
 } from '../../enterprise/entities/client'
-import type { ClientRepository } from '../repositories/client.repository'
+import { ClientRepository } from '../repositories/client.repository'
 
 export interface CreateClientUseCaseProps {
   name: string
@@ -15,7 +15,8 @@ export interface CreateClientUseCaseProps {
 
 type CreateClientUseCaseResponse = Either<unknown, { client: Client }>
 
-export class CreateClietUseCase {
+@Injectable()
+export class CreateClientUseCase {
   constructor(private clientsRepository: ClientRepository) {}
 
   async execute({
@@ -24,8 +25,7 @@ export class CreateClietUseCase {
     phone,
     extraPreferences,
   }: CreateClientUseCaseProps): Promise<CreateClientUseCaseResponse> {
-    const client = await Client.create({
-      userId: new UniqueEntityId(),
+    const client = Client.create({
       name,
       periodPreference,
       phone,
