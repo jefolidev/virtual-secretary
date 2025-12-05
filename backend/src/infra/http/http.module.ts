@@ -1,4 +1,7 @@
+import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
+import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
+import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { Module } from '@nestjs/common'
 import { DatabaseModule } from '../database/database.module'
 import { AuthenticateController } from './controllers/authenticate.controller'
@@ -20,6 +23,11 @@ import { FetchProfessionalController } from './controllers/fetch-professionals.c
     FetchOrganizationController,
     FetchProfessionalController,
   ],
-  providers: [CreateAppointmentUseCase],
+  providers: [
+    CreateAppointmentUseCase,
+    CreateClientUseCase,
+    CreateProfessionalUseCase,
+    RegisterUserUseCase,
+  ],
 })
 export class HttpModule {}
