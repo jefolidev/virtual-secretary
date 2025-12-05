@@ -22,7 +22,6 @@ export class PrismaClientMapper {
         name: raw.users.name,
         phone: raw.users.phone,
         createdAt: raw.createdAt,
-        userId: new UniqueEntityId(raw.users.id),
         extraPreferences: raw.extraPreference || null,
         periodPreference: raw.periodPreference || [],
         updatedAt: raw.updatedAt || null,
