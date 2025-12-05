@@ -1,5 +1,4 @@
-import { CreateClientUseCaseProps } from '@/domain/scheduling/application/use-cases/create-client'
-import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
+import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import { checkPasswordStrong } from '@/utils/checkPasswordStrong'
@@ -22,8 +21,7 @@ import {
 export class CreateAccountController {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly createProfessionalUseCase: CreateProfessionalUseCase,
-    private readonly createClientUseCase: CreateClientUseCaseProps
+    private readonly registerUserUseCase: RegisterUserUseCase
   ) {}
 
   @Post()
