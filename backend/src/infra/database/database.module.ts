@@ -4,6 +4,7 @@ import { CancellationPolicyRepository } from '@/domain/scheduling/application/re
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { ScheduleConfigurationRepository } from '@/domain/scheduling/application/repositories/schedule-configuration.repository'
+import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { Module } from '@nestjs/common'
 import { PrismaService } from './prisma/prisma.service'
 import { PrismaAppointmentsRepository } from './prisma/repositories/prisma-appointments.repository'
@@ -12,6 +13,7 @@ import { PrismaClientRepository } from './prisma/repositories/prisma-client.repo
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaProfessionalRepository } from './prisma/repositories/prisma-professional.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
+import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository'
 
 @Module({
   providers: [
@@ -44,6 +46,10 @@ import { PrismaScheduleConfigurationRepository } from './prisma/repositories/pri
       provide: CancellationPolicyRepository,
       useClass: PrismaCancellationPolicyRepository,
     },
+    {
+      provide: UserRepository,
+      useClass: PrismaUserRepository,
+    },
   ],
   exports: [
     PrismaService,
@@ -53,6 +59,7 @@ import { PrismaScheduleConfigurationRepository } from './prisma/repositories/pri
     OrganizationRepository,
     ProfessionalRepository,
     ScheduleConfigurationRepository,
+    UserRepository,
   ],
 })
 export class DatabaseModule {}
