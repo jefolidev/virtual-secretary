@@ -5,7 +5,7 @@ import { Optional } from '@prisma/client/runtime/client'
 export interface UserProps {
   clientId?: UniqueEntityId
   professionalId?: UniqueEntityId
-  addressId: UniqueEntityId
+  addressId?: UniqueEntityId
   name: string
   email: string
   phone: string
@@ -21,13 +21,22 @@ export class User extends Entity<UserProps> {
     return this.props.clientId ?? undefined
   }
 
-  get phone() {
-    return this.props.phone
-  }
-
   set clientId(clientId: UniqueEntityId | undefined) {
     this.props.clientId = clientId
     this.touch()
+  }
+
+  get addressId() {
+    return this.props.addressId ?? undefined
+  }
+
+  set addressId(addressId: UniqueEntityId | undefined) {
+    this.props.addressId = addressId
+    this.touch()
+  }
+
+  get phone() {
+    return this.props.phone
   }
 
   set professionalId(professionalId: UniqueEntityId | undefined) {

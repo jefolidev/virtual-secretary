@@ -36,7 +36,8 @@ model User {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  address Address?
+  addressId String?  @unique @map("address_id")
+  address   Address? @relation(fields: [addressId], references: [id])
 
   professional   Professional? @relation(fields: [professionalId], references: [id])
   professionalId String?       @unique @map("professional_id")
@@ -166,8 +167,7 @@ model Address {
   organizationId String?       @unique @map("organization_id")
   organization   Organization? @relation(fields: [organizationId], references: [id])
 
-  userId String? @unique @map("user_id")
-  user   User?   @relation(fields: [userId], references: [id])
+  user User?
 
   @@map("addresses")
 }

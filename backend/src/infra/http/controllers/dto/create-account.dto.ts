@@ -31,6 +31,7 @@ const addressSchema = z.object({
   state: z.string().min(1, 'State is required'),
   postalCode: z.string().min(8, 'Postal code must have at least 8 characters'),
   country: z.string().min(1, 'Country is required').default('Brasil'),
+  createdAt: z.date().optional().default(new Date()),
 })
 
 const clientDataSchema = z.object({

@@ -12,7 +12,7 @@ Content-Type: application/json
 
 ###
 
-# @name create_account
+# @name create_professional_account
 POST {{baseUrl}}/accounts
 Content-Type: application/json
 
@@ -33,6 +33,30 @@ Content-Type: application/json
     "country": "Brasil"
   },
   "session_price": 20
+}
+
+###
+
+# @name create_client_account
+POST {{baseUrl}}/accounts
+Content-Type: application/json
+
+{
+  "name": "Jeferson Franco de Oliveira",
+  "email": "jeferson@client.com.br",
+  "password": "SenhaForte123",
+  "cpf": "07609254371",
+  "role": "CLIENT",
+  "phone": "9988776622",
+  "address": {
+    "addressLine1": "Rua Exemplo, 123",
+    "addressLine2": "Apto 101",
+    "neighborhood": "Bairro Central",
+    "city": "Fortaleza",
+    "state": "CE",
+    "postalCode": "60000000",
+    "country": "Brasil"
+  }
 }
 ### 
 

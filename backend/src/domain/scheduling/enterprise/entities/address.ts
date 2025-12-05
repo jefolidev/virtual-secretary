@@ -6,7 +6,7 @@ export type PeriodPreferenceType = 'MORNING' | 'AFTERNOON' | 'EVENING'
 
 export interface AddressProps {
   addressLine1: string
-  addressLine2?: string
+  addressLine2?: string | null
   neighborhood: string
   city: string
   state: string
@@ -26,7 +26,7 @@ export class Address extends Entity<AddressProps> {
   }
 
   get addressLine2() {
-    return this.props.addressLine2
+    return this.props.addressLine2 || null || undefined
   }
   set addressLine2(value: string | undefined) {
     this.props.addressLine2 = value

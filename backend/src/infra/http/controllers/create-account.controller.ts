@@ -74,50 +74,5 @@ export class CreateAccountController {
     })
 
     return result
-
-    // const professionalId = randomUUID()
-    // const clientId = randomUUID()
-
-    // const userWithAddress = await this.prisma.user.create({
-    //   data: {
-    //     cpf,
-    //     email,
-    //     role,
-    //     name,
-    //     phone,
-    //     client:
-    //       role === 'CLIENT'
-    //         ? {
-    //             create: {},
-    //           }
-    //         : undefined,
-    //     professional:
-    //       role === 'PROFESSIONAL'
-    //         ? {
-    //             create: {
-    //               sessionPrice: 0,
-    //             },
-    //           }
-    //         : undefined,
-    //     password: hashedPassword,
-    //     address: {
-    //       create: {
-    //         addressLine1: address.addressLine1,
-    //         addressLine2: address.addressLine2,
-    //         neighborhood: address.neighborhood,
-    //         city: address.city,
-    //         state: address.state,
-    //         postalCode: address.postalCode,
-    //         country: address.country,
-    //       },
-    //     },
-    //   },
-    //   include: {
-    //     address: true,
-    //     professional: true,
-    //     client: true,
-    //   },
-    // })
-    // return userWithAddress
   }
 }

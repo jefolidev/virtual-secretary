@@ -1,4 +1,5 @@
 import { OrganizationRepository } from '@/domain/organization/application/repositories/organization.repository'
+import { AddressRepository } from '@/domain/scheduling/application/repositories/address.repository'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { CancellationPolicyRepository } from '@/domain/scheduling/application/repositories/cancellation-policy.repository'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
@@ -7,6 +8,7 @@ import { ScheduleConfigurationRepository } from '@/domain/scheduling/application
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { Module } from '@nestjs/common'
 import { PrismaService } from './prisma/prisma.service'
+import { PrismaAddressRepository } from './prisma/repositories/prisma-address.repository'
 import { PrismaAppointmentsRepository } from './prisma/repositories/prisma-appointments.repository'
 import { PrismaCancellationPolicyRepository } from './prisma/repositories/prisma-cancellation-policy.repository'
 import { PrismaClientRepository } from './prisma/repositories/prisma-client.repository'
@@ -18,6 +20,10 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
 @Module({
   providers: [
     PrismaService,
+    {
+      provide: AddressRepository,
+      useClass: PrismaAddressRepository,
+    },
     {
       provide: AppointmentsRepository,
       useClass: PrismaAppointmentsRepository,
@@ -54,6 +60,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
   exports: [
     PrismaService,
     AppointmentsRepository,
+    AddressRepository,
     CancellationPolicyRepository,
     ClientRepository,
     OrganizationRepository,

@@ -1,9 +1,15 @@
 import { FakeHasher } from '@test/cryptography/fake-hasher'
 import { makeAddress } from '@test/factories/make-address'
+import { InMemoryAddressRepository } from '@test/repositories/in-memory-address.repository'
+import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
+import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemoryUserRepository } from '@test/repositories/in-memory-user.repository'
 import { RegisterUserUseCase } from './register-user'
 
 let inMemoryUsersRepository: InMemoryUserRepository
+let inMemoryClientRepository: InMemoryClientRepository
+let inMemoryProfessionalRepository: InMemoryProfessionalRepository
+let inMemoryAddressRepository: InMemoryAddressRepository
 let fakeHasher: FakeHasher
 
 let sut: RegisterUserUseCase
@@ -12,8 +18,18 @@ describe('Register User', () => {
   beforeEach(() => {
     inMemoryUsersRepository = new InMemoryUserRepository()
     fakeHasher = new FakeHasher()
+    inMemoryClientRepository = new InMemoryClientRepository()
+    inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
+    inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
+    inMemoryAddressRepository = new InMemoryAddressRepository()
 
-    sut = new RegisterUserUseCase(inMemoryUsersRepository, fakeHasher)
+    sut = new RegisterUserUseCase(
+      inMemoryUsersRepository,
+      fakeHasher,
+      inMemoryClientRepository,
+      inMemoryProfessionalRepository,
+      inMemoryAddressRepository
+    )
   })
 
   it('should be able to register a new user as client', async () => {
@@ -32,8 +48,13 @@ describe('Register User', () => {
     expect(result.value).toEqual({
       user: inMemoryUsersRepository.items[0],
     })
+
     expect(inMemoryUsersRepository.items[0].role).toBe('CLIENT')
     expect(inMemoryUsersRepository.items[0].clientId).toBeTruthy()
+    expect(inMemoryUsersRepository.items[0].addressId).toBeTruthy()
+
+    console.log(inMemoryUsersRepository.items[0])
+
     expect(inMemoryUsersRepository.items[0].professionalId).toBeUndefined()
   })
 

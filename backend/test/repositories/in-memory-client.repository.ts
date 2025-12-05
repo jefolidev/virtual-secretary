@@ -3,14 +3,20 @@ import type { ClientRepository } from '@/domain/scheduling/application/repositor
 import type { Client } from '@/domain/scheduling/enterprise/entities/client'
 
 export class InMemoryClientRepository implements ClientRepository {
-  // async findByUserId(userId: string): Promise<Client | null> {
-  //   const client = this.items.find((client) => client. === userId)
-  //   return client ?? null
-  // }
   public items: Client[] = []
 
   async create(client: Client): Promise<void> {
     await this.items.push(client)
+  }
+
+  async findByUserId(userId: string): Promise<Client | null> {
+    const client = await this.items.find(
+      (client) =>
+        client.userId !== undefined &&
+        client.userId.equals(new UniqueEntityId(userId))
+    )
+
+    return client ?? null
   }
 
   async findMany(): Promise<Client[]> {

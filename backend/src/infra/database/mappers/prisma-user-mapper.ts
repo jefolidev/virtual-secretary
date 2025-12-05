@@ -1,9 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
-import {
-  Address as PrismaAddress,
-  User as PrismaUser,
-} from '@prisma/generated/client'
+import { User as PrismaUser } from '@prisma/generated/client'
 import { UserUncheckedCreateInput } from '@prisma/generated/models'
 
 export class PrismaUserMapper {
@@ -17,6 +14,7 @@ export class PrismaUserMapper {
       updatedAt: user.updatedAt,
       cpf: user.cpf,
       phone: user.phone,
+      addressId: user.addressId ? user.addressId.toString() : undefined,
       clientId: user.clientId ? user.clientId.toString() : undefined,
       professionalId: user.professionalId
         ? user.professionalId.toString()
@@ -25,23 +23,7 @@ export class PrismaUserMapper {
     }
   }
 
-  static toDomain(raw: PrismaUser & { address: PrismaAddress | null }): User {
-    if (!raw.address) {
-      throw new Error(
-        `User com ID ${raw.id} não possui um endereço (Address) associado.`
-      )
-    }
-
-    const address = {
-      addressLine1: raw.address.addressLine1,
-      addressLine2: raw.address.addressLine2 ?? undefined,
-      neighborhood: raw.address.neighborhood,
-      city: raw.address.city,
-      state: raw.address.state,
-      postalCode: raw.address.postalCode,
-      country: raw.address.country,
-    }
-
+  static toDomain(raw: PrismaUser): User {
     return User.create(
       {
         name: raw.name,
@@ -56,7 +38,9 @@ export class PrismaUserMapper {
           ? new UniqueEntityId(raw.professionalId)
           : undefined,
         role: raw.role,
-        address,
+        addressId: raw.addressId
+          ? new UniqueEntityId(raw.addressId)
+          : undefined,
       },
       new UniqueEntityId(raw.id)
     )

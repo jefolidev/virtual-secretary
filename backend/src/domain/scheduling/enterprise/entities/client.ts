@@ -6,7 +6,7 @@ import type { Appointment } from './appointment'
 export type PeriodPreferenceType = 'MORNING' | 'AFTERNOON' | 'EVENING'
 
 export interface ClientProps {
-  // userId: UniqueEntityId
+  userId?: UniqueEntityId
   name: string
   phone: string
   periodPreference?: PeriodPreferenceType[] | null
@@ -17,9 +17,9 @@ export interface ClientProps {
 }
 
 export class Client extends Entity<ClientProps> {
-  // get userId() {
-  //   return this.props.userId
-  // }
+  get userId() {
+    return this.props.userId
+  }
 
   get name() {
     return this.props.name
