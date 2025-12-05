@@ -18,6 +18,7 @@ export interface UserProps {
   address: AddressProps
   name: string
   email: string
+  phone: string
   password: string
   role: 'PROFESSIONAL' | 'CLIENT'
   cpf: string
@@ -28,6 +29,10 @@ export interface UserProps {
 export class User extends Entity<UserProps> {
   get clientId() {
     return this.props.clientId ?? undefined
+  }
+
+  get phone() {
+    return this.props.phone
   }
 
   set clientId(clientId: UniqueEntityId | undefined) {
@@ -102,10 +107,11 @@ export class User extends Entity<UserProps> {
       email,
       name,
       password,
+      phone,
       address,
       role,
       createdAt,
-    }: Optional<UserProps, "createdAt" | 'updatedAt'>,
+    }: Optional<UserProps, 'createdAt' | 'updatedAt'>,
     id?: UniqueEntityId
   ) {
     const user = new User(
@@ -117,6 +123,7 @@ export class User extends Entity<UserProps> {
         name,
         password,
         role,
+        phone,
         address,
         createdAt: createdAt ?? new Date(),
       },
