@@ -1,4 +1,5 @@
 import { Either, left, right } from '@/core/either'
+import { checkPasswordStrong } from '@/utils/checkPasswordStrong'
 import { Injectable } from '@nestjs/common'
 import { Address, AddressProps } from '../../enterprise/entities/address'
 import { Client } from '../../enterprise/entities/client'
@@ -10,6 +11,7 @@ import { ClientRepository } from '../repositories/client.repository'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 import { UserRepository } from '../repositories/user.repository'
 import { UserAlreadyExists } from './errors/user-already-exists'
+import { WeakPasswordError } from './errors/weak-password-error'
 
 interface RegisterUserUseCaseRequest {
   name: string
@@ -73,6 +75,12 @@ export class RegisterUserUseCase {
 
     if (userWithSameEmail) {
       return left(new UserAlreadyExists())
+    }
+
+    const isStrongPassword = checkPasswordStrong(password)
+
+    if (!isStrongPassword.isValid) {
+      throw new WeakPasswordError(isStrongPassword.errors)
     }
 
     const hashedPassword = await this.hashGenerator.hash(password)

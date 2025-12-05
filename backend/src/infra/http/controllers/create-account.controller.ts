@@ -1,17 +1,14 @@
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import { checkPasswordStrong } from '@/utils/checkPasswordStrong'
 import {
   BadRequestException,
   Body,
-  ConflictException,
   Controller,
   HttpCode,
   Post,
   UsePipes,
 } from '@nestjs/common'
-import { hash } from 'bcryptjs'
 import {
   CreateUserAccountBodySchema,
   createUserAccountBodySchema,
@@ -19,10 +16,7 @@ import {
 
 @Controller('/accounts')
 export class CreateAccountController {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly registerUserUseCase: RegisterUserUseCase
-  ) {}
+  constructor(private readonly registerUserUseCase: RegisterUserUseCase) {}
 
   @Post()
   @HttpCode(201)
@@ -30,46 +24,13 @@ export class CreateAccountController {
   async handle(@Body() body: CreateUserAccountBodySchema) {
     const { cpf, email, name, phone, password, address, role } = body
 
-    const existingUser = await this.prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { cpf }, { phone }],
-      },
-    })
-
-    if (existingUser) {
-      if (existingUser.email === email) {
-        throw new ConflictException(
-          'User with same e-mail address already exists.'
-        )
-      }
-      if (existingUser.cpf === cpf) {
-        throw new ConflictException('User with same CPF already exists.')
-      }
-      if (existingUser.phone === phone) {
-        throw new ConflictException(
-          'User with same phone number already exists.'
-        )
-      }
-    }
-
-    const isStrongPassword = checkPasswordStrong(password)
-
-    if (!isStrongPassword.isValid) {
-      throw new BadRequestException({
-        message: 'Senha fraca',
-        errors: isStrongPassword.errors,
-      })
-    }
-
-    const hashedPassword = await hash(password, 8)
-
     const result = await this.registerUserUseCase.execute({
       address,
       cpf,
       email,
       name,
       phone,
-      password: hashedPassword,
+      password,
       role,
     })
 

@@ -37,7 +37,7 @@ describe('Register User', () => {
     const result = await sut.execute({
       name: 'John Doe',
       email: 'johndoe@example.com',
-      password: '123456',
+      password: 'JohnDoe123',
       address,
       cpf: '07609254371',
       phone: '85987146194',
@@ -64,7 +64,7 @@ describe('Register User', () => {
     const result = await sut.execute({
       name: 'John Doe',
       email: 'johndoe@example.com',
-      password: '123456',
+      password: 'JohnDoe123',
       address,
       cpf: '07609254371',
       phone: '85987146194',
@@ -86,14 +86,14 @@ describe('Register User', () => {
     const result = await sut.execute({
       name: 'John Doe',
       email: 'johndoe@example.com',
-      password: '123456',
+      password: 'JohnDoe123',
       cpf: '07609254371',
       phone: '85987146194',
       role: 'PROFESSIONAL',
       address,
     })
 
-    const hashedPassword = await fakeHasher.hash('123456')
+    const hashedPassword = await fakeHasher.hash('JohnDoe123')
 
     expect(result.isRight()).toBe(true)
     expect(inMemoryUsersRepository.items[0].password).toEqual(hashedPassword)
