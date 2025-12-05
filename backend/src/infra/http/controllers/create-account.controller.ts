@@ -1,9 +1,10 @@
+import { UserAlreadyExists as UserAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/user-already-exists'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
-import { checkPasswordStrong } from '@/utils/checkPasswordStrong'
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   HttpCode,
   Post,
@@ -33,6 +34,16 @@ export class CreateAccountController {
       password,
       role,
     })
+
+    if (result.isLeft()) {
+      const error = result.value
+      switch (error.constructor) {
+        case UserAlreadyExistsError:
+          throw new ConflictException(error.message)
+        default:
+          throw new BadRequestException(error?.message ?? 'Bad Request')
+      }
+    }
 
     return result
   }

@@ -1,6 +1,8 @@
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
+import { WrongCredentialsError } from '@/domain/scheduling/application/use-cases/errors/wrong-credentials-error'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import {
+  BadRequestException,
   Body,
   Controller,
   Post,
@@ -34,7 +36,12 @@ export class AuthenticateController {
 
     if (result.isLeft()) {
       const error = result.value
-      throw new UnauthorizedException(error?.message ?? 'Unauthorized')
+      switch (error.constructor) {
+        case WrongCredentialsError:
+          throw new UnauthorizedException(error.message)
+        default:
+          throw new BadRequestException(error?.message ?? 'Bad Request')
+      }
     }
 
     const { accessToken } = result.value
