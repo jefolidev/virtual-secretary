@@ -1,12 +1,13 @@
 import { Either, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { faker } from '@faker-js/faker'
+import { Injectable } from '@nestjs/common'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import { Professional } from '../../enterprise/entities/professional'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
 import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface CreateProfessionalUseCaseProps {
   name: string
@@ -18,7 +19,7 @@ type CreateProfessionalUseCaseResponse = Either<
   unknown,
   { professional: Professional }
 >
-
+@Injectable()
 export class CreateProfessionalUseCase {
   constructor(private professionalRepository: ProfessionalRepository) {}
 
