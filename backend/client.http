@@ -18,11 +18,11 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson@client.com.br",
+  "email": "jeferson@professional.com.br",
   "password": "SenhaForte123",
-  "cpf": "07609254371",
-  "role": "CLIENT",
-  "phone": "9988776622",
+  "cpf": "71264124368",
+  "role": "PROFESSIONAL",
+  "phone": "9988776655",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -31,7 +31,8 @@ Content-Type: application/json
     "state": "CE",
     "postalCode": "60000000",
     "country": "Brasil"
-  }
+  },
+  "session_price": 20
 }
 ### 
 

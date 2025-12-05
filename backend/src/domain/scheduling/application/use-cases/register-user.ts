@@ -4,6 +4,8 @@ import { Client } from '../../enterprise/entities/client'
 import { Professional } from '../../enterprise/entities/professional'
 import { AddressProps, User } from '../../enterprise/entities/user'
 import { HashGenerator } from '../cryptography/hash-generator'
+import { ClientRepository } from '../repositories/client.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
 import { UserRepository } from '../repositories/user.repository'
 import { UserAlreadyExists } from './errors/user-already-exists'
 
@@ -23,7 +25,9 @@ type RegisterUserUseCaseResponse = Either<UserAlreadyExists, { user: User }>
 export class RegisterUserUseCase {
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly hashGenerator: HashGenerator
+    private readonly hashGenerator: HashGenerator,
+    private readonly clientRepository: ClientRepository,
+    private readonly professionalRepository: ProfessionalRepository
   ) {}
 
   async execute({
@@ -46,6 +50,8 @@ export class RegisterUserUseCase {
         phone,
         sessionPrice: 0,
       })
+      // persist professional before creating the user so FK constraints are satisfied
+      await this.professionalRepository.create(professional)
     }
 
     if (role === 'CLIENT') {
@@ -54,6 +60,8 @@ export class RegisterUserUseCase {
         phone,
         appointmentHistory: [],
       })
+      // persist client before creating the user so FK constraints are satisfied
+      await this.clientRepository.create(client)
     }
 
     if (userWithSameEmail) {

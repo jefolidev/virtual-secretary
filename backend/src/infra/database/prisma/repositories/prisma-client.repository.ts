@@ -8,8 +8,18 @@ import { PrismaService } from '../prisma.service'
 export class PrismaClientRepository implements ClientRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(client: Client): Promise<void> {
-    throw new Error('Method not implemented.')
+  async create(client: Client): Promise<void> {
+    await this.prisma.client.create({
+      data: {
+        id: client.id.toString(),
+        periodPreference: client.periodPreference ?? [],
+        extraPreference: client.extraPreferences
+          ? client.extraPreferences
+          : null,
+        createdAt: client.createdAt,
+        updatedAt: client.updatedAt ?? null,
+      },
+    })
   }
 
   findMany(): Promise<Client[]> {

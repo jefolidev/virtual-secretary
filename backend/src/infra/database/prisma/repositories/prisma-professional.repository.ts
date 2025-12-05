@@ -9,8 +9,18 @@ import { PrismaService } from '../prisma.service'
 export class PrismaProfessionalRepository implements ProfessionalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(professional: Professional): Promise<void> {
-    throw new Error('Method not implemented.')
+  async create(professional: Professional): Promise<void> {
+    await this.prisma.professional.create({
+      data: {
+        id: professional.id.toString(),
+        organizationId: professional.organizationId
+          ? professional.organizationId.toString()
+          : null,
+        sessionPrice: professional.sessionPrice as any,
+        createdAt: professional.createdAt,
+        updatedAt: professional.updatedAt ?? null,
+      },
+    })
   }
   findMany(): Promise<Professional[]> {
     throw new Error('Method not implemented.')
