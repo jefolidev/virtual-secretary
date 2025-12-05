@@ -69,6 +69,7 @@ export class RegisterUserUseCase {
       password: hashedPassword,
       cpf,
       role,
+      phone,
       professionalId: professional?.id,
       clientId: client?.id,
     })
