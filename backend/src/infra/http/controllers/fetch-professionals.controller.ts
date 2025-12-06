@@ -13,7 +13,7 @@ export class FetchProfessionalController {
       take: 10,
       skip: (page - 1) * 1,
       include: {
-        users: true,
+        user: true,
       },
     })
   }

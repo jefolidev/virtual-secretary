@@ -32,7 +32,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
         id,
       },
       include: {
-        users: true,
+        user: true,
       },
     })
 

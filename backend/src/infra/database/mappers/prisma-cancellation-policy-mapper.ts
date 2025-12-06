@@ -3,6 +3,21 @@ import { CancellationPolicy } from '@/domain/scheduling/enterprise/entities/canc
 import { CancellationPolicy as PrismaCancellationPolicy } from '@prisma/generated/client'
 
 export class PrismaCancellationPolicyMapper {
+  static toPrisma(cancellationPoliy: CancellationPolicy) {
+    return {
+      id: cancellationPoliy.id.toString(),
+      allowReschedule: cancellationPoliy.allowReschedule,
+      cancellationFeePercentage: cancellationPoliy.cancelationFeePercentage,
+      description: cancellationPoliy.description,
+      minDaysBeforeNextAppointment:
+        cancellationPoliy.minDaysBeforeNextAppointment,
+      createdAt: cancellationPoliy.createdAt,
+      minHoursBeforeCancellation: cancellationPoliy.minHoursBeforeCancellation,
+      professionalId: cancellationPoliy.professionalId,
+      updatedAt: cancellationPoliy.updatedAt,
+    }
+  }
+
   static toDomain(raw: PrismaCancellationPolicy): CancellationPolicy {
     return CancellationPolicy.create(
       {

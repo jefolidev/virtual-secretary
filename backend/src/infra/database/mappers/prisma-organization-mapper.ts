@@ -4,6 +4,19 @@ import { Slug } from '@/utils/slug'
 import { Organization as PrismaOrganization } from '@prisma/generated/client'
 
 export class PrismaOrganizationMapper {
+  static toPrisma(organization: Organization): PrismaOrganization {
+    return {
+      id: organization.id.toString(),
+      name: organization.name,
+      ownerId: organization.ownerId.toString(),
+      isActive: organization.isActive,
+      cnpj: organization.cnpj,
+      slug: organization.slug.value,
+      createdAt: organization.createdAt,
+      updatedAt: organization.updatedAt,
+    }
+  }
+
   static toDomain(raw: PrismaOrganization): Organization {
     return Organization.create(
       {

@@ -40,6 +40,10 @@ export class Organization extends AggregateRoot<OrganizationProps> {
     this.touch()
   }
 
+  get cnpj() {
+    return this.props.cnpj
+  }
+
   get ownerId() {
     return this.props.ownerId
   }
