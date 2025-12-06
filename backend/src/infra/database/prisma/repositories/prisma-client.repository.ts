@@ -1,3 +1,4 @@
+import { DomainEvents } from '@/core/events/domain-events'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
 import { Injectable } from '@nestjs/common'
@@ -9,16 +10,10 @@ export class PrismaClientRepository implements ClientRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(client: Client): Promise<void> {
+    const data = PrismaClientMapper.toPrisma(client)
+
     await this.prisma.client.create({
-      data: {
-        id: client.id.toString(),
-        periodPreference: client.periodPreference ?? [],
-        extraPreference: client.extraPreferences
-          ? client.extraPreferences
-          : null,
-        createdAt: client.createdAt,
-        updatedAt: client.updatedAt ?? null,
-      },
+      data,
     })
   }
 
@@ -62,7 +57,16 @@ export class PrismaClientRepository implements ClientRepository {
     return PrismaClientMapper.toDomain(client)
   }
 
-  save(client: Client): Promise<void> {
-    throw new Error('Method not implemented.')
+  async save(client: Client): Promise<void> {
+    const data = PrismaClientMapper.toPrisma(client)
+
+    await Promise.all([
+      this.prisma.client.update({
+        where: { id: client.id.toString() },
+        data,
+      }),
+    ])
+
+    DomainEvents.dispatchEventsForAggregate(client.id)
   }
 }

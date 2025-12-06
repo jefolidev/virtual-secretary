@@ -80,18 +80,18 @@ model Professional {
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  notificationSettings   NotificationSettings? @relation(fields: [notificationSettingsId], references: [id])
   notificationSettingsId String?               @unique @map("notification_settings_id")
+  notificationSettings   NotificationSettings?
 
-  cancellationPolicy   CancellationPolicy? @relation(fields: [cancellationPolicyId], references: [id])
   cancellationPolicyId String?             @unique @map("cancellation_policy_id")
+  cancellationPolicy   CancellationPolicy?
 
   organization Organization? @relation(fields: [organizationId], references: [id])
 
   user User?
 
-  scheduleConfiguration   ScheduleConfiguration?
   scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
+  scheduleConfiguration   ScheduleConfiguration?
 
   @@map("professionals")
 }
@@ -103,7 +103,8 @@ model NotificationSettings {
   reminderBeforeMinutes Int                   @default(10) @map("reminder_before_minutes")
   dailySummaryTime      String                @default("12:00") @map("daily_summary_time")
 
-  professional Professional?
+  professionalId String?       @unique @map("professional_id")
+  professional   Professional? @relation(fields: [professionalId], references: [id])
 
   @@map("notification_settings")
 }
@@ -118,7 +119,8 @@ model CancellationPolicy {
   createdAt                    DateTime  @default(now()) @map("created_at")
   updatedAt                    DateTime? @map("updated_at")
 
-  professional Professional?
+  professionalId String?       @unique @map("professional_id")
+  professional   Professional? @relation(fields: [professionalId], references: [id])
 
   @@map("cancellation_policy")
 }

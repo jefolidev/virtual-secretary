@@ -3,7 +3,7 @@ import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 
 export interface CancellationPolicyProps {
-  professionalId: UniqueEntityId | undefined
+  professionalId: UniqueEntityId
   minHoursBeforeCancellation: number
   minDaysBeforeNextAppointment: number
   cancelationFeePercentage: number

@@ -1,22 +1,45 @@
 import { OrganizationRepository } from '@/domain/organization/application/repositories/organization.repository'
 import { Organization } from '@/domain/organization/enterprise/entities/organization'
+import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { Injectable } from '@nestjs/common'
+import { PrismaOrganizationMapper } from '../../mappers/prisma-organization-mapper'
 
 @Injectable()
 export class PrismaOrganizationRepository implements OrganizationRepository {
-  create(organization: Organization): Promise<void> {
-    throw new Error('Method not implemented.')
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(organization: Organization): Promise<void> {
+    const data = PrismaOrganizationMapper.toPrisma(organization)
+
+    await this.prisma.organization.create({
+      data,
+    })
   }
-  findById(id: string): Promise<Organization | null> {
-    throw new Error('Method not implemented.')
+
+  async findById(id: string): Promise<Organization | null> {
+    const org = await this.prisma.organization.findUnique({ where: { id } })
+    if (!org) return null
+    return PrismaOrganizationMapper.toDomain(org)
   }
-  findMany(): Promise<Organization[] | null> {
-    throw new Error('Method not implemented.')
+
+  async findMany(): Promise<Organization[] | null> {
+    const orgs = await this.prisma.organization.findMany()
+    if (!orgs.length) return null
+    return orgs.map((org) => PrismaOrganizationMapper.toDomain(org))
   }
-  findByOwnerId(id: string): Promise<Organization | null> {
-    throw new Error('Method not implemented.')
+
+  async findByOwnerId(ownerId: string): Promise<Organization | null> {
+    const org = await this.prisma.organization.findFirst({ where: { ownerId } })
+    if (!org) return null
+    return PrismaOrganizationMapper.toDomain(org)
   }
-  save(organization: Organization): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  async save(organization: Organization): Promise<void> {
+    const data = PrismaOrganizationMapper.toPrisma(organization)
+
+    await this.prisma.organization.update({
+      where: { id: organization.id.toString() },
+      data,
+    })
   }
 }

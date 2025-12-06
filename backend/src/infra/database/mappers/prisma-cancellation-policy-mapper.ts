@@ -19,6 +19,10 @@ export class PrismaCancellationPolicyMapper {
   }
 
   static toDomain(raw: PrismaCancellationPolicy): CancellationPolicy {
+    if (!raw.professionalId) {
+      throw new Error('Professional Id not provided')
+    }
+
     return CancellationPolicy.create(
       {
         allowReschedule: raw.allowReschedule,
@@ -27,7 +31,7 @@ export class PrismaCancellationPolicyMapper {
         minDaysBeforeNextAppointment: raw.minDaysBeforeNextAppointment,
         createdAt: raw.createdAt,
         minHoursBeforeCancellation: raw.minHoursBeforeCancellation,
-        professionalId: undefined,
+        professionalId: new UniqueEntityId(raw.professionalId),
         updatedAt: raw.updatedAt || null,
       },
       new UniqueEntityId(raw.id)

@@ -10,20 +10,17 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(professional: Professional): Promise<void> {
+    const data = PrismaProfessionalMapper.toPrisma(professional)
+
     await this.prisma.professional.create({
-      data: {
-        id: professional.id.toString(),
-        organizationId: professional.organizationId
-          ? professional.organizationId.toString()
-          : null,
-        sessionPrice: professional.sessionPrice as any,
-        createdAt: professional.createdAt,
-        updatedAt: professional.updatedAt ?? null,
-      },
+      data,
     })
   }
-  findMany(): Promise<Professional[]> {
-    throw new Error('Method not implemented.')
+
+  async findMany(): Promise<Professional[]> {
+    const professionals = await this.prisma.professional.findMany()
+
+    return professionals.map(PrismaProfessionalMapper.toDomain)
   }
 
   async findById(id: string): Promise<Professional | null> {
@@ -42,13 +39,25 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
 
     return PrismaProfessionalMapper.toDomain(professional)
   }
-  assignCancellationPolicy(
+
+  async assignCancellationPolicy(
     professionalId: string,
     cancellationPolicyId: string
   ): Promise<void> {
-    throw new Error('Method not implemented.')
+    await this.prisma.professional.update({
+      where: { id: professionalId },
+      data: { cancellationPolicyId },
+    })
   }
-  save(professional: Professional): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  async save(professional: Professional): Promise<void> {
+    const data = PrismaProfessionalMapper.toPrisma(professional)
+
+    await Promise.all([
+      this.prisma.professional.update({
+        where: { id: professional.id.toString() },
+        data,
+      }),
+    ])
   }
 }

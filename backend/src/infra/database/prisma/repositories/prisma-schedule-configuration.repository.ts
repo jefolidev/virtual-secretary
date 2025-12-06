@@ -11,11 +11,19 @@ export class PrismaScheduleConfigurationRepository
 {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(scheduleconfiguration: ScheduleConfiguration): Promise<void> {
-    throw new Error('Method not implemented.')
+  async create(scheduleConfiguration: ScheduleConfiguration): Promise<void> {
+    const data = PrismaScheduleConfigurationMapper.toPrisma(
+      scheduleConfiguration
+    )
+    await this.prisma.scheduleConfiguration.create({ data })
   }
-  findMany(): Promise<ScheduleConfiguration[]> {
-    throw new Error('Method not implemented.')
+
+  async findMany(): Promise<ScheduleConfiguration[]> {
+    const scheduleConfigurations =
+      await this.prisma.scheduleConfiguration.findMany()
+    return scheduleConfigurations.map(
+      PrismaScheduleConfigurationMapper.toDomain
+    )
   }
 
   async findByProfessionalId(
@@ -34,7 +42,17 @@ export class PrismaScheduleConfigurationRepository
 
     return PrismaScheduleConfigurationMapper.toDomain(scheduleConfiguration)
   }
-  save(scheduleconfiguration: ScheduleConfiguration): Promise<void> {
-    throw new Error('Method not implemented.')
+
+  async save(scheduleConfiguration: ScheduleConfiguration): Promise<void> {
+    const data = PrismaScheduleConfigurationMapper.toPrisma(
+      scheduleConfiguration
+    )
+
+    await Promise.all([
+      this.prisma.scheduleConfiguration.update({
+        where: { id: scheduleConfiguration.id.toString() },
+        data,
+      }),
+    ])
   }
 }
