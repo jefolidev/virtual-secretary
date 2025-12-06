@@ -1,11 +1,9 @@
-import { JwtAuthGuard } from '@/infra/auth/jwt.strategy'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { PaginationQueryPipe } from '@/infra/http/pipes/pagination-query.pipe'
-import { Controller, Get, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Query } from '@nestjs/common'
 import { PageQueryParamSchema } from './dto/page-query.dto'
 
 @Controller('/clients')
-@UseGuards(JwtAuthGuard)
 export class FetchClientController {
   constructor(private readonly prisma: PrismaService) {}
 

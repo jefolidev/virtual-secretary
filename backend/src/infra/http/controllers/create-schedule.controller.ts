@@ -1,14 +1,13 @@
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
-import { JwtAuthGuard, UserPayload } from '@/infra/auth/jwt.strategy'
+import { UserPayload } from '@/infra/auth/jwt.strategy'
 import {
   BadRequestException,
   Body,
   Controller,
   NotFoundException,
   Post,
-  UseGuards,
   UsePipes,
 } from '@nestjs/common'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
@@ -20,7 +19,6 @@ import {
 const bodyValidationPipe = new ZodValidationPipe(createScheduleBodySchema)
 
 @Controller('/schedules')
-@UseGuards(JwtAuthGuard)
 export class CreateScheduleController {
   constructor(
     private readonly createScheduleUseCase: CreateAppointmentUseCase,

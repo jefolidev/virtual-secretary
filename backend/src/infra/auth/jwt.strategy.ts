@@ -1,7 +1,7 @@
 import { Env } from '@/infra/env'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { AuthGuard, PassportStrategy } from '@nestjs/passport'
+import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 import z from 'zod'
 
@@ -27,5 +27,3 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return tokenPayloadSchema.parse(payload)
   }
 }
-
-export class JwtAuthGuard extends AuthGuard('jwt') {}

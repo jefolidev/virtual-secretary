@@ -1,5 +1,5 @@
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
-import { JwtAuthGuard, UserPayload } from '@/infra/auth/jwt.strategy'
+import { UserPayload } from '@/infra/auth/jwt.strategy'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import { Slug } from '@/utils/slug'
@@ -9,7 +9,6 @@ import {
   Controller,
   NotFoundException,
   Post,
-  UseGuards,
 } from '@nestjs/common'
 import {
   createOrganizationSchema,
@@ -19,7 +18,6 @@ import {
 const bodyValidationPipe = new ZodValidationPipe(createOrganizationSchema)
 
 @Controller('/organization')
-@UseGuards(JwtAuthGuard)
 export class CreateOrganizationController {
   constructor(private prisma: PrismaService) {}
 
