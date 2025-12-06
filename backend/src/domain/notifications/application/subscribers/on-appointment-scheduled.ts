@@ -37,7 +37,7 @@ export class OnAppointmentScheduled implements EventHandler {
       await this.sendNotification.execute({
         recipientId: professional.id.toString(),
         title: `Nova consulta agendada`,
-        content: `O paciente ${client.name.toUpperCase()} agendou uma consulta para ${dayjs(
+        content: `O paciente agendou uma consulta para ${dayjs(
           appointment.startDateTime
         ).format('DD/MM/YYYY')} às ${dayjs(appointment.startDateTime).format(
           'hh:mm'

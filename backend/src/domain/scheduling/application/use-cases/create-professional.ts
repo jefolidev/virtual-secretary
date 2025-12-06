@@ -10,8 +10,6 @@ import { WorkingDaysList } from '../../enterprise/entities/value-objects/working
 import { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface CreateProfessionalUseCaseProps {
-  name: string
-  phone: string
   sessionPrice: number
 }
 
@@ -24,8 +22,6 @@ export class CreateProfessionalUseCase {
   constructor(private professionalRepository: ProfessionalRepository) {}
 
   async execute({
-    name,
-    phone,
     sessionPrice,
   }: CreateProfessionalUseCaseProps): Promise<CreateProfessionalUseCaseResponse> {
     const notificationSettings = NotificationSettings.create({
@@ -41,8 +37,6 @@ export class CreateProfessionalUseCase {
     })
 
     const professional = await Professional.create({
-      name,
-      phone,
       sessionPrice,
     })
 

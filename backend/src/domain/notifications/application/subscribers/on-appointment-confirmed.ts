@@ -38,7 +38,7 @@ export class OnAppointmentConfirmed implements EventHandler {
       await this.sendNotification.execute({
         recipientId: professional.id.toString(),
         title: `Consulta confirmada`,
-        content: `O paciente ${client.name.toUpperCase()} confirmou a consulta do dia ${dayjs(
+        content: `O paciente confirmou a consulta do dia ${dayjs(
           appointment.startDateTime
         ).format('DD/MM/YYYY')}.`,
       })

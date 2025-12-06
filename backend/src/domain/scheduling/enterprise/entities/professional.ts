@@ -7,8 +7,6 @@ export interface ProfessionalProps {
   notificationSettingsId: UniqueEntityId
   cancellationPolicyId: UniqueEntityId
   scheduleConfigurationId: UniqueEntityId
-  name: string
-  phone: string
   sessionPrice: number
   createdAt: Date
   updatedAt?: Date | null
@@ -38,24 +36,6 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
 
   set cancellationPolicyId(cancellationPolicyId: UniqueEntityId) {
     this.props.cancellationPolicyId = cancellationPolicyId
-    this.touch()
-  }
-
-  get name() {
-    return this.props.name
-  }
-
-  set name(name: string) {
-    this.props.name = name
-    this.touch()
-  }
-
-  get phone() {
-    return this.props.phone
-  }
-
-  set phone(phone: string) {
-    this.props.phone = phone
     this.touch()
   }
 

@@ -7,8 +7,6 @@ import {
 import { ClientRepository } from '../repositories/client.repository'
 
 export interface CreateClientUseCaseProps {
-  name: string
-  phone: string
   periodPreference: PeriodPreferenceType[]
   extraPreferences?: string
 }
@@ -20,15 +18,11 @@ export class CreateClientUseCase {
   constructor(private clientsRepository: ClientRepository) {}
 
   async execute({
-    name,
     periodPreference,
-    phone,
     extraPreferences,
   }: CreateClientUseCaseProps): Promise<CreateClientUseCaseResponse> {
     const client = Client.create({
-      name,
       periodPreference,
-      phone,
       extraPreferences,
       appointmentHistory: [],
     })

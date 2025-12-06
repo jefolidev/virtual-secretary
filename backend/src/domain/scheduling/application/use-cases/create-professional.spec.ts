@@ -1,5 +1,4 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { faker } from '@faker-js/faker'
 import { InMemoryProfessionalRepository } from '../../../../../test/repositories/in-memory-professional.repository'
 import { CreateProfessionalUseCase } from './create-professional'
 
@@ -14,8 +13,6 @@ describe('Create Professional', () => {
 
   it('should be able to create a professional', async () => {
     const response = await sut.execute({
-      name: 'John Doe',
-      phone: faker.phone.number(),
       sessionPrice: 0,
     })
 
@@ -24,7 +21,6 @@ describe('Create Professional', () => {
     if (response.isRight()) {
       const { professional } = response.value
 
-      expect(professional.name).toBe('John Doe')
       expect(professional.scheduleConfigurationId).toEqual(
         new UniqueEntityId('schedule-configuration-id')
       )

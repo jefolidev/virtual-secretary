@@ -6,12 +6,12 @@ import {
 } from '@prisma/generated/client'
 
 type PrismaProfessionalWithUser = PrismaProfessionalUser & {
-  users: PrismaUser | null
+  user: PrismaUser
 }
 
 export class PrismaProfessionalMapper {
   static toDomain(raw: PrismaProfessionalWithUser): Professional {
-    if (!raw.users) {
+    if (!raw.user) {
       throw new Error(
         `Professional com ID ${raw.id} não possui um usuário (User) associado.`
       )
@@ -19,8 +19,6 @@ export class PrismaProfessionalMapper {
 
     return Professional.create(
       {
-        name: raw.users.name,
-        phone: raw.users.phone,
         createdAt: raw.createdAt,
         sessionPrice: Number(raw.sessionPrice),
         cancellationPolicyId: raw.cancellationPolicyId

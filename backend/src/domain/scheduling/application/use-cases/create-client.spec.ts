@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker'
 import { InMemoryClientRepository } from '../../../../../test/repositories/in-memory-client.repository'
 import { CreateClientUseCase } from './create-client'
 
@@ -13,8 +12,6 @@ describe('Create Client', () => {
 
   it('should be able to create a client', async () => {
     const response = await sut.execute({
-      name: 'John Doe',
-      phone: faker.phone.number(),
       extraPreferences: 'Nenhuma',
       periodPreference: ['AFTERNOON'],
     })
@@ -24,7 +21,6 @@ describe('Create Client', () => {
     if (response.isRight()) {
       const { client } = response.value
 
-      expect(client.name).toBe('John Doe')
       expect(client.extraPreferences).toBe('Nenhuma')
       expect(client.periodPreference).toEqual(['AFTERNOON'])
     }

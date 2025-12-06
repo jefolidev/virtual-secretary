@@ -87,7 +87,8 @@ model Professional {
   cancellationPolicyId String?             @unique @map("cancellation_policy_id")
 
   organization Organization? @relation(fields: [organizationId], references: [id])
-  users        User?
+
+  user User?
 
   scheduleConfiguration   ScheduleConfiguration?
   scheduleConfigurationId String?                @unique @map("schedule_configuration_id")

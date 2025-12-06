@@ -7,8 +7,6 @@ export type PeriodPreferenceType = 'MORNING' | 'AFTERNOON' | 'EVENING'
 
 export interface ClientProps {
   userId?: UniqueEntityId
-  name: string
-  phone: string
   periodPreference?: PeriodPreferenceType[] | null
   extraPreferences?: string | null
   appointmentHistory: Appointment[]
@@ -19,24 +17,6 @@ export interface ClientProps {
 export class Client extends Entity<ClientProps> {
   get userId() {
     return this.props.userId
-  }
-
-  get name() {
-    return this.props.name
-  }
-
-  set name(name: string) {
-    this.props.name = name
-    this.touch()
-  }
-
-  get phone() {
-    return this.props.phone
-  }
-
-  set phone(phone: string) {
-    this.props.phone = phone
-    this.touch()
   }
 
   get periodPreference() {

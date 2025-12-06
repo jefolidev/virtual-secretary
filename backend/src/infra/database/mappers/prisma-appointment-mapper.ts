@@ -7,35 +7,27 @@ import { Appointment as PrismaAppointment } from '@prisma/generated/client'
 import { AppointmentUncheckedCreateInput } from '@prisma/generated/models'
 
 export class PrismaAppointmentMapper {
-  static toPrisma({
-    agreedPrice,
-    clientId,
-    createdAt,
-    endDateTime,
-    googleMeetLink,
-    id,
-    modality,
-    rescheduleDateTime,
-    startDateTime,
-    professionalId,
-    updatedAt,
-  }: Appointment): AppointmentUncheckedCreateInput {
+  static toPrisma(raw: Appointment): AppointmentUncheckedCreateInput {
     return {
-      agreedPrice,
-      clientId: clientId.toString(),
-      createdAt,
-      endDateTime,
-      googleMeetLink,
-      id: id.toString(),
-      modality,
-      rescheduleDateTime,
-      professionalId: professionalId.toString(),
-      startDateTime,
-      updatedAt,
+      id: raw.id.toString(),
+      clientId: raw.clientId.toString(),
+      professionalId: raw.professionalId.toString(),
+      agreedPrice: raw.agreedPrice,
+      endDateTime: raw.endDateTime,
+      googleMeetLink: raw.googleMeetLink,
+      modality: raw.modality,
+      rescheduleDateTime: raw.rescheduleDateTime,
+      startDateTime: raw.startDateTime,
+      createdAt: raw.createdAt,
+      updatedAt: raw.updatedAt,
     }
   }
 
   static toDomain(raw: PrismaAppointment): Appointment {
+    if (!raw.clientId) {
+      throw new Error('Invalid client id.')
+    }
+
     return Appointment.create(
       {
         agreedPrice: Number(raw.agreedPrice),

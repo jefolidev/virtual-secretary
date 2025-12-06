@@ -37,7 +37,7 @@ export class OnAppointmentCanceled implements EventHandler {
       await this.sendNotification.execute({
         recipientId: professional.id.toString(),
         title: `Consulta cancelada`,
-        content: `O paciente ${client.name.toUpperCase()} cancelou a consulta do dia ${dayjs(
+        content: `O paciente cancelou a consulta do dia ${dayjs(
           appointment.startDateTime
         ).format('DD/MM/YYYY')}.`,
       })

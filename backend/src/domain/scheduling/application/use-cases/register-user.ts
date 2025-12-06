@@ -55,8 +55,6 @@ export class RegisterUserUseCase {
 
     if (role === 'PROFESSIONAL') {
       professional = Professional.create({
-        name,
-        phone,
         sessionPrice: 0,
       })
 
@@ -65,8 +63,6 @@ export class RegisterUserUseCase {
 
     if (role === 'CLIENT') {
       client = Client.create({
-        name,
-        phone,
         appointmentHistory: [],
       })
 
