@@ -1,9 +1,22 @@
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { DomainEvents } from '@/core/events/domain-events'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 
 export class InMemoryUserRepository implements UserRepository {
   public items: User[] = []
+
+  async findById(id: string): Promise<User | null> {
+    const user = await this.items.find((item) =>
+      item.id.equals(new UniqueEntityId(id))
+    )
+
+    if (!user) {
+      return null
+    }
+
+    return user
+  }
 
   async findByEmail(email: string) {
     const user = this.items.find((item) => item.email === email)
