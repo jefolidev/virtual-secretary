@@ -2,13 +2,27 @@
 @authToken  = {{authenticate.response.body.access_token}}
 
 # @name authenticate
-POST {{baseUrl}}/sessions
+POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
   "email": "jeferson@professional.com.br",
   "password": "SenhaForte123"
 }
+
+###
+
+# @name forgot_password
+POST {{baseUrl}}/forgot-password
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "email": "jeferson@professional.com.br",
+  "newPassword": "SenhaForte12345",
+  "newPasswordConfirmation": "SenhaForte12345"
+}
+
 
 ###
 

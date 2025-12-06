@@ -1,28 +1,9 @@
 import z from 'zod'
 
-// Enums (kept as requested)
+//
 const RoleEnum = z.enum(['CLIENT', 'PROFESSIONAL'])
 const PeriodPreferenceEnum = z.enum(['MORNING', 'AFTERNOON', 'EVENING'])
-const WeekDaysEnum = z.enum([
-  'SUNDAY',
-  'MONDAY',
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-  'SATURDAY',
-])
-const NotificationChannelEnum = z.enum(['EMAIL', 'WHATSAPP'])
-const NotificationTypeEnum = z.enum([
-  'NEW_APPOINTMENT',
-  'CANCELLATION',
-  'CONFIRMATION',
-  'DAILY_SUMMARY',
-  'CONFIRMED_LIST',
-  'PAYMENT_STATUS',
-])
 
-// DTO for client in general
 const addressSchema = z.object({
   addressLine1: z.string().min(1, 'Address line 1 is required'),
   addressLine2: z.string().optional(),

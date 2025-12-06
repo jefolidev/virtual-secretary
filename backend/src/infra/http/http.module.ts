@@ -2,6 +2,7 @@ import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
 import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
+import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { Module } from '@nestjs/common'
 import { CryptographyModule } from '../cryptography/cryptography.module'
@@ -13,6 +14,7 @@ import { CreateScheduleController } from './controllers/create-schedule.controll
 import { FetchClientController } from './controllers/fetch-clients.controller'
 import { FetchOrganizationController } from './controllers/fetch-organizations.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
+import { ForgotPasswordController } from './controllers/forgot-password.controller'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -24,12 +26,14 @@ import { FetchProfessionalController } from './controllers/fetch-professionals.c
     FetchClientController,
     FetchOrganizationController,
     FetchProfessionalController,
+    ForgotPasswordController,
   ],
   providers: [
     AuthenticateStudentUseCase,
     CreateAppointmentUseCase,
     CreateClientUseCase,
     CreateProfessionalUseCase,
+    ForgotPasswordUseCase,
     RegisterUserUseCase,
   ],
 })

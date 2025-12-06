@@ -1,5 +1,6 @@
 import { UserAlreadyExists as UserAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/user-already-exists'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
+import { Public } from '@/infra/auth/public'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import {
   BadRequestException,
@@ -15,11 +16,12 @@ import {
   createUserAccountBodySchema,
 } from './dto/create-account.dto'
 
-@Controller('/accounts')
+@Controller('/register')
 export class CreateAccountController {
   constructor(private readonly registerUserUseCase: RegisterUserUseCase) {}
 
   @Post()
+  @Public()
   @HttpCode(201)
   @UsePipes(new ZodValidationPipe(createUserAccountBodySchema))
   async handle(@Body() body: CreateUserAccountBodySchema) {

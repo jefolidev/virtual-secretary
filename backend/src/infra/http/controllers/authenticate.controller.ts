@@ -19,7 +19,7 @@ const authenticateBodySchema = z.object({
 
 type AuthenticateBodySchema = z.infer<typeof authenticateBodySchema>
 
-@Controller('/sessions')
+@Controller('/login')
 @Public()
 export class AuthenticateController {
   constructor(
@@ -30,6 +30,8 @@ export class AuthenticateController {
   @UsePipes(new ZodValidationPipe(authenticateBodySchema))
   async handle(@Body() body: AuthenticateBodySchema) {
     const { email, password } = body
+
+    console.log('AQUI')
 
     const result = await this.authenticateStudentUseCase.execute({
       email,

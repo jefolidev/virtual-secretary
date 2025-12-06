@@ -53,8 +53,6 @@ describe('Register User', () => {
     expect(inMemoryUsersRepository.items[0].clientId).toBeTruthy()
     expect(inMemoryUsersRepository.items[0].addressId).toBeTruthy()
 
-    console.log(inMemoryUsersRepository.items[0])
-
     expect(inMemoryUsersRepository.items[0].professionalId).toBeUndefined()
   })
 

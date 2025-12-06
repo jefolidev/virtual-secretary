@@ -20,4 +20,16 @@ export class InMemoryUserRepository implements UserRepository {
 
     DomainEvents.dispatchEventsForAggregate(user.id)
   }
+
+  async resetPassword(userId: string, password: string): Promise<void> {
+    const userIndex = await this.items.findIndex(
+      (user) => user.id.toString() === userId
+    )
+
+    if (userIndex === -1) {
+      throw new Error('User not found')
+    }
+
+    this.items[userIndex].password = password
+  }
 }
