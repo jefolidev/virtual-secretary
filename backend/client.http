@@ -7,7 +7,7 @@ Content-Type: application/json
 
 {
   "email": "jeferson@professional.com.br",
-  "password": "SenhaForte123"
+  "password": "SenhaForte12345"
 }
 
 ###
@@ -74,6 +74,7 @@ Content-Type: application/json
 }
 ### 
 
+# @name create_organization
 POST {{baseUrl}}/organization
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
@@ -81,7 +82,6 @@ Authorization: Bearer {{authToken}}
 {
   "name": "John Doe`s Organization 2",
   "cnpj": "12.343.678/0001-95",
-  "professionalsIds": ["a3832635-5411-4c1f-aeb6-906ee1b028d2"],
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
