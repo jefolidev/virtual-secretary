@@ -36,8 +36,6 @@ export class CreateOrganizationController {
     const { address, cnpj, name } = body
     const professional = await this.professionalRepository.findByUserId(userId)
 
-    // console.log('[Create Organization Controller] : ', body)
-
     if (!professional) {
       throw new NotFoundException('Professional not found.')
     }

@@ -24,7 +24,6 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
   }
 
   async findById(id: string): Promise<Professional | null> {
-    console.log('[PRISMA REPOSITORY] ID RECEBIDO NO findById: ', id)
     const professional = await this.prisma.professional.findFirst({
       where: {
         id,
@@ -33,8 +32,6 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
         user: true,
       },
     })
-
-    console.log('[PRISMA REPOSITORY] PROFISSIONAL ENCONTRADO: ', professional)
 
     if (!professional) {
       return null

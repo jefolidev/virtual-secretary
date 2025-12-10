@@ -1,4 +1,5 @@
 import { Either, right } from '@/core/either'
+import { Injectable } from '@nestjs/common'
 import { Address } from '../../enterprise/entities/address'
 import { AddressRepository } from '../repositories/address.repository'
 
@@ -14,6 +15,7 @@ export interface CreateAddressUseCaseRequest {
 
 export type CreateAddresUseCaseResponse = Either<null, { address }>
 
+@Injectable()
 export class CreateAddressUseCase {
   constructor(private addressRepository: AddressRepository) {}
 

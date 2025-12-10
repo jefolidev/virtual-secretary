@@ -57,16 +57,12 @@ describe('Create Appointment', () => {
     await inMemoryProfessionalRepository.save(professional)
 
     const response = await sut.execute({
-      clientId: client.id,
-      professionalId: professional.id,
+      clientId: client.id.toString(),
+      professionalId: professional.id.toString(),
       startDateTime: new Date('11/12/2026 10:00'),
-      endDateTime: new Date('11/12/2026 11:00'),
       modality: 'ONLINE',
-      amount: 200,
       googleMeetLink: 'https://meet.google.com/abc',
     })
-
-    // console.log(response.value)
 
     expect(response.isRight()).toBe(true)
 
@@ -112,12 +108,10 @@ describe('Create Appointment', () => {
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
-      clientId: client.id,
-      professionalId: professional.id,
+      clientId: client.id.toString(),
+      professionalId: professional.id.toString(),
       startDateTime: new Date('2023-01-01T10:00:00.000Z'),
-      endDateTime: new Date('2023-01-01T11:01:00.000Z'),
       modality: 'ONLINE',
-      amount: 200,
       googleMeetLink: 'https://meet.google.com/abc',
     })
 
@@ -163,12 +157,10 @@ describe('Create Appointment', () => {
       )
 
     const response = await sut.execute({
-      clientId: client.id,
-      professionalId: professional.id,
+      clientId: client.id.toString(),
+      professionalId: professional.id.toString(),
       startDateTime: new Date('2023-01-01T10:00:00.000Z'),
-      endDateTime: new Date('2023-01-01T11:00:00.000Z'),
       modality: 'ONLINE',
-      amount: 200,
       googleMeetLink: 'https://meet.google.com/abc',
     })
 

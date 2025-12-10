@@ -43,18 +43,11 @@ export class CreateOrganizationUseCase {
     cnpj,
     address,
   }: CreateOrganizationUseCaseRequest): Promise<CreateOrganizationUseCaseResponse> {
-    console.log('[Id do criador]', ownerId)
-    console.log()
-
     const professional = await this.professionalRepository.findById(
       ownerId.toString()
     )
 
-    // console.log('[Profissional Encontrado]', professional)
-
     const organizationAddress = Address.create(address)
-
-    // console.log('ENDERECO DA ORGNIZAACAO: ', organizationAddress)
 
     await this.addressRepository.create(organizationAddress)
 
@@ -77,7 +70,6 @@ export class CreateOrganizationUseCase {
       cnpj,
     })
 
-    // console.log('[OrganizationUseCase] Organization: ', organization)
     await this.organizationRepository.create(organization)
 
     professional.organizationId = organization.id

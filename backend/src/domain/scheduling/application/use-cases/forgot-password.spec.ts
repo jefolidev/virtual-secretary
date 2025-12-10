@@ -41,8 +41,6 @@ describe('Reset password ', () => {
       newPasswordConfirmation: 'newPassword123',
     })
 
-    console.log(result.value)
-
     expect(result.isRight()).toBe(true)
     expect(
       await fakeHasher.compare(
