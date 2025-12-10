@@ -4,6 +4,7 @@ export abstract class ProfessionalRepository {
   abstract create(professional: Professional): Promise<void>
   abstract findMany(): Promise<Professional[]>
   abstract findById(id: string): Promise<Professional | null>
+  abstract findByUserId(id: string): Promise<Professional | null>
   abstract assignCancellationPolicy(
     professionalId: string,
     cancellationPolicyId: string

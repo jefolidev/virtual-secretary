@@ -3,6 +3,7 @@ import type { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 
 export interface ProfessionalProps {
+  userId?: UniqueEntityId
   organizationId?: UniqueEntityId
   notificationSettingsId: UniqueEntityId
   cancellationPolicyId: UniqueEntityId
@@ -15,6 +16,15 @@ export interface ProfessionalProps {
 export class Professional extends AggregateRoot<ProfessionalProps> {
   get organizationId() {
     return this.props.organizationId
+  }
+
+  set organizationId(organizationId: UniqueEntityId | undefined) {
+    this.props.organizationId = organizationId || undefined
+    this.touch()
+  }
+
+  get userId() {
+    return this.props.userId
   }
 
   get notificationSettingsId() {

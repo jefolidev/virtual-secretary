@@ -24,9 +24,29 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
   }
 
   async findById(id: string): Promise<Professional | null> {
+    console.log('[PRISMA REPOSITORY] ID RECEBIDO NO findById: ', id)
     const professional = await this.prisma.professional.findFirst({
       where: {
         id,
+      },
+      include: {
+        user: true,
+      },
+    })
+
+    console.log('[PRISMA REPOSITORY] PROFISSIONAL ENCONTRADO: ', professional)
+
+    if (!professional) {
+      return null
+    }
+
+    return PrismaProfessionalMapper.toDomain(professional)
+  }
+
+  async findByUserId(id: string): Promise<Professional | null> {
+    const professional = await this.prisma.professional.findFirst({
+      where: {
+        user: { id },
       },
       include: {
         user: true,
