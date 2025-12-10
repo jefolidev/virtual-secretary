@@ -1,10 +1,11 @@
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
-import type { Organization } from '../../enterprise/entities/organization'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { Injectable } from '@nestjs/common'
+import { Organization } from '../../enterprise/entities/organization'
 import { Slug } from '../../enterprise/value-objects/slug'
-import type { OrganizationRepository } from '../repositories/organization.repository'
-import { type Either, left, right } from './../../../../core/either'
+import { OrganizationRepository } from '../repositories/organization.repository'
+import { Either, left, right } from './../../../../core/either'
 
 export interface UpdateOrganizationUseCaseRequest {
   organizationId: string
@@ -17,6 +18,8 @@ type UpdateOrganizationUseCaseResponse = Either<
     organization: Organization
   }
 >
+
+@Injectable()
 export class UpdateOrganizationUseCase {
   constructor(
     private readonly organizationRepository: OrganizationRepository,

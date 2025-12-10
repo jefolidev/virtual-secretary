@@ -5,6 +5,7 @@ import { ProfessionalRepository } from '@/domain/scheduling/application/reposito
 import { Injectable } from '@nestjs/common'
 import { Organization } from '../../enterprise/entities/organization'
 import { OrganizationRepository } from '../repositories/organization.repository'
+import { ProfessionalAlreadyInOrganizationError } from './errors/professional-already-in-organization-error'
 
 export interface AddProfessionalToOrganizationUseCaseRequest {
   organizationId: string
@@ -12,7 +13,7 @@ export interface AddProfessionalToOrganizationUseCaseRequest {
 }
 
 export type AddProfessionalToOrganizationUseCaseResponse = Either<
-  NotFoundError,
+  NotFoundError | ProfessionalAlreadyInOrganizationError,
   { organization: Organization }
 >
 
@@ -40,6 +41,14 @@ export class AddProfessionalToOrganizationUseCase {
 
     if (!professional) {
       return left(new NotFoundError('Professional not found'))
+    }
+
+    const isProfessionalInOrganization = organization.professionalsIds.some(
+      (id) => id.toString() === professionalId
+    )
+
+    if (isProfessionalInOrganization) {
+      return left(new ProfessionalAlreadyInOrganizationError())
     }
 
     organization.addProfessional(new UniqueEntityId(professionalId))

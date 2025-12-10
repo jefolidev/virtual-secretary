@@ -1,5 +1,8 @@
+import { AddProfessionalToOrganizationUseCase } from '@/domain/organization/application/use-cases/add-professional-to-organization'
 import { CreateOrganizationUseCase } from '@/domain/organization/application/use-cases/create-organization'
 import { FetchOrganizationByIdUseCase } from '@/domain/organization/application/use-cases/fetch-organization-by-id'
+import { RemoveProfessionalFromOrganizationUseCase } from '@/domain/organization/application/use-cases/remove-professional-from-organization'
+import { UpdateOrganizationUseCase } from '@/domain/organization/application/use-cases/update-organization'
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CreateAddressUseCase } from '@/domain/scheduling/application/use-cases/create-address'
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
@@ -11,6 +14,7 @@ import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/r
 import { Module } from '@nestjs/common'
 import { CryptographyModule } from '../cryptography/cryptography.module'
 import { DatabaseModule } from '../database/database.module'
+import { AddProfessionalToOrganizationController } from './controllers/add-professional-to-organization.controller'
 import { AuthenticateController } from './controllers/authenticate.controller'
 import { CreateAccountController } from './controllers/create-account.controller'
 import { CreateOrganizationController } from './controllers/create-organization.controller'
@@ -20,10 +24,13 @@ import { FetchOrganizationByIdController } from './controllers/fetch-organizatio
 import { FetchOrganizationController } from './controllers/fetch-organizations.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
+import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
+import { UpdateOrganizationController } from './controllers/update-organization.controller'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
   controllers: [
+    AddProfessionalToOrganizationController,
     AuthenticateController,
     CreateAccountController,
     CreateScheduleController,
@@ -33,8 +40,11 @@ import { ForgotPasswordController } from './controllers/forgot-password.controll
     FetchOrganizationByIdController,
     FetchProfessionalController,
     ForgotPasswordController,
+    RemoveProfessionalFromOrganizationController,
+    UpdateOrganizationController,
   ],
   providers: [
+    AddProfessionalToOrganizationUseCase,
     AuthenticateStudentUseCase,
     CreateAddressUseCase,
     CreateAppointmentUseCase,
@@ -45,6 +55,8 @@ import { ForgotPasswordController } from './controllers/forgot-password.controll
     FetchOrganizationByIdUseCase,
     ForgotPasswordUseCase,
     RegisterUserUseCase,
+    RemoveProfessionalFromOrganizationUseCase,
+    UpdateOrganizationUseCase,
   ],
 })
 export class HttpModule {}
