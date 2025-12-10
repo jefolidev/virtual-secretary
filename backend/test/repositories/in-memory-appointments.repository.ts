@@ -1,5 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { DomainEvents } from '@/core/events/domain-events'
+import { PaginationParams } from '@/core/repositories/pagination-params'
 import type { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import type {
   Appointment,
@@ -15,17 +16,26 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     DomainEvents.dispatchEventsForAggregate(appointment.id)
   }
 
-  async findMany(): Promise<Appointment[]> {
-    return await this.items
+  async findMany(params: PaginationParams = { page: 1 }): Promise<Appointment[]> {
+    const { page } = params
+    const appointments = await this.items.slice((page - 1) * 10, page * 10)
+    return appointments
   }
 
-  async findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[]> {
-    const appointment = await this.items.filter((appointment) => {
-      return (
-        appointment.startDateTime.getTime() >= startDate.getTime() &&
-        appointment.endDateTime.getTime() <= endDate.getTime()
-      )
-    })
+  async findManyByDate(
+    startDate: Date,
+    endDate: Date,
+    params: PaginationParams = { page: 1 }
+  ): Promise<Appointment[]> {
+    const { page } = params
+    const appointment = await this.items
+      .filter((appointment) => {
+        return (
+          appointment.startDateTime.getTime() >= startDate.getTime() &&
+          appointment.endDateTime.getTime() <= endDate.getTime()
+        )
+      })
+      .slice((page - 1) * 10, page * 10)
 
     return appointment
   }
@@ -43,50 +53,67 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     startDate: Date,
     endDate: Date
   ): Promise<Appointment[]> {
-    return this.items.filter((appointment) => {
+    const appointment = this.items.filter((appointment) => {
       return (
-        appointment.professionalId.equals(new UniqueEntityId(professionalId)) &&
-        appointment.startDateTime < endDate &&
-        appointment.endDateTime > startDate
+        appointment.professionalId.toString() === professionalId &&
+        appointment.startDateTime.getTime() <= endDate.getTime() &&
+        appointment.endDateTime.getTime() >= startDate.getTime()
       )
     })
+
+    return appointment
   }
 
   async findByProfessionalId(
     professionalId: string
   ): Promise<Appointment | null> {
-    const appointment = await this.items.find((appointment) =>
-      appointment.id.equals(new UniqueEntityId(professionalId))
-    )
-    return appointment || null
+    const appointment = this.items.find((appointment) => {
+      return appointment.professionalId.equals(new UniqueEntityId(professionalId))
+    })
+
+    return appointment ?? null
   }
 
   async findManyByProfessionalId(
-    professionalId: string
+    professionalId: string,
+    params: PaginationParams = { page: 1 }
   ): Promise<Appointment[]> {
-    const appointment = await this.items.filter((appointment) => {
-      return appointment.professionalId.equals(
-        new UniqueEntityId(professionalId)
-      )
-    })
+    const { page } = params
+    const appointment = await this.items
+      .filter((appointment) => {
+        return appointment.professionalId.equals(
+          new UniqueEntityId(professionalId)
+        )
+      })
+      .slice((page - 1) * 10, page * 10)
 
     return appointment ?? []
   }
 
-  async findManyByClientId(clientId: string): Promise<Appointment[]> {
-    const appointment = await this.items.filter((appointment) => {
-      return appointment.clientId.equals(new UniqueEntityId(clientId))
-    })
+  async findManyByClientId(
+    clientId: string,
+    params: PaginationParams = { page: 1 }
+  ): Promise<Appointment[]> {
+    const { page } = params
+    const appointment = await this.items
+      .filter((appointment) => {
+        return appointment.clientId.equals(new UniqueEntityId(clientId))
+      })
+      .slice((page - 1) * 10, page * 10)
 
     return appointment ?? []
   }
 
   async findManyByStatus(
-    status: AppointmentStatusType
+    status: AppointmentStatusType,
+    params: PaginationParams = { page: 1 }
   ): Promise<Appointment[]> {
-    const appointment = await this.items.filter((appointment) => {
-      return appointment.status === status
-    })
+    const { page } = params
+    const appointment = await this.items
+      .filter((appointment) => {
+        return appointment.status === status
+      })
+      .slice((page - 1) * 10, page * 10)
 
     return appointment ?? []
   }
