@@ -49,10 +49,6 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
       useClass: PrismaScheduleConfigurationRepository,
     },
     {
-      provide: CancellationPolicyRepository,
-      useClass: PrismaCancellationPolicyRepository,
-    },
-    {
       provide: UserRepository,
       useClass: PrismaUserRepository,
     },
