@@ -1,20 +1,27 @@
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
+import { FetchClientsUseCase } from '@/domain/scheduling/application/use-cases/fetch-client'
 import { PaginationQueryPipe } from '@/infra/http/pipes/pagination-query.pipe'
-import { Controller, Get, Query } from '@nestjs/common'
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common'
+import { ClientsPresenter } from '../presenters/clients-presenter'
 import { PageQueryParamSchema } from './dto/page-query.dto'
 
 @Controller('/clients')
 export class FetchClientController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly fetchClientsUseCase: FetchClientsUseCase) {}
 
   @Get()
   async handle(@Query('page', PaginationQueryPipe) page: PageQueryParamSchema) {
-    return await this.prisma.client.findMany({
-      take: 10,
-      skip: (page - 1) * 1,
-      include: {
-        users: true,
-      },
+    const result = await this.fetchClientsUseCase.execute({
+      page,
     })
+
+    if (result.isLeft()) {
+      throw new BadRequestException()
+    }
+
+    const clients = result.value.clients
+
+    return {
+      clients: clients.map(ClientsPresenter.toHTTP),
+    }
   }
 }

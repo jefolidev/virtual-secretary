@@ -27,7 +27,7 @@ Authorization: Bearer {{authToken}}
 ###
 
 # @name create_professional_account
-POST {{baseUrl}}/accounts
+POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
@@ -52,7 +52,7 @@ Content-Type: application/json
 ###
 
 # @name create_client_account
-POST {{baseUrl}}/accounts
+POST {{baseUrl}}/register
 Content-Type: application/json
 
 {
@@ -95,21 +95,25 @@ Authorization: Bearer {{authToken}}
 
 ###
 
+# @name fetch_organizations
 GET {{baseUrl}}/organizations
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 ###
 
-GET {{baseUrl}}/professionals
+# @name fetch_clients
+GET {{baseUrl}}/clients?page=1
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 ###
 
-GET {{baseUrl}}/clients?page=1
+# @name fetch_professionals
+GET {{baseUrl}}/professionals
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
 
 ###
 

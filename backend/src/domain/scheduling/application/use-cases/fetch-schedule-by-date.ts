@@ -28,7 +28,7 @@ export class FetchScheduleByDateUseCase {
     const appointments = await this.appointmentsRepository.findManyByDate(
       startDate,
       endDate,
-      page ? { page } : undefined
+      { page }
     )
 
     if (startDate >= endDate)

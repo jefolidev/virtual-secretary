@@ -1,4 +1,5 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { PaginationParams } from '@/core/repositories/pagination-params'
 import type { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import type { Client } from '@/domain/scheduling/enterprise/entities/client'
 
@@ -19,8 +20,8 @@ export class InMemoryClientRepository implements ClientRepository {
     return client ?? null
   }
 
-  async findMany(): Promise<Client[]> {
-    return await this.items
+  async findMany(params: PaginationParams = { page: 1 }): Promise<Client[]> {
+    return await this.items.slice((params.page - 1) * 10, params.page * 10)
   }
 
   async findById(id: string): Promise<Client | null> {

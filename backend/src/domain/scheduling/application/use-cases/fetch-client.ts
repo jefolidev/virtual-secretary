@@ -1,17 +1,25 @@
 import { Either, right } from '@/core/either'
-import type { Client } from '../../enterprise/entities/client'
-import type { ClientRepository } from '../repositories/client.repository'
+import { Injectable } from '@nestjs/common'
+import { Client } from '../../enterprise/entities/client'
+import { ClientRepository } from '../repositories/client.repository'
 
-export type FetchClientUseCaseResponse = Either<
+export interface FetchClientsUseCaseRequest {
+  page: number
+}
+
+export type FetchClientsUseCaseResponse = Either<
   undefined,
   { clients: Client[] }
 >
 
-export class FetchClientUseCase {
+@Injectable()
+export class FetchClientsUseCase {
   constructor(private clientsRepository: ClientRepository) {}
 
-  async execute(): Promise<FetchClientUseCaseResponse> {
-    const clients = await this.clientsRepository.findMany()
+  async execute({
+    page = 1,
+  }: FetchClientsUseCaseRequest): Promise<FetchClientsUseCaseResponse> {
+    const clients = await this.clientsRepository.findMany({ page })
 
     return right({ clients })
   }

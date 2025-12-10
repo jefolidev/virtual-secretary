@@ -56,7 +56,10 @@ export class ScheduleNextAppointmentUseCase {
     }
 
     const clientAppointments =
-      await this.appointmentsRepository.findManyByClientId(clientId.toString())
+      await this.appointmentsRepository.findManyByClientId(
+        clientId.toString(),
+        { page: 1 }
+      )
 
     if (clientAppointments.length === 0) {
       return left(new NotFoundError('This client has no appointments yet.'))

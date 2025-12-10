@@ -4,6 +4,7 @@ import { CreateAddressUseCase } from '@/domain/scheduling/application/use-cases/
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
 import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
+import { FetchClientsUseCase } from '@/domain/scheduling/application/use-cases/fetch-client'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { Module } from '@nestjs/common'
@@ -37,6 +38,7 @@ import { ForgotPasswordController } from './controllers/forgot-password.controll
     CreateClientUseCase,
     CreateOrganizationUseCase,
     CreateProfessionalUseCase,
+    FetchClientsUseCase,
     ForgotPasswordUseCase,
     RegisterUserUseCase,
   ],

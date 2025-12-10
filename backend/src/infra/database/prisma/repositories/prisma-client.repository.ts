@@ -17,8 +17,13 @@ export class PrismaClientRepository implements ClientRepository {
     })
   }
 
-  findMany(): Promise<Client[]> {
-    throw new Error('Method not implemented.')
+  async findMany(params: { page: number }): Promise<Client[]> {
+    const clients = await this.prisma.client.findMany({
+      take: 10,
+      skip: params.page ? (params.page - 1) * 10 : 0,
+    })
+
+    return clients.map(PrismaClientMapper.toDomain)
   }
 
   async findById(id: string): Promise<Client | null> {
