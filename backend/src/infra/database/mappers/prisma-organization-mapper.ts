@@ -12,6 +12,7 @@ export class PrismaOrganizationMapper {
       isActive: organization.isActive,
       cnpj: organization.cnpj,
       slug: organization.slug.value,
+      addressId: organization.addressId.toString(),
       createdAt: organization.createdAt,
       updatedAt: organization.updatedAt,
     }
@@ -21,6 +22,7 @@ export class PrismaOrganizationMapper {
     return Organization.create(
       {
         name: raw.name,
+        addressId: new UniqueEntityId(raw.addressId),
         ownerId: new UniqueEntityId(raw.ownerId),
         isActive: raw.isActive,
         cnpj: raw.cnpj,
