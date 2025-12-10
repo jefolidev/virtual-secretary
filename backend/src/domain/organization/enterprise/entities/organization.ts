@@ -8,6 +8,7 @@ import { Slug } from '../value-objects/slug'
 
 export interface OrganizationProps {
   ownerId: UniqueEntityId
+  addressId: UniqueEntityId
   professionalsIds: ProfessionalIdList
   name: string
   cnpj: string
@@ -25,6 +26,10 @@ export class Organization extends AggregateRoot<OrganizationProps> {
   set name(name: string) {
     this.props.name = name
     this.touch()
+  }
+
+  get addressId() {
+    return this.props.addressId
   }
 
   get professionalsIds() {

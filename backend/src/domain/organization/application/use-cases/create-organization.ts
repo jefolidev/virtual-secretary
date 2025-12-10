@@ -1,16 +1,25 @@
+import type { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { AddressRepository } from '@/domain/scheduling/application/repositories/address.repository'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import {
+  Address,
+  AddressProps,
+} from '@/domain/scheduling/enterprise/entities/address'
+import { Injectable } from '@nestjs/common'
 import { Organization } from '../../enterprise/entities/organization'
 import { ProfessionalIdList } from '../../enterprise/value-objects/professional-id-list'
 import { Slug } from '../../enterprise/value-objects/slug'
-import type { OrganizationRepository } from '../repositories/organization.repository'
+import { OrganizationRepository } from '../repositories/organization.repository'
 import { type Either, left, right } from './../../../../core/either'
+import { ConflictError } from './conflict-error'
 
 export interface CreateOrganizationUseCaseRequest {
   ownerId: string
   name: string
   cnpj: string
+  address: Optional<AddressProps, 'createdAt'>
 }
 
 type CreateOrganizationUseCaseResponse = Either<
@@ -20,34 +29,63 @@ type CreateOrganizationUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class CreateOrganizationUseCase {
   constructor(
     private readonly professionalRepository: ProfessionalRepository,
-    private readonly organizationRepository: OrganizationRepository
+    private readonly organizationRepository: OrganizationRepository,
+    private readonly addressRepository: AddressRepository
   ) {}
 
   async execute({
     name,
     ownerId,
     cnpj,
+    address,
   }: CreateOrganizationUseCaseRequest): Promise<CreateOrganizationUseCaseResponse> {
+    console.log('[Id do criador]', ownerId)
+    console.log()
+
     const professional = await this.professionalRepository.findById(
       ownerId.toString()
     )
 
+    // console.log('[Profissional Encontrado]', professional)
+
+    const organizationAddress = Address.create(address)
+
+    // console.log('ENDERECO DA ORGNIZAACAO: ', organizationAddress)
+
+    await this.addressRepository.create(organizationAddress)
+
     if (!professional) {
-      left(new NotFoundError('Professional not found.'))
+      return left(new NotFoundError('Professional not found.'))
+    }
+
+    if (professional.organizationId) {
+      return left(
+        new ConflictError('This professional is already into an organization.')
+      )
     }
 
     const organization = Organization.create({
-      name,
       ownerId: new UniqueEntityId(ownerId),
-      slug: Slug.createFromText(name),
+      addressId: organizationAddress.id,
       professionalsIds: new ProfessionalIdList(),
+      slug: Slug.createFromText(name),
+      name,
       cnpj,
     })
 
+    // console.log('[OrganizationUseCase] Organization: ', organization)
     await this.organizationRepository.create(organization)
+
+    professional.organizationId = organization.id
+
+    organization.addProfessional(professional.id)
+
+    await this.organizationRepository.save(organization)
+    await this.professionalRepository.save(professional)
 
     return right({
       organization,
