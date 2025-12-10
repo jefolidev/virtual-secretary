@@ -1,3 +1,4 @@
+import { PaginationParams } from '@/core/repositories/pagination-params'
 import type {
   Appointment,
   AppointmentStatusType,
@@ -5,26 +6,29 @@ import type {
 
 export abstract class AppointmentsRepository {
   abstract create(appointment: Appointment): Promise<void>
-  abstract findMany(): Promise<Appointment[]>
+  abstract findMany(params?: PaginationParams): Promise<Appointment[]>
   abstract findById(id: string): Promise<Appointment | null>
-  abstract findByProfessionalId(
-    professionalId: string
-  ): Promise<Appointment | null>
   abstract findOverlapping(
     profissionalId: string,
     startDate: Date,
     endDate: Date
   ): Promise<Appointment[]>
   abstract findManyByProfessionalId(
-    professionalId: string
+    professionalId: string,
+    params?: PaginationParams
   ): Promise<Appointment[]>
-  abstract findManyByClientId(clientId: string): Promise<Appointment[]>
+  abstract findManyByClientId(
+    clientId: string,
+    params?: PaginationParams
+  ): Promise<Appointment[]>
   abstract findManyByDate(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    params?: PaginationParams
   ): Promise<Appointment[]>
   abstract save(appointment: Appointment): Promise<void>
   abstract findManyByStatus(
-    status: AppointmentStatusType
+    status: AppointmentStatusType,
+    params?: PaginationParams
   ): Promise<Appointment[]>
 }
