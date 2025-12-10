@@ -20,7 +20,8 @@ model Organization {
   ownerId       String
   professionals Professional[]
 
-  address Address?
+  addressId String
+  address   Address?
 
   @@map("organizations")
 }
