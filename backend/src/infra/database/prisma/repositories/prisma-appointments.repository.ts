@@ -18,8 +18,12 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       data,
     })
   }
-  async findMany(): Promise<Appointment[]> {
-    const appointments = await this.prisma.appointment.findMany()
+  async findMany(params: { page: number }): Promise<Appointment[]> {
+    const appointments = await this.prisma.appointment.findMany({
+      take: 10,
+      skip: params?.page ? (params.page - 1) * 10 : 0,
+    })
+
     if (appointments.length === 0) {
       return []
     }
@@ -31,22 +35,6 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const appointment = await this.prisma.appointment.findFirst({
       where: {
         id,
-      },
-    })
-
-    if (!appointment) {
-      return null
-    }
-
-    return PrismaAppointmentMapper.toDomain(appointment)
-  }
-
-  async findByProfessionalId(
-    professionalId: string
-  ): Promise<Appointment | null> {
-    const appointment = await this.prisma.appointment.findFirst({
-      where: {
-        professionalId,
       },
     })
 
@@ -77,12 +65,15 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
   }
 
   async findManyByProfessionalId(
-    professionalId: string
+    professionalId: string,
+    params: { page: number }
   ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         professionalId,
       },
+      take: 10,
+      skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
     if (appointments.length === 0) {
@@ -92,11 +83,16 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     return appointments.map(PrismaAppointmentMapper.toDomain)
   }
 
-  async findManyByClientId(clientId: string): Promise<Appointment[]> {
+  async findManyByClientId(
+    clientId: string,
+    params: { page: number }
+  ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         clientId,
       },
+      take: 10,
+      skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
     if (appointments.length === 0) {
@@ -106,12 +102,18 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     return appointments.map(PrismaAppointmentMapper.toDomain)
   }
 
-  async findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[]> {
+  async findManyByDate(
+    startDate: Date,
+    endDate: Date,
+    params: { page: number }
+  ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         startDateTime: startDate,
         endDateTime: endDate,
       },
+      take: 10,
+      skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
     if (appointments.length === 0) {
@@ -122,12 +124,15 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
   }
 
   async findManyByStatus(
-    status: AppointmentStatusType
+    status: AppointmentStatusType,
+    params: { page: number }
   ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         status,
       },
+      take: 10,
+      skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
     if (appointments.length === 0) {
