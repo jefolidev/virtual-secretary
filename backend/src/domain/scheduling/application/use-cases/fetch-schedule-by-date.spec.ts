@@ -30,6 +30,7 @@ describe('Fetch Schedule By Date', () => {
     const response = await sut.execute({
       startDate: new Date('2025-01-01T10:00:00.000Z'),
       endDate: new Date('2025-01-02T11:00:00.000Z'),
+      page: 1,
     })
 
     expect(response.isRight()).toBe(true)
@@ -44,6 +45,7 @@ describe('Fetch Schedule By Date', () => {
     const response = await sut.execute({
       startDate: new Date('2030-01-01T00:00:00.000Z'),
       endDate: new Date('2030-01-02T00:00:00.000Z'),
+      page: 1,
     })
 
     expect(response.isRight()).toBe(true)
@@ -55,6 +57,7 @@ describe('Fetch Schedule By Date', () => {
     const response = await sut.execute({
       startDate: undefined as any,
       endDate: undefined as any,
+      page: 1,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -79,6 +82,7 @@ describe('Fetch Schedule By Date', () => {
     const response = await sut.execute({
       startDate: new Date('2025-01-01T10:00:00.000Z'),
       endDate: new Date('2025-01-02T11:00:00.000Z'),
+      page: 1,
     })
 
     expect(response.isRight()).toBe(true)

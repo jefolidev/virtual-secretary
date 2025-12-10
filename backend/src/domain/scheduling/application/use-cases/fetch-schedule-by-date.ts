@@ -6,6 +6,7 @@ import { ValidationError } from './errors/validation-error'
 export interface FetchScheduleByDateUseCaseProps {
   startDate: Date
   endDate: Date
+  page?: number
 }
 
 export type FetchScheduleByDateUseCaseResponse = Either<
@@ -19,13 +20,15 @@ export class FetchScheduleByDateUseCase {
   async execute({
     startDate,
     endDate,
+    page = 1,
   }: FetchScheduleByDateUseCaseProps): Promise<FetchScheduleByDateUseCaseResponse> {
     if (!startDate || !endDate)
       return left(new ValidationError('Please provide date.'))
 
     const appointments = await this.appointmentsRepository.findManyByDate(
       startDate,
-      endDate
+      endDate,
+      page ? { page } : undefined
     )
 
     if (startDate >= endDate)

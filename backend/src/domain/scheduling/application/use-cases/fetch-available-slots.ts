@@ -53,10 +53,6 @@ export class FetchAvailableSlotsUseCase {
     if (!scheduleConfiguration)
       return left(new NotFoundError('Schedule configuration not found!'))
 
-    const appointment = await this.appointmentRepository.findByProfessionalId(
-      professional.id.toString()
-    )
-
     const appointmentsInPeriod =
       await this.appointmentRepository.findManyByDate(startDate, endDate)
 

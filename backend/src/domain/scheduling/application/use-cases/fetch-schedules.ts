@@ -3,6 +3,10 @@ import type { NotFoundError } from '../../../../core/errors/resource-not-found-e
 import type { Appointment } from '../../enterprise/entities/appointment'
 import type { AppointmentsRepository } from '../repositories/appointments.repository'
 
+interface FetchScheduleUseCaseRequest {
+  page: number
+}
+
 type FetchScheduleUseCaseResponse = Either<
   NotFoundError,
   { appointments: Appointment[] }
@@ -11,8 +15,10 @@ type FetchScheduleUseCaseResponse = Either<
 export class FetchScheduleUseCase {
   constructor(private appointmentsRepository: AppointmentsRepository) {}
 
-  async execute(): Promise<FetchScheduleUseCaseResponse> {
-    const appointments = await this.appointmentsRepository.findMany()
+  async execute({
+    page,
+  }: FetchScheduleUseCaseRequest): Promise<FetchScheduleUseCaseResponse> {
+    const appointments = await this.appointmentsRepository.findMany({ page })
 
     return right({ appointments })
   }

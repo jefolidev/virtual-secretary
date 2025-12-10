@@ -11,7 +11,7 @@ describe('Fetch All Appointments', async () => {
   })
 
   it('should be able to fetch all appointments', async () => {
-    const response = await sut.execute()
+    const response = await sut.execute({ page: 1 })
 
     expect(response.isRight()).toBe(true)
 

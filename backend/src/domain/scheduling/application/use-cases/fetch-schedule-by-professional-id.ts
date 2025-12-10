@@ -5,6 +5,7 @@ import type { AppointmentsRepository } from '../repositories/appointments.reposi
 
 export interface FetchScheduleByProfessionalIdUseCaseProps {
   professionalId: string
+  page?: number
 }
 
 type FetchScheduleByProfessionalIdUseCaseResponse = Either<
@@ -17,9 +18,13 @@ export class FetchScheduleByProfessionalIdUseCase {
 
   async execute({
     professionalId,
+    page = 1,
   }: FetchScheduleByProfessionalIdUseCaseProps): Promise<FetchScheduleByProfessionalIdUseCaseResponse> {
     const appointments =
-      await this.appointmentsRepository.findManyByProfessionalId(professionalId)
+      await this.appointmentsRepository.findManyByProfessionalId(
+        professionalId,
+        { page }
+      )
 
     return right({ appointments })
   }

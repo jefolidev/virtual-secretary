@@ -8,6 +8,7 @@ import type { AppointmentsRepository } from '../repositories/appointments.reposi
 
 export interface FetchScheduleByStatusUseCaseProps {
   status: AppointmentStatusType
+  page?: number
 }
 
 type FetchScheduleByStatusUseCaseResponse = Either<
@@ -20,9 +21,11 @@ export class FetchScheduleByStatusUseCase {
 
   async execute({
     status,
+    page = 1,
   }: FetchScheduleByStatusUseCaseProps): Promise<FetchScheduleByStatusUseCaseResponse> {
     const appointments = await this.appointmentsRepository.findManyByStatus(
-      status
+      status,
+      { page }
     )
 
     return right({ appointments })
