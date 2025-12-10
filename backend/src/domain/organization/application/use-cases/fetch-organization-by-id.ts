@@ -1,7 +1,8 @@
 import { Either, left, right } from '@/core/either'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { Organization } from '../../enterprise/entities/organization'
-import type { OrganizationRepository } from '../repositories/organization.repository'
+import { Injectable } from '@nestjs/common'
+import { Organization } from '../../enterprise/entities/organization'
+import { OrganizationRepository } from '../repositories/organization.repository'
 
 export interface FetchOrganizationByIdRequest {
   organizationId: string
@@ -9,9 +10,10 @@ export interface FetchOrganizationByIdRequest {
 
 type FetchOrganizationByIdResponse = Either<
   NotFoundError,
-  { organization: Organization | null }
+  { organization: Organization }
 >
 
+@Injectable()
 export class FetchOrganizationByIdUseCase {
   constructor(private organizationRepository: OrganizationRepository) {}
 
@@ -22,7 +24,7 @@ export class FetchOrganizationByIdUseCase {
       organizationId.toString()
     )
 
-    if (!organizationId || organization) {
+    if (!organization) {
       return left(new NotFoundError('Organization not found.'))
     }
 

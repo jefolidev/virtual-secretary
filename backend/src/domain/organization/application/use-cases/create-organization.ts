@@ -70,14 +70,16 @@ export class CreateOrganizationUseCase {
       cnpj,
     })
 
+    // Primeiro cria a organização
     await this.organizationRepository.create(organization)
 
+    // Depois adiciona o profissional à organização
     professional.organizationId = organization.id
-
     organization.addProfessional(professional.id)
 
-    await this.organizationRepository.save(organization)
+    // Salva as duas entidades em sequência
     await this.professionalRepository.save(professional)
+    await this.organizationRepository.save(organization)
 
     return right({
       organization,

@@ -17,20 +17,28 @@ export class PrismaOrganizationRepository implements OrganizationRepository {
   }
 
   async findById(id: string): Promise<Organization | null> {
-    const org = await this.prisma.organization.findUnique({ where: { id } })
-    
+    const org = await this.prisma.organization.findUnique({
+      where: { id },
+      include: { professionals: true },
+    })
+
     if (!org) return null
     return PrismaOrganizationMapper.toDomain(org)
   }
 
   async findMany(): Promise<Organization[] | null> {
-    const orgs = await this.prisma.organization.findMany()
+    const orgs = await this.prisma.organization.findMany({
+      include: { professionals: true },
+    })
     if (!orgs.length) return null
     return orgs.map((org) => PrismaOrganizationMapper.toDomain(org))
   }
 
   async findByOwnerId(ownerId: string): Promise<Organization | null> {
-    const org = await this.prisma.organization.findFirst({ where: { ownerId } })
+    const org = await this.prisma.organization.findFirst({
+      where: { ownerId },
+      include: { professionals: true },
+    })
     if (!org) return null
     return PrismaOrganizationMapper.toDomain(org)
   }

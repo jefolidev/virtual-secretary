@@ -1,4 +1,5 @@
 import { CreateOrganizationUseCase } from '@/domain/organization/application/use-cases/create-organization'
+import { FetchOrganizationByIdUseCase } from '@/domain/organization/application/use-cases/fetch-organization-by-id'
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CreateAddressUseCase } from '@/domain/scheduling/application/use-cases/create-address'
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
@@ -15,6 +16,7 @@ import { CreateAccountController } from './controllers/create-account.controller
 import { CreateOrganizationController } from './controllers/create-organization.controller'
 import { CreateScheduleController } from './controllers/create-schedule.controller'
 import { FetchClientController } from './controllers/fetch-clients.controller'
+import { FetchOrganizationByIdController } from './controllers/fetch-organization-by-id.controller'
 import { FetchOrganizationController } from './controllers/fetch-organizations.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
@@ -28,6 +30,7 @@ import { ForgotPasswordController } from './controllers/forgot-password.controll
     CreateOrganizationController,
     FetchClientController,
     FetchOrganizationController,
+    FetchOrganizationByIdController,
     FetchProfessionalController,
     ForgotPasswordController,
   ],
@@ -39,6 +42,7 @@ import { ForgotPasswordController } from './controllers/forgot-password.controll
     CreateOrganizationUseCase,
     CreateProfessionalUseCase,
     FetchClientsUseCase,
+    FetchOrganizationByIdUseCase,
     ForgotPasswordUseCase,
     RegisterUserUseCase,
   ],

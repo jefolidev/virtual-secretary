@@ -6,8 +6,8 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "email": "jeferson@professional.com.br",
-  "password": "SenhaForte12345"
+  "email": "professional1@professional.com.br",
+  "password": "SenhaForte123"
 }
 
 ###
@@ -23,7 +23,6 @@ Authorization: Bearer {{authToken}}
   "newPasswordConfirmation": "SenhaForte12345"
 }
 
-
 ###
 
 # @name create_professional_account
@@ -32,11 +31,11 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson@professional.com.br",
+  "email": "professional1@professional.com.br",
   "password": "SenhaForte123",
-  "cpf": "71264124368",
+  "cpf": "82000843026",
   "role": "PROFESSIONAL",
-  "phone": "9988776655",
+  "phone": "2988773355",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -80,8 +79,8 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "name": "John Doe`s Organization 2",
-  "cnpj": "12.343.678/0001-95",
+  "name": "John Doe`s Organization 3",
+  "cnpj": "40.552.610/0001-12",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -93,15 +92,43 @@ Authorization: Bearer {{authToken}}
   }
 }
 
-###
+### 
 
 # @name fetch_organizations
 GET {{baseUrl}}/organizations
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
+### 
+
+# @name fetch_organizations_by_id
+GET {{baseUrl}}/organization/432434da-ad83-4fbe-a73d-a4c127b61ab4
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### 
+
+# @name update_organization
+PUT {{baseUrl}}/organization/432434da-ad83-4fbe-a73d-a4c127b61ab4
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "Jef Consultory"
+}
+
 ###
 
+# @name add_professional_to_organization
+PATCH {{baseUrl}}/organization/432434da-ad83-4fbe-a73d-a4c127b61ab4/professionals
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "professionalId": "71fa59cc-2398-4710-b1db-a4c180bfb9d5"
+}
+
+###
 # @name fetch_clients
 GET {{baseUrl}}/clients?page=1
 Content-Type: application/json

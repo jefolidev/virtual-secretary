@@ -83,14 +83,11 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
       {
         ...props,
         cancellationPolicyId:
-          props.cancellationPolicyId ??
-          new UniqueEntityId('cancellation-policy-id'),
+          props.cancellationPolicyId ?? new UniqueEntityId(),
         scheduleConfigurationId:
-          props.scheduleConfigurationId ??
-          new UniqueEntityId('schedule-configuration-id'),
+          props.scheduleConfigurationId ?? new UniqueEntityId(),
         notificationSettingsId:
-          props.notificationSettingsId ??
-          new UniqueEntityId('notifcation-settings-id'),
+          props.notificationSettingsId ?? new UniqueEntityId(),
         createdAt: props.createdAt ?? new Date(),
       },
       id

@@ -1,9 +1,10 @@
 import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
-import type { Organization } from '../../enterprise/entities/organization'
-import type { OrganizationRepository } from '../repositories/organization.repository'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { Injectable } from '@nestjs/common'
+import { Organization } from '../../enterprise/entities/organization'
+import { OrganizationRepository } from '../repositories/organization.repository'
 
 export interface AddProfessionalToOrganizationUseCaseRequest {
   organizationId: string
@@ -15,6 +16,7 @@ export type AddProfessionalToOrganizationUseCaseResponse = Either<
   { organization: Organization }
 >
 
+@Injectable()
 export class AddProfessionalToOrganizationUseCase {
   constructor(
     private readonly organizationRepository: OrganizationRepository,
@@ -41,8 +43,10 @@ export class AddProfessionalToOrganizationUseCase {
     }
 
     organization.addProfessional(new UniqueEntityId(professionalId))
+    professional.organizationId = new UniqueEntityId(organizationId)
 
-    await this.organizationRepository.create(organization)
+    await this.organizationRepository.save(organization)
+    await this.professionalRepository.save(professional)
 
     return right({
       organization,
