@@ -14,8 +14,18 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
   }
 
   async findById(id: string): Promise<Professional | null> {
-    const professional = await this.items.find((professional) =>
-      professional.id.equals(new UniqueEntityId(id))
+    const professional = await this.items.find(
+      (professional) => professional.id.toString() === id
+    )
+
+    return professional ?? null
+  }
+
+  async findByUserId(id: string): Promise<Professional | null> {
+    const professional = await this.items.find(
+      (professional) =>
+        professional.userId !== undefined &&
+        professional.userId.equals(new UniqueEntityId(id))
     )
 
     return professional ?? null
