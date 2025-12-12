@@ -8,9 +8,11 @@ import { CreateAddressUseCase } from '@/domain/scheduling/application/use-cases/
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
 import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
+import { CreateScheduleConfigurationUseCase } from '@/domain/scheduling/application/use-cases/create-schedule-configuration'
 import { FetchClientsUseCase } from '@/domain/scheduling/application/use-cases/fetch-client'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
+import { RescheduleAppointmentUseCase } from '@/domain/scheduling/application/use-cases/reschedule-appointment'
 import { Module } from '@nestjs/common'
 import { CryptographyModule } from '../cryptography/cryptography.module'
 import { DatabaseModule } from '../database/database.module'
@@ -18,6 +20,7 @@ import { AddProfessionalToOrganizationController } from './controllers/add-profe
 import { AuthenticateController } from './controllers/authenticate.controller'
 import { CreateAccountController } from './controllers/create-account.controller'
 import { CreateOrganizationController } from './controllers/create-organization.controller'
+import { CreateScheduleConfigurationController } from './controllers/create-schedule-configuration.controller'
 import { CreateScheduleController } from './controllers/create-schedule.controller'
 import { FetchClientController } from './controllers/fetch-clients.controller'
 import { FetchOrganizationByIdController } from './controllers/fetch-organization-by-id.controller'
@@ -25,6 +28,7 @@ import { FetchOrganizationController } from './controllers/fetch-organizations.c
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
+import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
 
 @Module({
@@ -34,6 +38,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     AuthenticateController,
     CreateAccountController,
     CreateScheduleController,
+    CreateScheduleConfigurationController,
     CreateOrganizationController,
     FetchClientController,
     FetchOrganizationController,
@@ -41,6 +46,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchProfessionalController,
     ForgotPasswordController,
     RemoveProfessionalFromOrganizationController,
+    RescheduleAppointmentController,
     UpdateOrganizationController,
   ],
   providers: [
@@ -51,11 +57,13 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     CreateClientUseCase,
     CreateOrganizationUseCase,
     CreateProfessionalUseCase,
+    CreateScheduleConfigurationUseCase,
     FetchClientsUseCase,
     FetchOrganizationByIdUseCase,
     ForgotPasswordUseCase,
     RegisterUserUseCase,
     RemoveProfessionalFromOrganizationUseCase,
+    RescheduleAppointmentUseCase,
     UpdateOrganizationUseCase,
   ],
 })

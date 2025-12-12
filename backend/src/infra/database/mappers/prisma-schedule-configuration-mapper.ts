@@ -1,10 +1,7 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { ScheduleConfiguration } from '@/domain/scheduling/enterprise/entities/schedule-configuration'
 import { WorkingDaysList } from '@/domain/scheduling/enterprise/entities/value-objects/working-days-list'
-import {
-  ScheduleConfiguration as PrismaScheduleConfiguration,
-  WeekDays,
-} from '@prisma/generated/client'
+import { ScheduleConfiguration as PrismaScheduleConfiguration } from '@prisma/generated/client'
 
 export class PrismaScheduleConfigurationMapper {
   static toPrisma(
@@ -12,9 +9,7 @@ export class PrismaScheduleConfigurationMapper {
   ): PrismaScheduleConfiguration {
     return {
       id: scheduleConfig.id.toString(),
-      workingDays: scheduleConfig.workingDays
-        .getItems()
-        .map((day) => WeekDays[day]),
+      workingDays: scheduleConfig.workingDays.getItems(),
       workStartHour: scheduleConfig.workingHours.start,
       workEndHour: scheduleConfig.workingHours.end,
       holidays: scheduleConfig.holidays,
@@ -28,11 +23,7 @@ export class PrismaScheduleConfigurationMapper {
   }
 
   static toDomain(raw: PrismaScheduleConfiguration): ScheduleConfiguration {
-    const numericWorkingDays = (raw.workingDays || []).map(
-      (day) => WeekDays[day] as unknown as number
-    )
-
-    const workingDaysDomain = new WorkingDaysList(numericWorkingDays)
+    const workingDaysDomain = new WorkingDaysList(raw.workingDays || [])
 
     return ScheduleConfiguration.create(
       {

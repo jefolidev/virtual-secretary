@@ -10,8 +10,6 @@ export function makeProfessional(
 ) {
   const professional: Professional = Professional.create(
     {
-      scheduleConfigurationId: new UniqueEntityId(),
-      cancellationPolicyId: new UniqueEntityId(),
       sessionPrice: 2000,
       ...override,
     },

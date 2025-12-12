@@ -5,9 +5,9 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 export interface ProfessionalProps {
   userId?: UniqueEntityId
   organizationId?: UniqueEntityId
-  notificationSettingsId: UniqueEntityId
-  cancellationPolicyId: UniqueEntityId
-  scheduleConfigurationId: UniqueEntityId
+  notificationSettingsId?: UniqueEntityId
+  cancellationPolicyId?: UniqueEntityId
+  scheduleConfigurationId?: UniqueEntityId
   sessionPrice: number
   createdAt: Date
   updatedAt?: Date | null
@@ -35,7 +35,9 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     return this.props.scheduleConfigurationId
   }
 
-  set scheduleConfigurationId(scheduleConfigurationId: UniqueEntityId) {
+  set scheduleConfigurationId(
+    scheduleConfigurationId: UniqueEntityId | undefined
+  ) {
     this.props.scheduleConfigurationId = scheduleConfigurationId
     this.touch()
   }
@@ -44,7 +46,7 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     return this.props.cancellationPolicyId
   }
 
-  set cancellationPolicyId(cancellationPolicyId: UniqueEntityId) {
+  set cancellationPolicyId(cancellationPolicyId: UniqueEntityId | undefined) {
     this.props.cancellationPolicyId = cancellationPolicyId
     this.touch()
   }
@@ -82,12 +84,9 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     const professional = new Professional(
       {
         ...props,
-        cancellationPolicyId:
-          props.cancellationPolicyId ?? new UniqueEntityId(),
-        scheduleConfigurationId:
-          props.scheduleConfigurationId ?? new UniqueEntityId(),
-        notificationSettingsId:
-          props.notificationSettingsId ?? new UniqueEntityId(),
+        cancellationPolicyId: props.cancellationPolicyId ?? undefined,
+        scheduleConfigurationId: props.scheduleConfigurationId ?? undefined,
+        notificationSettingsId: props.notificationSettingsId ?? undefined,
         createdAt: props.createdAt ?? new Date(),
       },
       id

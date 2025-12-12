@@ -1,4 +1,3 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { InMemoryProfessionalRepository } from '../../../../../test/repositories/in-memory-professional.repository'
 import { CreateProfessionalUseCase } from './create-professional'
 
@@ -20,13 +19,6 @@ describe('Create Professional', () => {
 
     if (response.isRight()) {
       const { professional } = response.value
-
-      expect(professional.scheduleConfigurationId).toEqual(
-        new UniqueEntityId('schedule-configuration-id')
-      )
-      expect(professional.cancellationPolicyId).toEqual(
-        new UniqueEntityId('cancellation-policy-id')
-      )
     }
   })
 })

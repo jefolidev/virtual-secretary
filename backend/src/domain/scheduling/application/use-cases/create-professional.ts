@@ -49,7 +49,7 @@ export class CreateProfessionalUseCase {
         minHoursBeforeCancellation: 7,
         professionalId: professional.id,
       },
-      new UniqueEntityId('cancellation-policy-id')
+      new UniqueEntityId()
     )
 
     const scheduleConfiguration = await ScheduleConfiguration.create(
@@ -66,7 +66,7 @@ export class CreateProfessionalUseCase {
         bufferIntervalMinutes: 60,
         sessionDurationMinutes: 50,
       },
-      new UniqueEntityId('schedule-configuration-id')
+      new UniqueEntityId()
     )
 
     const workingDaysList = new WorkingDaysList([0, 1, 2, 3, 4, 5, 6])

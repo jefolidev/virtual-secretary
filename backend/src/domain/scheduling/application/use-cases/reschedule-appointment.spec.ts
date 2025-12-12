@@ -134,7 +134,7 @@ describe('Reschedule Appointment', () => {
     expect(response.isLeft()).toBe(true)
 
     if (response.isLeft()) {
-      expect(response.value).toBeInstanceOf(NoDisponibilityError)
+      expect(response.value).toBeInstanceOf(NotAllowedError)
     }
   })
 
@@ -210,15 +210,9 @@ describe('Reschedule Appointment', () => {
     }
   })
 
-  it('should not be able to reschedule an appointment if client not allowed', async () => {
+  it('should not be able to reschedule to a past date', async () => {
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
-    const anotherClient = makeClient(
-      undefined,
-      new UniqueEntityId('client-id#02')
-    )
-
     await inMemoryClientRepository.create(client)
-    await inMemoryClientRepository.create(anotherClient)
 
     const professional = makeProfessional(
       {
@@ -226,8 +220,7 @@ describe('Reschedule Appointment', () => {
       },
       new UniqueEntityId('professional-id')
     )
-
-    inMemoryProfessionalRepository.create(professional)
+    await inMemoryProfessionalRepository.create(professional)
 
     const reschedulelationPolicy = makeCancellationPolicy(
       {
@@ -235,32 +228,90 @@ describe('Reschedule Appointment', () => {
       },
       new UniqueEntityId('reschedule-policy-id')
     )
-
     await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
 
     professional.cancellationPolicyId = new UniqueEntityId(
       'reschedule-policy-id'
     )
-
     await inMemoryProfessionalRepository.save(professional)
 
     const appointment = makeAppointment(
       {
-        clientId: new UniqueEntityId('client-id#02'),
+        clientId: client.id,
         professionalId: professional.id,
       },
       new UniqueEntityId('appointment-id')
     )
-
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
+      startDateTime: new Date('2020-01-05T10:00:00.000Z'), // Past date
+      endDateTime: new Date('2020-01-05T11:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NoDisponibilityError)
+    }
+  })
+
+  it('should not be able to reschedule if start date is after end date', async () => {
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {
+        cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
+      },
+      new UniqueEntityId('professional-id')
+    )
+    await inMemoryProfessionalRepository.create(professional)
+
+    const reschedulelationPolicy = makeCancellationPolicy(
+      {
+        professionalId: new UniqueEntityId('professional-id'),
+      },
+      new UniqueEntityId('reschedule-policy-id')
+    )
+    await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
+
+    professional.cancellationPolicyId = new UniqueEntityId(
+      'reschedule-policy-id'
+    )
+    await inMemoryProfessionalRepository.save(professional)
+
+    const appointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: professional.id,
+      },
+      new UniqueEntityId('appointment-id')
+    )
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime: new Date('2026-01-05T11:00:00.000Z'), // After end date
+      endDateTime: new Date('2026-01-05T10:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NoDisponibilityError)
+    }
+  })
+
+  it('should not be able to reschedule a non-existent appointment', async () => {
+    const response = await sut.execute({
+      id: 'non-existent-id',
       startDateTime: new Date('2026-01-05T10:00:00.000Z'),
       endDateTime: new Date('2026-01-05T11:00:00.000Z'),
     })
 
     expect(response.isLeft()).toBe(true)
-    expect(response.value).toBeInstanceOf(NotAllowedError)
+    if (response.isLeft()) {
+      expect(response.value.message).toBe('Appointment not found')
+    }
   })
 })

@@ -54,6 +54,7 @@ export class CreateAppointmentUseCase {
     const professional = await this.professionalRepository.findById(
       professionalId.toString()
     )
+
     if (!professional) {
       return left(new NotFoundError('Professional not found'))
     }

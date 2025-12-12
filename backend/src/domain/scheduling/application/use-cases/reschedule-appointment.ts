@@ -1,12 +1,13 @@
 import { Either, left, right } from '@/core/either'
+import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
-import type { Appointment } from '../../enterprise/entities/appointment'
-import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
-import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
+import { Appointment } from '../../enterprise/entities/appointment'
+import { AppointmentsRepository } from '../repositories/appointments.repository'
+import { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
+import { ClientRepository } from '../repositories/client.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 export interface RescheduleAppointmentUseCaseProps {
@@ -22,6 +23,7 @@ export type RescheduleAppointmentUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class RescheduleAppointmentUseCase {
   constructor(
     private appointmentsRepository: AppointmentsRepository,
@@ -42,18 +44,18 @@ export class RescheduleAppointmentUseCase {
     }
 
     if (appointment.status !== 'SCHEDULED') {
-      return left(new NoDisponibilityError('Appointment not scheduled'))
-    }
-
-    if (dayjs(startDateTime).isBefore(appointment.startDateTime)) {
       return left(
-        new NoDisponibilityError('Reschedule start must be after start')
+        new NotAllowedError('Only scheduled appointments can be rescheduled')
       )
     }
 
-    if (dayjs(endDateTime).isBefore(appointment.startDateTime)) {
+    if (dayjs(startDateTime).isBefore(dayjs())) {
+      return left(new NoDisponibilityError('Cannot reschedule to past date'))
+    }
+
+    if (dayjs(startDateTime).isAfter(endDateTime)) {
       return left(
-        new NoDisponibilityError('Reschedule end must be after start')
+        new NoDisponibilityError('Start date must be before end date')
       )
     }
 
@@ -63,14 +65,6 @@ export class RescheduleAppointmentUseCase {
 
     if (!client) {
       return left(new NotFoundError('Client not found'))
-    }
-
-    if (client.id !== appointment.clientId) {
-      return left(
-        new NotAllowedError(
-          'You are not allowed to reschedule this appointment'
-        )
-      )
     }
 
     const professional = await this.professionalRepository.findById(
@@ -87,8 +81,7 @@ export class RescheduleAppointmentUseCase {
       )
 
     if (!professionalCancellationPolicy?.allowReschedule) {
-      appointment.status = 'SCHEDULED'
-      return left(new NoDisponibilityError('Professional not allow reschedule'))
+      return left(new NotAllowedError('Professional does not allow reschedule'))
     }
 
     const overlappingAppointments =
@@ -98,12 +91,8 @@ export class RescheduleAppointmentUseCase {
         endDateTime
       )
 
-    if (overlappingAppointments!.length > 0) {
-      return left(new NoDisponibilityError('Overlapping appointments'))
-    }
-
-    if (dayjs(startDateTime).isAfter(endDateTime)) {
-      throw new Error('Reschedule start must be before end')
+    if (overlappingAppointments && overlappingAppointments.length > 0) {
+      return left(new NoDisponibilityError('Time slot is not available'))
     }
 
     const rescheduleDateTime = {
@@ -111,7 +100,7 @@ export class RescheduleAppointmentUseCase {
       end: endDateTime,
     }
 
-    await appointment.reschedule(rescheduleDateTime)
+    appointment.reschedule(rescheduleDateTime)
 
     await this.appointmentsRepository.save(appointment)
 

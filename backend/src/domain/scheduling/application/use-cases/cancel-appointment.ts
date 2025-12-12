@@ -63,6 +63,12 @@ export class CancelAppointmentUseCase {
       )
     }
 
+    if (!professional.cancellationPolicyId) {
+      return left(
+        new NotFoundError('Professional not have cancellation policy yet.')
+      )
+    }
+
     const cancellationPolicyId = professional.cancellationPolicyId.toString()
 
     const cancellationPolicy = await this.cancellationPolicyRepository.findById(

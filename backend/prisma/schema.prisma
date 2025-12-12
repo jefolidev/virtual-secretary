@@ -128,7 +128,7 @@ model CancellationPolicy {
 
 model ScheduleConfiguration {
   id                     String     @id @default(uuid())
-  workingDays            WeekDays[] @map("working_days")
+  workingDays            Int[]      @map("working_days")
   workStartHour          String     @map("work_start_hour")
   workEndHour            String     @map("work_end_hour")
   sessionDurationMinutes Int        @default(60) @map("session_duration_minutes")

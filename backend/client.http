@@ -23,6 +23,7 @@ Authorization: Bearer {{authToken}}
   "newPasswordConfirmation": "SenhaForte12345"
 }
 
+
 ###
 
 # @name create_professional_account
@@ -46,6 +47,22 @@ Content-Type: application/json
     "country": "Brasil"
   },
   "session_price": 20
+}
+
+###
+
+# @name create_schedule_configuration
+POST {{baseUrl}}/profissional/schedule-configuration
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "bufferIntervalMinutes": 10,
+    "daysOfWeek": [1, 2, 3, 4, 5],
+    "startTime": "09:00",
+    "endTime": "21:00",
+    "holidays": [],
+    "sessionDurationMinutes": 50
 }
 
 ###
@@ -120,13 +137,25 @@ Authorization: Bearer {{authToken}}
 ###
 
 # @name add_professional_to_organization
-PATCH {{baseUrl}}/organization/432434da-ad83-4fbe-a73d-a4c127b61ab4/professionals
+PATCH {{baseUrl}}/organization/432434da-ad83-4fbe-a73d-a4c127b61ab4/add/professional
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
   "professionalId": "71fa59cc-2398-4710-b1db-a4c180bfb9d5"
 }
+
+### 
+
+# @name remove_professional_to_organization
+PATCH {{baseUrl}}/organization/432434da-ad83-4fbe-a73d-a4c127b61ab4/remove/professional
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "professionalId": "71fa59cc-2398-4710-b1db-a4c180bfb9d5"
+}
+
 
 ###
 # @name fetch_clients
@@ -141,15 +170,25 @@ GET {{baseUrl}}/professionals
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
-
 ###
 
-POST {{baseUrl}}/schedules
+POST {{baseUrl}}/appointments/schedule
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "professionalId": "80bd51eb-a225-4049-a5d0-01042834617f",
+  "professionalId": "194a29f4-7c53-4867-b3f9-5a5fbd44bb81",
   "startDateTime": "2024-06-11T14:30:00.000Z",
   "modality": "IN_PERSON"
+}
+
+###
+
+PATCH {{baseUrl}}/appointments/reschedule
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "startDate": "2024-06-11T14:30:00.000Z",
+  "endDate": "2024-06-11T14:30:00.000Z"
 }

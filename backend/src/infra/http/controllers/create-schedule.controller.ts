@@ -18,14 +18,14 @@ import {
 
 const bodyValidationPipe = new ZodValidationPipe(createScheduleBodySchema)
 
-@Controller('/schedules')
+@Controller('/appointments')
 export class CreateScheduleController {
   constructor(
     private readonly createScheduleUseCase: CreateAppointmentUseCase,
     private readonly clientRepository: ClientRepository
   ) {}
 
-  @Post()
+  @Post('/schedule')
   @UsePipes()
   async handle(
     @Body(bodyValidationPipe)
