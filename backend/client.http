@@ -204,3 +204,9 @@ Authorization: Bearer {{authToken}}
 {
   "startDate": "2026-01-08T14:00:00.000Z"
 }
+
+###
+
+PATCH {{baseUrl}}/appointments/c020bb50-0496-4acc-a3a6-f936357658c2/cancel
+Content-Type: application/json
+Authorization: Bearer {{authToken}}

@@ -1,11 +1,16 @@
+import { NotAllowedError } from '@/core/errors/not-allowed-error'
+import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
+import { NoDisponibilityError } from '@/domain/scheduling/application/use-cases/errors/no-disponibility-error'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
+  ForbiddenException,
   NotFoundException,
   Post,
   UsePipes,
@@ -48,7 +53,23 @@ export class CreateScheduleController {
     })
 
     if (result.isLeft()) {
-      throw new BadRequestException(result.value.message)
+      const error = result.value
+      switch (error.constructor) {
+        case NotFoundError:
+          throw new NotFoundException(error.message)
+        case NoDisponibilityError:
+          throw new ConflictException(error.message)
+        case NotAllowedError:
+          throw new ForbiddenException(error.message)
+        default:
+          throw new BadRequestException(error?.message ?? 'Bad Request')
+      }
+    }
+
+    const scheduledAppointment = result.value.appointment
+
+    return { 
+      scheduled_appointment: scheduledAppointment
     }
   }
 }

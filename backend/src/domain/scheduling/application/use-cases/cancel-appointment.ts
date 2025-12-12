@@ -1,12 +1,13 @@
 import { Either, left, right } from '@/core/either'
+import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
-import type { Appointment } from '../../enterprise/entities/appointment'
-import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
-import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
+import { Appointment } from '../../enterprise/entities/appointment'
+import { AppointmentsRepository } from '../repositories/appointments.repository'
+import { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
+import { ClientRepository } from '../repositories/client.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
 import { AlreadyCanceledError } from './errors/already-canceled-error'
 import { CannotCancelAppointmentError } from './errors/cannot-cancel-appointment'
 
@@ -22,6 +23,7 @@ export type CancelAppointmentUseCaseResponse = Either<
   { appointment: Appointment }
 >
 
+@Injectable()
 export class CancelAppointmentUseCase {
   constructor(
     private appointmentsRepository: AppointmentsRepository,
@@ -54,12 +56,19 @@ export class CancelAppointmentUseCase {
       return left(new NotFoundError('Professional not found'))
     }
 
-    if (
-      client?.id !== appointment.clientId ||
-      professional?.id !== appointment.professionalId
-    ) {
+    if (!client.id.equals(appointment.clientId)) {
       return left(
-        new NotAllowedError('You are not allowed to cancel this appointment')
+        new NotAllowedError(
+          'You are not allowed to cancel an appointment from another person.'
+        )
+      )
+    }
+
+    if (!professional.id.equals(appointment.professionalId)) {
+      return left(
+        new NotAllowedError(
+          'You are not allowed to cancel an appointment from another professional.'
+        )
       )
     }
 
