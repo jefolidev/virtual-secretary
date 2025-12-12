@@ -61,7 +61,7 @@ describe('Cancel Appointment', () => {
       {
         clientId: client.id,
         professionalId: professional.id,
-        startDateTime: new Date('2025-12-12T10:00:00.000Z'),
+        startDateTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
       },
       new UniqueEntityId('appointment-id')
     )
