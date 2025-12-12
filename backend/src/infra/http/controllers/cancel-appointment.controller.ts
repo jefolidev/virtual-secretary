@@ -1,7 +1,8 @@
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { CancelAppointmentUseCase } from '@/domain/scheduling/application/use-cases/cancel-appointment'
-import { NoDisponibilityError } from '@/domain/scheduling/application/use-cases/errors/no-disponibility-error'
+import { AlreadyCanceledError } from '@/domain/scheduling/application/use-cases/errors/already-canceled-error'
+import { CannotCancelAppointmentError } from '@/domain/scheduling/application/use-cases/errors/cannot-cancel-appointment'
 import {
   BadRequestException,
   ConflictException,
@@ -30,10 +31,12 @@ export class CancelAppointmentController {
       switch (error.constructor) {
         case NotFoundError:
           throw new NotFoundException(error.message)
-        case NoDisponibilityError:
+        case AlreadyCanceledError:
           throw new ConflictException(error.message)
         case NotAllowedError:
           throw new ForbiddenException(error.message)
+        case CannotCancelAppointmentError:
+          throw new BadRequestException(error.message)
         default:
           throw new BadRequestException(error?.message ?? 'Bad Request')
       }

@@ -55,12 +55,17 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     startDate: Date,
     endDate: Date
   ): Promise<Appointment[]> {
+    const blockingStatuses = [
+      'SCHEDULED',
+      'CONFIRMED',
+      'RESCHEDULED',
+      'IN_PROGRESS',
+    ]
+
     const appointment = this.items.filter((appointment) => {
-      console.log(appointment.effectiveStartDateTime.getTime())
-      console.log(appointment.effectiveEndDateTime.getTime())
-      console.log(appointment.isRescheduled())
       return (
         appointment.professionalId.toString() === professionalId &&
+        blockingStatuses.includes(appointment.status) &&
         appointment.effectiveStartDateTime.getTime() <= endDate.getTime() &&
         appointment.effectiveEndDateTime.getTime() >= startDate.getTime()
       )

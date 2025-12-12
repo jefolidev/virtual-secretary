@@ -60,17 +60,25 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       return []
     }
 
-    // Convert to domain objects and filter using effective datetime
     const domainAppointments = appointments.map(
       PrismaAppointmentMapper.toDomain
     )
 
-    // Filter appointments that overlap with the given time range using effective datetime
+    const blockingStatuses = [
+      'SCHEDULED',
+      'CONFIRMED',
+      'RESCHEDULED',
+      'IN_PROGRESS',
+    ]
+
     const overlappingAppointments = domainAppointments.filter((appointment) => {
+      if (!blockingStatuses.includes(appointment.status)) {
+        return false
+      }
+
       const effectiveStart = appointment.effectiveStartDateTime
       const effectiveEnd = appointment.effectiveEndDateTime
 
-      // Check if appointments overlap: effectiveStart < endDate && effectiveEnd > startDate
       return effectiveStart < endDate && effectiveEnd > startDate
     })
 

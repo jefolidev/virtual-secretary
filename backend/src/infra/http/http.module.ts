@@ -34,6 +34,8 @@ import { ForgotPasswordController } from './controllers/forgot-password.controll
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
+import { ConfirmAppointmentUseCase } from '@/domain/scheduling/application/use-cases/confirm-appointment'
+import { ConfirmAppointmentController } from './controllers/confirm-appointment.controller'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -41,6 +43,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     AddProfessionalToOrganizationController,
     AuthenticateController,
     CancelAppointmentController,
+    ConfirmAppointmentController,
     CreateAccountController,
     CreateCancellationPolicyController,
     CreateScheduleController,
@@ -59,6 +62,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     AddProfessionalToOrganizationUseCase,
     AuthenticateStudentUseCase,
     CancelAppointmentUseCase,
+    ConfirmAppointmentUseCase,
     CreateAddressUseCase,
     CreateAppointmentUseCase,
     CreateCancellationPolicyUseCase,

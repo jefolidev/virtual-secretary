@@ -170,6 +170,9 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   public isRescheduled() {
     return this.props.status === 'RESCHEDULED'
   }
+  public isCancelled() {
+    return this.props.status === 'CANCELLED'
+  }
 
   public confirm() {
     if (this.isCompletedOrInProgress()) {

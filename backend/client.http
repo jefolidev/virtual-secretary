@@ -197,7 +197,7 @@ Authorization: Bearer {{authToken}}
 
 ###
 
-PATCH {{baseUrl}}/appointments/c020bb50-0496-4acc-a3a6-f936357658c2/reschedule
+PATCH {{baseUrl}}/appointments/9bea1145-9904-4522-875c-560849193bb9/reschedule
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -207,6 +207,12 @@ Authorization: Bearer {{authToken}}
 
 ###
 
-PATCH {{baseUrl}}/appointments/c020bb50-0496-4acc-a3a6-f936357658c2/cancel
+PATCH {{baseUrl}}/appointments/9bea1145-9904-4522-875c-560849193bb9/cancel
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+PATCH {{baseUrl}}/appointments/996a45a5-74cb-4692-99ab-6d6b2b730c75/confirm
 Content-Type: application/json
 Authorization: Bearer {{authToken}}

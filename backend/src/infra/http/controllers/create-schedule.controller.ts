@@ -16,6 +16,7 @@ import {
   UsePipes,
 } from '@nestjs/common'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
+import { AppointmentsPresenter } from '../presenters/appointments-presenter'
 import {
   createScheduleBodySchema,
   CreateScheduleBodySchema,
@@ -68,8 +69,8 @@ export class CreateScheduleController {
 
     const scheduledAppointment = result.value.appointment
 
-    return { 
-      scheduled_appointment: scheduledAppointment
+    return {
+      scheduled_appointment: AppointmentsPresenter.toHTTP(scheduledAppointment),
     }
   }
 }
