@@ -20,15 +20,13 @@ export class FetchScheduleByDateUseCase {
   async execute({
     startDate,
     endDate,
-    page = 1,
   }: FetchScheduleByDateUseCaseProps): Promise<FetchScheduleByDateUseCaseResponse> {
     if (!startDate || !endDate)
       return left(new ValidationError('Please provide date.'))
 
     const appointments = await this.appointmentsRepository.findManyByDate(
       startDate,
-      endDate,
-      { page }
+      endDate
     )
 
     if (startDate >= endDate)

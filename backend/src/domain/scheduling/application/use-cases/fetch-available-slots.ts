@@ -1,13 +1,14 @@
 import { Either, left, right } from '@/core/either'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
+import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter'
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore'
 import utc from 'dayjs/plugin/utc'
-import type { Professional } from '../../enterprise/entities/professional'
-import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
-import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
+import { Professional } from '../../enterprise/entities/professional'
+import { AppointmentsRepository } from '../repositories/appointments.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
+import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 
 dayjs.extend(utc)
 dayjs.extend(isSameOrAfter)
@@ -27,6 +28,7 @@ export type FetchAvailableSlotsUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class FetchAvailableSlotsUseCase {
   constructor(
     private readonly professionalRepository: ProfessionalRepository,
@@ -53,8 +55,7 @@ export class FetchAvailableSlotsUseCase {
     if (!scheduleConfiguration)
       return left(new NotFoundError('Schedule configuration not found!'))
 
-    const appointmentsInPeriod =
-      await this.appointmentRepository.findManyByDate(startDate, endDate)
+    // Vamos calcular por dia e buscar conflitos apenas do profissional
 
     const {
       workingDays,
@@ -69,14 +70,12 @@ export class FetchAvailableSlotsUseCase {
 
     const allSlots: { startDate: Date; endDate: Date }[] = []
 
-    // Itera por cada dia no período - TRABALHANDO SEMPRE EM UTC
     let currentDate = dayjs(startDate).utc().startOf('day')
-    const end = dayjs(endDate).utc().endOf('day')
+    const end = dayjs(endDate).utc()
 
     while (currentDate.isSameOrBefore(end)) {
       const dayOfWeek = currentDate.utc().day()
 
-      // Verifica se é um dia de trabalho e não é feriado
       const isWorkingDay = workingDays.currentItems.includes(dayOfWeek)
       const isHoliday = holidays.some((holiday) =>
         dayjs(holiday).utc().isSame(currentDate, 'day')
@@ -90,12 +89,32 @@ export class FetchAvailableSlotsUseCase {
           .second(0)
           .millisecond(0)
 
-        const workEnd = currentDate
+        let workEnd = currentDate
           .utc()
           .hour(endHour!)
           .minute(endMinute!)
           .second(0)
           .millisecond(0)
+
+        // Limita o fim do trabalho ao fim do período solicitado, se for o mesmo dia
+        if (workEnd.isSame(end, 'day') && workEnd.isAfter(end)) {
+          workEnd = end.clone()
+        }
+
+        // Busca consultas do profissional para o intervalo diário inteiro
+        const dayStart = currentDate
+          .utc()
+          .hour(startHour!)
+          .minute(startMinute!)
+          .second(0)
+          .millisecond(0)
+        const dayEnd = workEnd.clone()
+        const appointmentsInPeriod =
+          await this.appointmentRepository.findOverlapping(
+            professional.id.toString(),
+            dayStart.toDate(),
+            dayEnd.toDate()
+          )
 
         while (cursor.isBefore(workEnd)) {
           const slotStart = cursor
@@ -106,25 +125,16 @@ export class FetchAvailableSlotsUseCase {
             break
           }
 
-          // LÓGICA DE CONFLITO CORRIGIDA - mais abrangente
           const isConflicting = appointmentsInPeriod.some((appointment) => {
-            const appointmentStart = dayjs(appointment.startDateTime).utc()
-            const appointmentEnd = dayjs(appointment.endDateTime).utc()
+            const appointmentStart = dayjs(
+              appointment.effectiveStartDateTime
+            ).utc()
+            const appointmentEnd = dayjs(appointment.effectiveEndDateTime).utc()
 
-            // Conflito ocorre se há QUALQUER sobreposição
+            // Sobreposição direta: início do slot < fim da consulta E fim do slot > início da consulta
             return (
-              // Appointment começa durante o slot (incluindo início exato)
-              (appointmentStart.isSameOrAfter(slotStart) &&
-                appointmentStart.isBefore(slotEnd)) ||
-              // Appointment termina durante o slot (incluindo fim exato)
-              (appointmentEnd.isAfter(slotStart) &&
-                appointmentEnd.isSameOrBefore(slotEnd)) ||
-              // Appointment cobre completamente o slot
-              (appointmentStart.isSameOrBefore(slotStart) &&
-                appointmentEnd.isSameOrAfter(slotEnd)) ||
-              // Slot cobre completamente o appointment
-              (slotStart.isSameOrBefore(appointmentStart) &&
-                slotEnd.isSameOrAfter(appointmentEnd))
+              slotStart.isBefore(appointmentEnd) &&
+              slotEnd.isAfter(appointmentStart)
             )
           })
 
@@ -135,7 +145,6 @@ export class FetchAvailableSlotsUseCase {
             })
           }
 
-          // Avança para o próximo slot (sessão + buffer)
           cursor = slotEnd.add(bufferIntervalMinutes, 'minute')
         }
       }

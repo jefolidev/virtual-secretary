@@ -36,6 +36,8 @@ import { RescheduleAppointmentController } from './controllers/reschedule-appoin
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
 import { ConfirmAppointmentUseCase } from '@/domain/scheduling/application/use-cases/confirm-appointment'
 import { ConfirmAppointmentController } from './controllers/confirm-appointment.controller'
+import { FetchAvailableProfessionalSlotsController } from './controllers/fetch-available-slots.controller'
+import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-cases/fetch-available-slots'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -49,6 +51,7 @@ import { ConfirmAppointmentController } from './controllers/confirm-appointment.
     CreateScheduleController,
     CreateScheduleConfigurationController,
     CreateOrganizationController,
+    FetchAvailableProfessionalSlotsController,
     FetchClientController,
     FetchOrganizationController,
     FetchOrganizationByIdController,
@@ -70,6 +73,7 @@ import { ConfirmAppointmentController } from './controllers/confirm-appointment.
     CreateOrganizationUseCase,
     CreateProfessionalUseCase,
     CreateScheduleConfigurationUseCase,
+    FetchAvailableSlotsUseCase,
     FetchClientsUseCase,
     FetchOrganizationByIdUseCase,
     ForgotPasswordUseCase,

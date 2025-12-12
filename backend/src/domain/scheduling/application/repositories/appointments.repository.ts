@@ -23,8 +23,7 @@ export abstract class AppointmentsRepository {
   ): Promise<Appointment[]>
   abstract findManyByDate(
     startDate: Date,
-    endDate: Date,
-    params?: PaginationParams
+    endDate: Date
   ): Promise<Appointment[]>
   abstract save(appointment: Appointment): Promise<void>
   abstract findManyByStatus(

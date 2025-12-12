@@ -123,18 +123,14 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     return appointments.map(PrismaAppointmentMapper.toDomain)
   }
 
-  async findManyByDate(
-    startDate: Date,
-    endDate: Date,
-    params: { page: number }
-  ): Promise<Appointment[]> {
+  async findManyByDate(startDate: Date, endDate: Date): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         startDateTime: startDate,
         endDateTime: endDate,
       },
-      take: 10,
-      skip: params.page ? (params.page - 1) * 10 : 0,
+      // take: 10,
+      // skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
     if (appointments.length === 0) {

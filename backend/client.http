@@ -191,13 +191,13 @@ Authorization: Bearer {{authToken}}
 
 {
   "professionalId": "1d82b379-e7e7-4b68-936c-8dea94af5d4f",
-  "startDateTime": "2025-12-21T15:00:00.000Z",
+  "startDateTime": "2025-12-22T09:00:00.000Z",
   "modality": "IN_PERSON"
 }
 
 ###
 
-PATCH {{baseUrl}}/appointments/9bea1145-9904-4522-875c-560849193bb9/reschedule
+PATCH {{baseUrl}}/appointments/e7c473db-4ce3-4ddb-9b20-99c8f8e14efa/reschedule
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -216,3 +216,16 @@ Authorization: Bearer {{authToken}}
 PATCH {{baseUrl}}/appointments/996a45a5-74cb-4692-99ab-6d6b2b730c75/confirm
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
+### 
+
+GET {{baseUrl}}/professional/slots
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "professionalId": "1d82b379-e7e7-4b68-936c-8dea94af5d4f",
+  "startDate": "2026-01-08T09:00:00.000Z",
+  "endDate": "2026-01-08T21:00:00.000Z"
+
+}
