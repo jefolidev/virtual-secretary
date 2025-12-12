@@ -67,7 +67,7 @@ describe('Create ScheduleConfiguration', () => {
     expect(result.isLeft()).toBe(true)
 
     if (result.isLeft()) {
-      expect(result.value).instanceOf(NotFoundError)
+      expect(result.value).toBeInstanceOf(NotFoundError)
     }
   })
 
@@ -94,7 +94,7 @@ describe('Create ScheduleConfiguration', () => {
     expect(result.isLeft()).toBe(true)
 
     if (result.isLeft()) {
-      expect(result.value).instanceOf(ConflictError)
+      expect(result.value).toBeInstanceOf(ConflictError)
     }
   })
 })

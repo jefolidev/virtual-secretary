@@ -50,17 +50,18 @@ model User {
 }
 
 model Appointment {
-  id                 String     @id @default(uuid())
-  clientId           String     @map("client_id")
-  professionalId     String     @map("professional_id")
-  startDateTime      DateTime   @map("start_date_time")
-  endDateTime        DateTime   @map("end_date_time")
+  id                 String        @id @default(uuid())
+  clientId           String        @map("client_id")
+  professionalId     String        @map("professional_id")
+  startDateTime      DateTime      @map("start_date_time")
+  endDateTime        DateTime      @map("end_date_time")
   modality           Modalities
-  status             Status     @default(PENDING_PAYMENT)
-  agreedPrice        Decimal    @map("agreed_price") @db.Decimal(10, 2)
-  googleMeetLink     String?    @map("google_meet_link")
-  rescheduleDateTime Json?      @map("reschedule_date_time")
-  paymentExpiresAt   DateTime?  @map("payment_expires_at")
+  status             Status        @default(SCHEDULED)
+  paymentStatus      PaymentStatus @default(PENDING)
+  agreedPrice        Decimal       @map("agreed_price") @db.Decimal(10, 2)
+  googleMeetLink     String?       @map("google_meet_link")
+  rescheduleDateTime Json?         @map("reschedule_date_time")
+  paymentExpiresAt   DateTime?     @map("payment_expires_at")
 
   client       Client       @relation(fields: [clientId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
@@ -212,13 +213,13 @@ enum Status {
   CONFIRMED
   CANCELLED
   RESCHEDULED
-  PENDING_PAYMENT
   NO_SHOW
   IN_PROGRESS
   COMPLETED
 }
 
 enum PaymentStatus {
+  PENDING
   PROCESSING
   SUCCEEDED
   FAILED

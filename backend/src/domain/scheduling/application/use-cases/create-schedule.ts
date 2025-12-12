@@ -72,6 +72,7 @@ export class CreateAppointmentUseCase {
 
     const scheduleDurationMinute =
       professionalScheduleConfiguration.sessionDurationMinutes
+      
     const scheduleDurationDiff = dayjs(startDateTime)
       .add(scheduleDurationMinute, 'minutes')
       .diff(dayjs(startDateTime), 'minute')
@@ -86,6 +87,7 @@ export class CreateAppointmentUseCase {
         startDateTime,
         endScheduleTime
       )
+      
 
     if (overlappingAppointments!.length > 0) {
       return left(new NoDisponibilityError('No disponibility'))

@@ -1,8 +1,10 @@
 import { Either, left, right } from '@/core/either'
+import { Injectable } from '@nestjs/common'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
-import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
+import { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
+import { ConflictError } from './errors/conflict-error'
 import { ValidationError } from './errors/validation-error'
 
 interface CreateCancellationPolicyUseCaseProps {
@@ -11,7 +13,7 @@ interface CreateCancellationPolicyUseCaseProps {
   cancelationFeePercentage: number
   minDaysBeforeNextAppointment: number
   allowReschedule: boolean
-  description: string
+  description?: string
 }
 
 type CreateCancellationPolicyUseCaseResponse = Either<
@@ -21,6 +23,7 @@ type CreateCancellationPolicyUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class CreateCancellationPolicyUseCase {
   constructor(
     readonly cancellationPolicyRepository: CancellationPolicyRepository,
@@ -43,6 +46,14 @@ export class CreateCancellationPolicyUseCase {
       return left(new NotFoundError('Professional not found'))
     }
 
+    if (professional.cancellationPolicyId) {
+      return left(
+        new ConflictError(
+          'This professional already have a cancellation policy.'
+        )
+      )
+    }
+
     if (cancelationFeePercentage < 0) {
       return left(
         new ValidationError('cancelationFeePercentage must be greater than 0')
@@ -58,11 +69,15 @@ export class CreateCancellationPolicyUseCase {
       minHoursBeforeCancellation,
       cancelationFeePercentage,
       allowReschedule,
-      description,
+      description: description ? description : '',
       minDaysBeforeNextAppointment,
     })
 
-    this.cancellationPolicyRepository.create(cancellationPolicy)
+    await this.cancellationPolicyRepository.create(cancellationPolicy)
+
+    professional.cancellationPolicyId = cancellationPolicy.id
+
+    await this.professionalRepository.save(professional)
 
     return right({ cancellationPolicy })
   }

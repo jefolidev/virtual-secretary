@@ -5,6 +5,7 @@ import { RemoveProfessionalFromOrganizationUseCase } from '@/domain/organization
 import { UpdateOrganizationUseCase } from '@/domain/organization/application/use-cases/update-organization'
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CreateAddressUseCase } from '@/domain/scheduling/application/use-cases/create-address'
+import { CreateCancellationPolicyUseCase } from '@/domain/scheduling/application/use-cases/create-cancellation-policy'
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
 import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
@@ -19,6 +20,7 @@ import { DatabaseModule } from '../database/database.module'
 import { AddProfessionalToOrganizationController } from './controllers/add-professional-to-organization.controller'
 import { AuthenticateController } from './controllers/authenticate.controller'
 import { CreateAccountController } from './controllers/create-account.controller'
+import { CreateCancellationPolicyController } from './controllers/create-cancellation-pollicy.controller'
 import { CreateOrganizationController } from './controllers/create-organization.controller'
 import { CreateScheduleConfigurationController } from './controllers/create-schedule-configuration.controller'
 import { CreateScheduleController } from './controllers/create-schedule.controller'
@@ -37,6 +39,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     AddProfessionalToOrganizationController,
     AuthenticateController,
     CreateAccountController,
+    CreateCancellationPolicyController,
     CreateScheduleController,
     CreateScheduleConfigurationController,
     CreateOrganizationController,
@@ -54,6 +57,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     AuthenticateStudentUseCase,
     CreateAddressUseCase,
     CreateAppointmentUseCase,
+    CreateCancellationPolicyUseCase,
     CreateClientUseCase,
     CreateOrganizationUseCase,
     CreateProfessionalUseCase,

@@ -22,7 +22,7 @@ describe('Create Cancellation Policy', () => {
   it('should be able to create a cancellation policy', async () => {
     const professional = makeProfessional()
 
-    inMemoryProfessionalRepository.create(professional)
+    await inMemoryProfessionalRepository.create(professional)
 
     const professionalId = professional.id.toString()
 
@@ -35,13 +35,6 @@ describe('Create Cancellation Policy', () => {
       professionalId,
       minDaysBeforeNextAppointment: 1,
     }
-
-    const cancellationPolicyId = cancellationPolicy.id.toString()
-
-    inMemoryProfessionalRepository.assignCancellationPolicy(
-      professionalId,
-      cancellationPolicyId
-    )
 
     const response = await sut.execute(cancellationPolicy)
 

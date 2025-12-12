@@ -17,7 +17,7 @@ export function makeAppointment(
       startDateTime: new Date(),
       endDateTime: new Date(),
       modality: 'ONLINE',
-      status: 'CANCELLED',
+      status: 'SCHEDULED',
       agreedPrice: 2000,
       googleMeetLink: faker.internet.url(),
       ...override,

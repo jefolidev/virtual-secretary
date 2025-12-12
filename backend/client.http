@@ -6,7 +6,7 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "email": "professional1@professional.com.br",
+  "email": "jeferson@client.com.br",
   "password": "SenhaForte123"
 }
 
@@ -23,7 +23,6 @@ Authorization: Bearer {{authToken}}
   "newPasswordConfirmation": "SenhaForte12345"
 }
 
-
 ###
 
 # @name create_professional_account
@@ -32,7 +31,7 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "professional1@professional.com.br",
+  "email": "jeferson@professional.com.br",
   "password": "SenhaForte123",
   "cpf": "82000843026",
   "role": "PROFESSIONAL",
@@ -63,6 +62,21 @@ Authorization: Bearer {{authToken}}
     "endTime": "21:00",
     "holidays": [],
     "sessionDurationMinutes": 50
+}
+
+###
+
+# @name create_cancellation_policy
+POST {{baseUrl}}/profissional/cancellation-policy
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "allowReschedule": true,
+    "cancelationFeePercentage": 0.5,
+    "description": "Cancellation Policy",
+    "minHoursBeforeCancellation": 6,
+    "minDaysBeforeNextAppointment": 1
 }
 
 ###
@@ -156,7 +170,6 @@ Authorization: Bearer {{authToken}}
   "professionalId": "71fa59cc-2398-4710-b1db-a4c180bfb9d5"
 }
 
-
 ###
 # @name fetch_clients
 GET {{baseUrl}}/clients?page=1
@@ -170,25 +183,24 @@ GET {{baseUrl}}/professionals
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
-###
+### 
 
 POST {{baseUrl}}/appointments/schedule
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "professionalId": "194a29f4-7c53-4867-b3f9-5a5fbd44bb81",
-  "startDateTime": "2024-06-11T14:30:00.000Z",
+  "professionalId": "1d82b379-e7e7-4b68-936c-8dea94af5d4f",
+  "startDateTime": "2025-12-21T14:00:00.000Z",
   "modality": "IN_PERSON"
 }
 
 ###
 
-PATCH {{baseUrl}}/appointments/reschedule
+PATCH {{baseUrl}}/appointments/996a45a5-74cb-4692-99ab-6d6b2b730c75/reschedule
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "startDate": "2024-06-11T14:30:00.000Z",
-  "endDate": "2024-06-11T14:30:00.000Z"
+  "startDate": "2026-01-08T14:00:00.000Z"
 }
