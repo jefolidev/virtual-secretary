@@ -53,15 +53,28 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         professionalId,
-        startDateTime: { lt: endDate },
-        endDateTime: { gt: startDate },
       },
     })
+
     if (appointments.length === 0) {
       return []
     }
 
-    return appointments.map(PrismaAppointmentMapper.toDomain)
+    // Convert to domain objects and filter using effective datetime
+    const domainAppointments = appointments.map(
+      PrismaAppointmentMapper.toDomain
+    )
+
+    // Filter appointments that overlap with the given time range using effective datetime
+    const overlappingAppointments = domainAppointments.filter((appointment) => {
+      const effectiveStart = appointment.effectiveStartDateTime
+      const effectiveEnd = appointment.effectiveEndDateTime
+
+      // Check if appointments overlap: effectiveStart < endDate && effectiveEnd > startDate
+      return effectiveStart < endDate && effectiveEnd > startDate
+    })
+
+    return overlappingAppointments
   }
 
   async findManyByProfessionalId(

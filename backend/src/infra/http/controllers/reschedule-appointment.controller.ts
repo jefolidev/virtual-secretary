@@ -13,10 +13,11 @@ import {
   Patch,
 } from '@nestjs/common'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
+import { AppointmentsPresenter } from '../presenters/appointments-presenter'
 import {
   RescheduleAppointmentBodySchema,
   rescheduleAppointmentBodySchema,
-} from './dto/reschedule-appointments.dtor'
+} from './dto/reschedule-appointments.dto'
 
 @Controller('/appointments')
 export class RescheduleAppointmentController {
@@ -30,12 +31,11 @@ export class RescheduleAppointmentController {
     body: RescheduleAppointmentBodySchema,
     @Param('id') appointmentid: string
   ) {
-    const { startDate, endDate } = body
+    const { startDate } = body
 
     const result = await this.rescheduleAppointmentUseCase.execute({
       id: appointmentid,
       startDateTime: startDate,
-      endDateTime: endDate,
     })
 
     if (result.isLeft()) {
@@ -55,7 +55,7 @@ export class RescheduleAppointmentController {
     const appointment = result.value.appointment
 
     return {
-      appointment,
+      appointment: AppointmentsPresenter.toHTTP(appointment),
     }
   }
 }

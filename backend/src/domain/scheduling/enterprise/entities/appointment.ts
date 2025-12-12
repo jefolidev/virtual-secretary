@@ -15,6 +15,13 @@ export type AppointmentStatusType =
   | 'IN_PROGRESS'
   | 'COMPLETED'
 
+export type PaymentStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'REFUNDED'
+
 export interface AppointmentProps {
   clientId: UniqueEntityId
   professionalId: UniqueEntityId
@@ -24,6 +31,7 @@ export interface AppointmentProps {
   modality: AppointmentModalityType
   agreedPrice: number
   status: AppointmentStatusType
+  paymentStatus: PaymentStatus
   googleMeetLink?: string
   rescheduleDateTime?: { start: Date; end: Date }
   isPaid: boolean
@@ -62,6 +70,18 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.touch()
   }
 
+  get effectiveStartDateTime() {
+    return this.isRescheduled()
+      ? this.props.rescheduleDateTime!.start
+      : this.props.startDateTime
+  }
+
+  get effectiveEndDateTime() {
+    return this.isRescheduled()
+      ? this.props.rescheduleDateTime!.end
+      : this.props.endDateTime
+  }
+
   get modality() {
     return this.props.modality
   }
@@ -85,6 +105,15 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
   set status(status: AppointmentStatusType) {
     this.props.status = status
+    this.touch()
+  }
+
+  get paymentStatus() {
+    return this.props.paymentStatus
+  }
+
+  set paymentStatus(paymentStatus: PaymentStatus) {
+    this.props.paymentStatus = paymentStatus
     this.touch()
   }
 
@@ -215,13 +244,17 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   }
 
   static create(
-    props: Optional<AppointmentProps, 'createdAt' | 'status' | 'isPaid'>,
+    props: Optional<
+      AppointmentProps,
+      'createdAt' | 'status' | 'isPaid' | 'paymentStatus'
+    >,
     id?: UniqueEntityId
   ) {
     const appointment = new Appointment(
       {
         ...props,
-        status: 'SCHEDULED',
+        status: props.status ?? 'SCHEDULED',
+        paymentStatus: 'PENDING',
         isPaid: props.isPaid ?? false,
         createdAt: props.createdAt ?? new Date(),
       },

@@ -8,12 +8,12 @@ import { AppointmentsRepository } from '../repositories/appointments.repository'
 import { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import { ClientRepository } from '../repositories/client.repository'
 import { ProfessionalRepository } from '../repositories/professional.repository'
+import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 
 export interface RescheduleAppointmentUseCaseProps {
   id: string
   startDateTime: Date
-  endDateTime: Date
 }
 
 export type RescheduleAppointmentUseCaseResponse = Either<
@@ -29,13 +29,14 @@ export class RescheduleAppointmentUseCase {
     private appointmentsRepository: AppointmentsRepository,
     private professionalRepository: ProfessionalRepository,
     private cancellationPollicyRepository: CancellationPolicyRepository,
+    private scheduleConfigurationRepository: ScheduleConfigurationRepository,
+
     private clientRepository: ClientRepository
   ) {}
 
   async execute({
     id,
     startDateTime,
-    endDateTime,
   }: RescheduleAppointmentUseCaseProps): Promise<RescheduleAppointmentUseCaseResponse> {
     const appointment = await this.appointmentsRepository.findById(id)
 
@@ -51,12 +52,6 @@ export class RescheduleAppointmentUseCase {
 
     if (dayjs(startDateTime).isBefore(dayjs())) {
       return left(new NoDisponibilityError('Cannot reschedule to past date'))
-    }
-
-    if (dayjs(startDateTime).isAfter(endDateTime)) {
-      return left(
-        new NoDisponibilityError('Start date must be before end date')
-      )
     }
 
     const client = await this.clientRepository.findById(
@@ -75,6 +70,23 @@ export class RescheduleAppointmentUseCase {
       return left(new NotFoundError('Professional not found'))
     }
 
+    const professionalScheduleConfiguration =
+      await this.scheduleConfigurationRepository.findByProfessionalId(
+        professional.id.toString()
+      )
+
+    if (!professionalScheduleConfiguration) {
+      return left(
+        new NotFoundError('Professional schedule configuration not found')
+      )
+    }
+
+    const sessionDurationMinutes =
+      professionalScheduleConfiguration.sessionDurationMinutes
+    const endDateTime = dayjs(startDateTime)
+      .add(sessionDurationMinutes, 'minutes')
+      .toDate()
+
     const professionalCancellationPolicy =
       await this.cancellationPollicyRepository.findByProfessionalId(
         professional.id.toString()
@@ -91,7 +103,15 @@ export class RescheduleAppointmentUseCase {
         endDateTime
       )
 
-    if (overlappingAppointments && overlappingAppointments.length > 0) {
+    const filteredOverlappingAppointments = overlappingAppointments.filter(
+      (overlappingAppointment) =>
+        !overlappingAppointment.id.equals(appointment.id)
+    )
+
+    if (
+      filteredOverlappingAppointments &&
+      filteredOverlappingAppointments.length > 0
+    ) {
       return left(new NoDisponibilityError('Time slot is not available'))
     }
 
@@ -101,6 +121,7 @@ export class RescheduleAppointmentUseCase {
     }
 
     appointment.reschedule(rescheduleDateTime)
+    appointment.status = 'RESCHEDULED'
 
     await this.appointmentsRepository.save(appointment)
 

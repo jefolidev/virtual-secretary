@@ -191,13 +191,13 @@ Authorization: Bearer {{authToken}}
 
 {
   "professionalId": "1d82b379-e7e7-4b68-936c-8dea94af5d4f",
-  "startDateTime": "2025-12-21T14:00:00.000Z",
+  "startDateTime": "2025-12-21T15:00:00.000Z",
   "modality": "IN_PERSON"
 }
 
 ###
 
-PATCH {{baseUrl}}/appointments/996a45a5-74cb-4692-99ab-6d6b2b730c75/reschedule
+PATCH {{baseUrl}}/appointments/c020bb50-0496-4acc-a3a6-f936357658c2/reschedule
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 

@@ -16,7 +16,9 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     DomainEvents.dispatchEventsForAggregate(appointment.id)
   }
 
-  async findMany(params: PaginationParams = { page: 1 }): Promise<Appointment[]> {
+  async findMany(
+    params: PaginationParams = { page: 1 }
+  ): Promise<Appointment[]> {
     const { page } = params
     const appointments = await this.items.slice((page - 1) * 10, page * 10)
     return appointments
@@ -54,10 +56,13 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     endDate: Date
   ): Promise<Appointment[]> {
     const appointment = this.items.filter((appointment) => {
+      console.log(appointment.effectiveStartDateTime.getTime())
+      console.log(appointment.effectiveEndDateTime.getTime())
+      console.log(appointment.isRescheduled())
       return (
         appointment.professionalId.toString() === professionalId &&
-        appointment.startDateTime.getTime() <= endDate.getTime() &&
-        appointment.endDateTime.getTime() >= startDate.getTime()
+        appointment.effectiveStartDateTime.getTime() <= endDate.getTime() &&
+        appointment.effectiveEndDateTime.getTime() >= startDate.getTime()
       )
     })
 
@@ -68,7 +73,9 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     professionalId: string
   ): Promise<Appointment | null> {
     const appointment = this.items.find((appointment) => {
-      return appointment.professionalId.equals(new UniqueEntityId(professionalId))
+      return appointment.professionalId.equals(
+        new UniqueEntityId(professionalId)
+      )
     })
 
     return appointment ?? null

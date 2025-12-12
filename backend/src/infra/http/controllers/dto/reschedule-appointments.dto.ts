@@ -1,8 +1,7 @@
 import z from 'zod'
 
 export const rescheduleAppointmentBodySchema = z.object({
-  startDate: z.date(),
-  endDate: z.date(),
+  startDate: z.coerce.date(),
 })
 
 export type RescheduleAppointmentBodySchema = z.infer<
