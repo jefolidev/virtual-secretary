@@ -17,8 +17,11 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
     })
   }
 
-  async findMany(): Promise<Professional[]> {
-    const professionals = await this.prisma.professional.findMany()
+  async findMany(params: { page: number }): Promise<Professional[]> {
+    const professionals = await this.prisma.professional.findMany({
+      take: 10,
+      skip: params.page ? (params.page - 1) * 10 : 0,
+    })
 
     return professionals.map(PrismaProfessionalMapper.toDomain)
   }

@@ -2,19 +2,20 @@ import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
+import { Injectable } from '@nestjs/common'
+import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
-import type { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
+import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 
 export interface EditScheduleConfigurationUseCaseRequest {
   professionalId: string
-  workingHours: { start: string; end: string }
-  sessionDurationMinutes: number
-  bufferIntervalMinutes: number
-  enableGoogleMeet: boolean
-  holidays: Date[]
-  workingDays: WorkingDaysList
+  workingHours?: { start?: string; end?: string }
+  sessionDurationMinutes?: number
+  bufferIntervalMinutes?: number
+  enableGoogleMeet?: boolean
+  holidays?: Date[]
+  workingDays?: WorkingDaysList
 }
 
 export type EditScheduleConfigurationUseCaseResponse = Either<
@@ -24,6 +25,7 @@ export type EditScheduleConfigurationUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class EditScheduleConfigurationUseCase {
   constructor(
     private professionalRepository: ProfessionalRepository,
@@ -38,7 +40,7 @@ export class EditScheduleConfigurationUseCase {
     sessionDurationMinutes,
     workingDays,
     workingHours,
-  }: EditScheduleConfigurationUseCaseRequest) {
+  }: EditScheduleConfigurationUseCaseRequest): Promise<EditScheduleConfigurationUseCaseResponse> {
     const professional = await this.professionalRepository.findById(
       professionalId
     )
@@ -54,9 +56,9 @@ export class EditScheduleConfigurationUseCase {
         professionalId
       )
 
-    const workingDaysList = new WorkingDaysList([0, 1, 3, 4, 5])
-
-    workingDaysList.update(workingDays.getItems())
+    const workingDaysList = workingDays
+      ? new WorkingDaysList(workingDays.getItems())
+      : scheduleConfiguration.workingDays
 
     if (!scheduleConfiguration.professionalId) {
       return left(new NotFoundError())
@@ -65,12 +67,18 @@ export class EditScheduleConfigurationUseCase {
     if (!scheduleConfiguration.professionalId.equals(professional.id))
       return left(new NotAllowedError())
 
-    scheduleConfiguration.bufferIntervalMinutes = bufferIntervalMinutes
-    scheduleConfiguration.enableGoogleMeet = enableGoogleMeet
-    scheduleConfiguration.holidays = holidays
-    scheduleConfiguration.sessionDurationMinutes = sessionDurationMinutes
+    scheduleConfiguration.bufferIntervalMinutes =
+      bufferIntervalMinutes ?? scheduleConfiguration.bufferIntervalMinutes
+    scheduleConfiguration.enableGoogleMeet =
+      enableGoogleMeet ?? scheduleConfiguration.enableGoogleMeet
+    scheduleConfiguration.holidays = holidays ?? scheduleConfiguration.holidays
+    scheduleConfiguration.sessionDurationMinutes =
+      sessionDurationMinutes ?? scheduleConfiguration.sessionDurationMinutes
     scheduleConfiguration.workingDays = workingDaysList
-    scheduleConfiguration.workingHours = workingHours
+    scheduleConfiguration.workingHours =
+      workingHours?.start && workingHours?.end
+        ? { start: workingHours.start, end: workingHours.end }
+        : scheduleConfiguration.workingHours
 
     await this.scheduleConfigurationRepository.save(scheduleConfiguration)
 

@@ -6,7 +6,7 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "email": "jeferson@client.com.br",
+  "email": "jeferson@professional.com.br",
   "password": "SenhaForte123"
 }
 
@@ -179,7 +179,7 @@ Authorization: Bearer {{authToken}}
 ###
 
 # @name fetch_professionals
-GET {{baseUrl}}/professionals
+GET {{baseUrl}}/professionals?page=1
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -227,5 +227,36 @@ Authorization: Bearer {{authToken}}
   "professionalId": "1d82b379-e7e7-4b68-936c-8dea94af5d4f",
   "startDate": "2026-01-08T09:00:00.000Z",
   "endDate": "2026-01-08T21:00:00.000Z"
+}
 
+### 
+
+GET {{baseUrl}}/client/5e2fd20e-351c-45b0-9aa3-bdf5858628da/appointments
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### 
+
+GET {{baseUrl}}/professional/1d82b379-e7e7-4b68-936c-8dea94af5d4f/appointments
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### 
+
+PUT {{baseUrl}}/profissional/cancellation-policy
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "allowReschedule": true
+}
+
+### 
+
+PUT {{baseUrl}}/profissional/schedule-configuration
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "daysOfWeek": [1, 2]
 }

@@ -2,9 +2,10 @@ import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
-import type { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
+import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
+import { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
+import { Injectable } from '@nestjs/common'
 
 export interface EditCancellationPolicyUseCaseRequest {
   professionalId: string
@@ -22,6 +23,7 @@ export type EditCancellationPolicyUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class EditCancellationPolicyUseCase {
   constructor(
     private professionalRepository: ProfessionalRepository,
@@ -35,7 +37,7 @@ export class EditCancellationPolicyUseCase {
     cancelationFeePercentage,
     allowReschedule,
     description,
-  }: EditCancellationPolicyUseCaseRequest) {
+  }: EditCancellationPolicyUseCaseRequest): Promise<EditCancellationPolicyUseCaseResponse> {
     const professional = await this.professionalRepository.findById(
       professionalId
     )

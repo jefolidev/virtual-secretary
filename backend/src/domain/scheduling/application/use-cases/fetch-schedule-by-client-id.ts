@@ -1,7 +1,8 @@
 import { Either, right } from '@/core/either'
-import type { NotFoundError } from '../../../../core/errors/resource-not-found-error'
-import type { Appointment } from '../../enterprise/entities/appointment'
-import type { AppointmentsRepository } from '../repositories/appointments.repository'
+import { Injectable } from '@nestjs/common'
+import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
+import { Appointment } from '../../enterprise/entities/appointment'
+import { AppointmentsRepository } from '../repositories/appointments.repository'
 
 export interface FetchScheduleByClientIdUseCaseProps {
   clientId: string
@@ -13,6 +14,7 @@ type FetchScheduleByClientIdUseCaseResponse = Either<
   { appointments: Appointment[] | [] }
 >
 
+@Injectable()
 export class FetchScheduleByClientIdUseCase {
   constructor(private appointmentsRepository: AppointmentsRepository) {}
 

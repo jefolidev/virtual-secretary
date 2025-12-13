@@ -5,13 +5,20 @@ import { RemoveProfessionalFromOrganizationUseCase } from '@/domain/organization
 import { UpdateOrganizationUseCase } from '@/domain/organization/application/use-cases/update-organization'
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CancelAppointmentUseCase } from '@/domain/scheduling/application/use-cases/cancel-appointment'
+import { ConfirmAppointmentUseCase } from '@/domain/scheduling/application/use-cases/confirm-appointment'
 import { CreateAddressUseCase } from '@/domain/scheduling/application/use-cases/create-address'
 import { CreateCancellationPolicyUseCase } from '@/domain/scheduling/application/use-cases/create-cancellation-policy'
 import { CreateClientUseCase } from '@/domain/scheduling/application/use-cases/create-client'
 import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-cases/create-professional'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
 import { CreateScheduleConfigurationUseCase } from '@/domain/scheduling/application/use-cases/create-schedule-configuration'
+import { EditCancellationPolicyUseCase } from '@/domain/scheduling/application/use-cases/edit-cancellation-policy'
+import { EditScheduleConfigurationUseCase } from '@/domain/scheduling/application/use-cases/edit-schedule-configuration'
+import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-cases/fetch-available-slots'
 import { FetchClientsUseCase } from '@/domain/scheduling/application/use-cases/fetch-client'
+import { FetchProfessionalUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional'
+import { FetchScheduleByClientIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-client-id'
+import { FetchScheduleByProfessionalIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { RescheduleAppointmentUseCase } from '@/domain/scheduling/application/use-cases/reschedule-appointment'
@@ -21,11 +28,17 @@ import { DatabaseModule } from '../database/database.module'
 import { AddProfessionalToOrganizationController } from './controllers/add-professional-to-organization.controller'
 import { AuthenticateController } from './controllers/authenticate.controller'
 import { CancelAppointmentController } from './controllers/cancel-appointment.controller'
+import { ConfirmAppointmentController } from './controllers/confirm-appointment.controller'
 import { CreateAccountController } from './controllers/create-account.controller'
 import { CreateCancellationPolicyController } from './controllers/create-cancellation-pollicy.controller'
 import { CreateOrganizationController } from './controllers/create-organization.controller'
 import { CreateScheduleConfigurationController } from './controllers/create-schedule-configuration.controller'
 import { CreateScheduleController } from './controllers/create-schedule.controller'
+import { EditCancellationPolicyController } from './controllers/edit-cancellation-policy.controller'
+import { EditScheduleConfigurationController } from './controllers/edit-schedule-configuration.controller'
+import { FetchAppointmentsByClientController } from './controllers/fetch-appointments-by-client.controller'
+import { FetchAppointmentsByProfessionalController } from './controllers/fetch-appointments-by-professional.controller'
+import { FetchAvailableProfessionalSlotsController } from './controllers/fetch-available-slots.controller'
 import { FetchClientController } from './controllers/fetch-clients.controller'
 import { FetchOrganizationByIdController } from './controllers/fetch-organization-by-id.controller'
 import { FetchOrganizationController } from './controllers/fetch-organizations.controller'
@@ -34,10 +47,6 @@ import { ForgotPasswordController } from './controllers/forgot-password.controll
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
-import { ConfirmAppointmentUseCase } from '@/domain/scheduling/application/use-cases/confirm-appointment'
-import { ConfirmAppointmentController } from './controllers/confirm-appointment.controller'
-import { FetchAvailableProfessionalSlotsController } from './controllers/fetch-available-slots.controller'
-import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-cases/fetch-available-slots'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -51,7 +60,11 @@ import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-
     CreateScheduleController,
     CreateScheduleConfigurationController,
     CreateOrganizationController,
+    EditCancellationPolicyController,
+    EditScheduleConfigurationController,
     FetchAvailableProfessionalSlotsController,
+    FetchAppointmentsByClientController,
+    FetchAppointmentsByProfessionalController,
     FetchClientController,
     FetchOrganizationController,
     FetchOrganizationByIdController,
@@ -73,9 +86,14 @@ import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-
     CreateOrganizationUseCase,
     CreateProfessionalUseCase,
     CreateScheduleConfigurationUseCase,
+    EditCancellationPolicyUseCase,
+    EditScheduleConfigurationUseCase,
     FetchAvailableSlotsUseCase,
     FetchClientsUseCase,
     FetchOrganizationByIdUseCase,
+    FetchProfessionalUseCase,
+    FetchScheduleByClientIdUseCase,
+    FetchScheduleByProfessionalIdUseCase,
     ForgotPasswordUseCase,
     RegisterUserUseCase,
     RemoveProfessionalFromOrganizationUseCase,
