@@ -5,7 +5,7 @@ import { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
   userId?: UniqueEntityId
-  organizationId?: UniqueEntityId
+  organizationId?: UniqueEntityId | null
   notificationSettings?: NotificationSettings
   cancellationPolicyId?: UniqueEntityId
   scheduleConfigurationId?: UniqueEntityId
@@ -16,11 +16,11 @@ export interface ProfessionalProps {
 
 export class Professional extends AggregateRoot<ProfessionalProps> {
   get organizationId() {
-    return this.props.organizationId
+    return this.props.organizationId || null
   }
 
-  set organizationId(organizationId: UniqueEntityId | undefined) {
-    this.props.organizationId = organizationId || undefined
+  set organizationId(organizationId: UniqueEntityId | null) {
+    this.props.organizationId = organizationId || null
     this.touch()
   }
 

@@ -23,14 +23,15 @@ export class PrismaProfessionalMapper {
       organizationId: professional.organizationId?.toString(),
       scheduleConfigurationId: professional.scheduleConfigurationId?.toString(),
       updatedAt: professional.updatedAt,
-      // notificationSettingsId será adicionado pelo repository quando necessário
     }
   }
 
-  static toDomain(raw: PrismaProfessional): UserProfessionalWithSettings {
+  static toDomain(raw: PrismaProfessional): Professional {
     return Professional.create(
       {
-        
+        organizationId: raw.organizationId
+          ? new UniqueEntityId(raw.organizationId)
+          : null,
         sessionPrice: Number(raw.sessionPrice),
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt || null,

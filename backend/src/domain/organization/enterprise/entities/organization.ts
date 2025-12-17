@@ -8,14 +8,14 @@ import { Slug } from '../value-objects/slug'
 
 export interface OrganizationProps {
   ownerId: UniqueEntityId
-  addressId: UniqueEntityId
+  addressId?: UniqueEntityId
   professionalsIds: ProfessionalIdList
   name: string
   cnpj: string
   slug: Slug
   isActive: boolean
   createdAt: Date
-  updatedAt?: Date
+  updatedAt?: Date | null
 }
 
 export class Organization extends AggregateRoot<OrganizationProps> {

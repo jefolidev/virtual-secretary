@@ -48,7 +48,7 @@ export class RemoveProfessionalFromOrganizationUseCase {
     }
 
     organization.removeProfessional(new UniqueEntityId(professionalId))
-    professional.organizationId = undefined
+    professional.organizationId = null
 
     await this.organizationRepository.save(organization)
     await this.professionalRepository.save(professional)

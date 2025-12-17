@@ -2,9 +2,11 @@ import { ProfessionalRepository } from '@/domain/scheduling/application/reposito
 import { Professional } from '@/domain/scheduling/enterprise/entities/professional'
 
 import { ProfessionalWithNotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/professional-with-notification-settings'
+import { UserProfessionalWithSettings } from '@/domain/scheduling/enterprise/entities/value-objects/user-professional-with-settings'
 import { Injectable } from '@nestjs/common'
 import { PrismaProfessionalMapper } from '../../mappers/prisma-professional-mapper'
 import { PrismaProfessionalWithNotificationSettingsMapper } from '../../mappers/prisma-professional-with-notification-settings-mapper'
+import { PrismaUserProfessionalWithSettingsMapper } from '../../mappers/prisma-user-professional-with-settings'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
@@ -51,7 +53,6 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
       notificationSettingsId = createdNotificationSettings.id
     }
 
-    // Depois, criar o Professional com o notificationSettingsId
     const data = {
       ...PrismaProfessionalMapper.toPrisma(professional),
       notificationSettingsId,
@@ -66,11 +67,6 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
     const professionals = await this.prisma.professional.findMany({
       take: 10,
       skip: params.page ? (params.page - 1) * 10 : 0,
-      include: {
-        user: true,
-        cancellationPolicy: true,
-        scheduleConfiguration: true,
-      },
     })
 
     return professionals.map(PrismaProfessionalMapper.toDomain)
@@ -83,6 +79,9 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
       },
       include: {
         user: true,
+        cancellationPolicy: true,
+        scheduleConfiguration: true,
+        organization: true,
       },
     })
 
@@ -100,6 +99,9 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
       },
       include: {
         user: true,
+        cancellationPolicy: true,
+        scheduleConfiguration: true,
+        organization: true,
       },
     })
 
@@ -108,6 +110,46 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
     }
 
     return PrismaProfessionalMapper.toDomain(professional)
+  }
+
+  async findManyProfessionalsAndSettings(params: {
+    page: number
+  }): Promise<UserProfessionalWithSettings[] | null> {
+    const professionals = await this.prisma.professional.findMany({
+      take: 10,
+      skip: params.page ? (params.page - 1) * 10 : 0,
+      include: {
+        user: true,
+        cancellationPolicy: true,
+        scheduleConfiguration: true,
+        organization: true,
+        notificationSettings: true,
+      },
+    })
+
+    return professionals.map(PrismaUserProfessionalWithSettingsMapper.toDomain)
+  }
+
+  async findByProfessionalIdWithSettings(
+    id: string
+  ): Promise<UserProfessionalWithSettings | null> {
+    const professional = await this.prisma.professional.findFirst({
+      where: {
+        id,
+      },
+      include: {
+        user: true,
+        cancellationPolicy: true,
+        scheduleConfiguration: true,
+        organization: true,
+      },
+    })
+
+    if (!professional) {
+      return null
+    }
+
+    return PrismaUserProfessionalWithSettingsMapper.toDomain(professional)
   }
 
   async assignCancellationPolicy(

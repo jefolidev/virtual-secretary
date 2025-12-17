@@ -13,6 +13,12 @@ type PrismaOrganizationWithProfessionals = PrismaOrganization & {
 
 export class PrismaOrganizationMapper {
   static toPrisma(organization: Organization): PrismaOrganization {
+    if (!organization.addressId) {
+      throw new Error(
+        'Organization must have an addressId to be mapped to Prisma.'
+      )
+    }
+
     return {
       id: organization.id.toString(),
       name: organization.name,

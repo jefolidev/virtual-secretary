@@ -1,6 +1,6 @@
 import { Either, right } from '@/core/either'
 import { Injectable } from '@nestjs/common'
-import { Professional } from '../../enterprise/entities/professional'
+import { UserProfessionalWithSettings } from '../../enterprise/entities/value-objects/user-professional-with-settings'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface FetchProfessionalUseCasePropsRequest {
@@ -9,7 +9,7 @@ export interface FetchProfessionalUseCasePropsRequest {
 
 export type FetchProfessionalUseCaseResponse = Either<
   null,
-  { professionals: Professional[] }
+  { professionals: UserProfessionalWithSettings[] }
 >
 
 @Injectable()
@@ -19,10 +19,13 @@ export class FetchProfessionalUseCase {
   async execute({
     page = 1,
   }: FetchProfessionalUseCasePropsRequest): Promise<FetchProfessionalUseCaseResponse> {
-    const professionals = await this.professionalRepository.findMany({ page })
+    const professionals =
+      await this.professionalRepository.findManyProfessionalsAndSettings({
+        page,
+      })
 
     return right({
-      professionals,
+      professionals: professionals || [],
     })
   }
 }
