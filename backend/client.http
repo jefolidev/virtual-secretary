@@ -178,8 +178,16 @@ Authorization: Bearer {{authToken}}
 
 ###
 
+# TODO: Fazer com que retorne: nome, organizacao (caso possua), telefone, email, horarios e politicas de cancelmaneto
 # @name fetch_professionals
 GET {{baseUrl}}/professionals?page=1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### 
+
+# @name fetch_professionals_with_notification_settings
+GET {{baseUrl}}/professional/9cf0b36d-2952-4487-87b6-8117bf8755b2/notification-settings
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 

@@ -1,6 +1,17 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Professional } from '@/domain/scheduling/enterprise/entities/professional'
-import { Professional as PrismaProfessionalUser } from '@prisma/generated/client'
+import {
+  CancellationPolicy as PrismaCancellationPolicy,
+  Professional as PrismaProfessional,
+  ScheduleConfiguration as PrismaScheduleConfiguration,
+  User as PrismaUser,
+} from '@prisma/generated/client'
+
+type UserProfessionalWithSettings = PrismaUser & {
+  professional: PrismaProfessional
+  cancellationPolicy: PrismaCancellationPolicy
+  scheduleConfiguration: PrismaScheduleConfiguration
+}
 
 export class PrismaProfessionalMapper {
   static toPrisma(professional: Professional) {
@@ -8,35 +19,21 @@ export class PrismaProfessionalMapper {
       id: professional.id.toString(),
       createdAt: professional.createdAt,
       sessionPrice: professional.sessionPrice,
-      cancellationPolicyId:
-        professional.cancellationPolicyId?.toString() ?? null,
-      organizationId: professional.organizationId?.toString() ?? null,
-      scheduleConfigurationId:
-        professional.scheduleConfigurationId?.toString() ?? null,
-      updatedAt: professional.updatedAt ?? null,
-      notificationSettingsId:
-        professional.notificationSettingsId?.toString() ?? null,
+      cancellationPolicyId: professional.cancellationPolicyId?.toString(),
+      organizationId: professional.organizationId?.toString(),
+      scheduleConfigurationId: professional.scheduleConfigurationId?.toString(),
+      updatedAt: professional.updatedAt,
+      // notificationSettingsId será adicionado pelo repository quando necessário
     }
   }
 
-  static toDomain(raw: PrismaProfessionalUser): Professional {
+  static toDomain(raw: PrismaProfessional): UserProfessionalWithSettings {
     return Professional.create(
       {
-        createdAt: raw.createdAt,
+        
         sessionPrice: Number(raw.sessionPrice),
-        cancellationPolicyId: raw.cancellationPolicyId
-          ? new UniqueEntityId(raw.cancellationPolicyId)
-          : undefined,
-        organizationId: raw.organizationId
-          ? new UniqueEntityId(raw.organizationId)
-          : undefined,
-        scheduleConfigurationId: raw.scheduleConfigurationId
-          ? new UniqueEntityId(raw.scheduleConfigurationId)
-          : undefined,
+        createdAt: raw.createdAt,
         updatedAt: raw.updatedAt || null,
-        notificationSettingsId: raw.notificationSettingsId
-          ? new UniqueEntityId(raw.notificationSettingsId)
-          : undefined,
       },
       new UniqueEntityId(raw.id)
     )

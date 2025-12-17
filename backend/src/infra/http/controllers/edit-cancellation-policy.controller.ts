@@ -43,9 +43,6 @@ export class EditCancellationPolicyController {
 
     const professional = await this.professionalRepository.findByUserId(userId)
 
-    console.log(userId)
-    console.log(professional)
-
     if (!professional) {
       throw new NotFoundException()
     }

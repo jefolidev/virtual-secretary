@@ -74,16 +74,16 @@ model Appointment {
 }
 
 model Professional {
-  id             String        @id @default(uuid())
-  organizationId String?       @map("organization_id")
-  sessionPrice   Decimal       @map("session_price")
-  appointments   Appointment[]
+  id                     String        @id @default(uuid())
+  notificationSettingsId String?       @unique @map("notification_settings_id")
+  organizationId         String?       @map("organization_id")
+  sessionPrice           Decimal       @map("session_price")
+  appointments           Appointment[]
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
-  notificationSettingsId String?               @unique @map("notification_settings_id")
-  notificationSettings   NotificationSettings?
+  notificationSettings NotificationSettings? @relation(fields: [notificationSettingsId], references: [id])
 
   cancellationPolicyId String?             @unique @map("cancellation_policy_id")
   cancellationPolicy   CancellationPolicy?
@@ -105,8 +105,7 @@ model NotificationSettings {
   reminderBeforeMinutes Int                   @default(10) @map("reminder_before_minutes")
   dailySummaryTime      String                @default("12:00") @map("daily_summary_time")
 
-  professionalId String?       @unique @map("professional_id")
-  professional   Professional? @relation(fields: [professionalId], references: [id])
+  professional Professional?
 
   @@map("notification_settings")
 }

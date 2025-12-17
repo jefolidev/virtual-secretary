@@ -1,11 +1,12 @@
 import { AggregateRoot } from '@/core/entities/aggregate'
 import type { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
   userId?: UniqueEntityId
   organizationId?: UniqueEntityId
-  notificationSettingsId?: UniqueEntityId
+  notificationSettings?: NotificationSettings
   cancellationPolicyId?: UniqueEntityId
   scheduleConfigurationId?: UniqueEntityId
   sessionPrice: number
@@ -27,8 +28,8 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     return this.props.userId
   }
 
-  get notificationSettingsId() {
-    return this.props.notificationSettingsId
+  get notificationSettings() {
+    return this.props.notificationSettings
   }
 
   get scheduleConfigurationId() {
@@ -77,7 +78,7 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
       | 'createdAt'
       | 'cancellationPolicyId'
       | 'scheduleConfigurationId'
-      | 'notificationSettingsId'
+      | 'notificationSettings'
     >,
     id?: UniqueEntityId
   ) {
@@ -86,7 +87,19 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
         ...props,
         cancellationPolicyId: props.cancellationPolicyId ?? undefined,
         scheduleConfigurationId: props.scheduleConfigurationId ?? undefined,
-        notificationSettingsId: props.notificationSettingsId ?? undefined,
+        notificationSettings:
+          props.notificationSettings ??
+          NotificationSettings.create({
+            channels: ['EMAIL', 'WHATSAPP'],
+            dailySummaryTime: '18:00',
+            enabledTypes: [
+              'CANCELLATION',
+              'CONFIRMED_LIST',
+              'CONFIRMATION',
+              'DAILY_SUMMARY',
+            ],
+            reminderBeforeMinutes: 50,
+          }),
         createdAt: props.createdAt ?? new Date(),
       },
       id

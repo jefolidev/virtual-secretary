@@ -17,6 +17,7 @@ import { EditScheduleConfigurationUseCase } from '@/domain/scheduling/applicatio
 import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-cases/fetch-available-slots'
 import { FetchClientsUseCase } from '@/domain/scheduling/application/use-cases/fetch-client'
 import { FetchProfessionalUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional'
+import { FetchProfessionalWithNotificationSettingsUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional-notification-settings'
 import { FetchScheduleByClientIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-client-id'
 import { FetchScheduleByProfessionalIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
@@ -42,6 +43,7 @@ import { FetchAvailableProfessionalSlotsController } from './controllers/fetch-a
 import { FetchClientController } from './controllers/fetch-clients.controller'
 import { FetchOrganizationByIdController } from './controllers/fetch-organization-by-id.controller'
 import { FetchOrganizationController } from './controllers/fetch-organizations.controller'
+import { FetchProfessionalWithNotificationSettingsController } from './controllers/fetch-professional-notification-settings.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
@@ -69,6 +71,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchOrganizationController,
     FetchOrganizationByIdController,
     FetchProfessionalController,
+    FetchProfessionalWithNotificationSettingsController,
     ForgotPasswordController,
     RemoveProfessionalFromOrganizationController,
     RescheduleAppointmentController,
@@ -92,6 +95,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchClientsUseCase,
     FetchOrganizationByIdUseCase,
     FetchProfessionalUseCase,
+    FetchProfessionalWithNotificationSettingsUseCase,
     FetchScheduleByClientIdUseCase,
     FetchScheduleByProfessionalIdUseCase,
     ForgotPasswordUseCase,

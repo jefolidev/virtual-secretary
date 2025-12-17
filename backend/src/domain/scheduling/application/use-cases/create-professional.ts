@@ -38,6 +38,7 @@ export class CreateProfessionalUseCase {
 
     const professional = await Professional.create({
       sessionPrice,
+      notificationSettings,
     })
 
     const cancellationPolicy = await CancellationPolicy.create(

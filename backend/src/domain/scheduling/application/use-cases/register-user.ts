@@ -58,6 +58,7 @@ export class RegisterUserUseCase {
         sessionPrice: 0,
       })
 
+
       await this.professionalRepository.create(professional)
     }
 

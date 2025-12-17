@@ -1,6 +1,7 @@
 import { FetchProfessionalUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional'
 import { PaginationQueryPipe } from '@/infra/http/pipes/pagination-query.pipe'
-import { Controller, Get, Query } from '@nestjs/common'
+import { BadRequestException, Controller, Get, Query } from '@nestjs/common'
+import { ProfessionalsPresenter } from '../presenters/professional-presenter'
 import { PageQueryParamSchema } from './dto/page-query.dto'
 
 @Controller('/professionals')
@@ -11,6 +12,14 @@ export class FetchProfessionalController {
 
   @Get()
   async handle(@Query('page', PaginationQueryPipe) page: PageQueryParamSchema) {
-    return await this.fetchProfessionalUseCase.execute({ page })
+    const result = await this.fetchProfessionalUseCase.execute({ page })
+
+    if (result.isLeft()) {
+      throw new BadRequestException('Bad Request')
+    }
+
+    const professionals = result.value.professionals
+
+    return professionals.map(ProfessionalsPresenter.toHTTP)
   }
 }

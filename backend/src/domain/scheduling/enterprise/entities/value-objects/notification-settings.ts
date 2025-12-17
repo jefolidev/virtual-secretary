@@ -1,4 +1,5 @@
 import type { Optional } from '@/core/entities/types/optional'
+import { ValueObject } from '@/core/entities/value-object'
 
 type NotificationChannel = 'EMAIL' | 'WHATSAPP'
 
@@ -17,17 +18,21 @@ interface NotificationSettingsProps {
   dailySummaryTime: string
 }
 
-export class NotificationSettings {
-  public readonly channels: NotificationChannel[]
-  public readonly enabledTypes: NotificationType[]
-  public reminderBeforeMinutes: number
-  public dailySummaryTime: string
+export class NotificationSettings extends ValueObject<NotificationSettingsProps> {
+  get channels() {
+    return this.props.channels
+  }
 
-  constructor(props: NotificationSettingsProps) {
-    this.channels = props.channels
-    this.enabledTypes = props.enabledTypes
-    this.reminderBeforeMinutes = props.reminderBeforeMinutes
-    this.dailySummaryTime = props.dailySummaryTime
+  get enabledTypes() {
+    return this.props.enabledTypes
+  }
+
+  get reminderBeforeMinutes() {
+    return this.props.reminderBeforeMinutes
+  }
+
+  get dailySummaryTime() {
+    return this.props.dailySummaryTime
   }
 
   static create(
