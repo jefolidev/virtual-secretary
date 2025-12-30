@@ -14,7 +14,7 @@ export interface FetchProfessionalScheduleSettingsRequest {
 export type FetchProfessionalScheduleSettingsResponse = Either<
   NotFoundError,
   {
-    scheduleConfiguration: ScheduleConfiguration
+    scheduleConfiguration: ScheduleConfiguration | null
     cancellationPolicy: CancellationPolicy | null
   }
 >
@@ -35,9 +35,6 @@ export class FetchProfessionalScheduleSettingsUseCase {
 
     const scheduleConfiguration =
       await this.scheduleConfigs.findByProfessionalId(professionalId)
-    if (!scheduleConfiguration)
-      return left(new NotFoundError('Schedule configuration not found'))
-
     const cancellationPolicy =
       await this.cancellationPolicies.findByProfessionalId(professionalId)
 

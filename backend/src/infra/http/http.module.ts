@@ -13,11 +13,14 @@ import { CreateProfessionalUseCase } from '@/domain/scheduling/application/use-c
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
 import { CreateScheduleConfigurationUseCase } from '@/domain/scheduling/application/use-cases/create-schedule-configuration'
 import { EditCancellationPolicyUseCase } from '@/domain/scheduling/application/use-cases/edit-cancellation-policy'
+import { EditClientUseCase } from '@/domain/scheduling/application/use-cases/edit-client'
+import { EditProfessionalUseCase } from '@/domain/scheduling/application/use-cases/edit-professional'
 import { EditScheduleConfigurationUseCase } from '@/domain/scheduling/application/use-cases/edit-schedule-configuration'
 import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-cases/fetch-available-slots'
 import { FetchClientsUseCase } from '@/domain/scheduling/application/use-cases/fetch-client'
 import { FetchProfessionalUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional'
 import { FetchProfessionalWithNotificationSettingsUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional-notification-settings'
+import { FetchProfessionalScheduleSettingsUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional-schedule-settings'
 import { FetchScheduleByClientIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-client-id'
 import { FetchScheduleByProfessionalIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
@@ -36,6 +39,8 @@ import { CreateOrganizationController } from './controllers/create-organization.
 import { CreateScheduleConfigurationController } from './controllers/create-schedule-configuration.controller'
 import { CreateScheduleController } from './controllers/create-schedule.controller'
 import { EditCancellationPolicyController } from './controllers/edit-cancellation-policy.controller'
+import { EditClientController } from './controllers/edit-client.controller'
+import { EditProfessionalController } from './controllers/edit-professional.controller'
 import { EditScheduleConfigurationController } from './controllers/edit-schedule-configuration.controller'
 import { FetchAppointmentsByClientController } from './controllers/fetch-appointments-by-client.controller'
 import { FetchAppointmentsByProfessionalController } from './controllers/fetch-appointments-by-professional.controller'
@@ -44,8 +49,10 @@ import { FetchClientController } from './controllers/fetch-clients.controller'
 import { FetchOrganizationByIdController } from './controllers/fetch-organization-by-id.controller'
 import { FetchOrganizationController } from './controllers/fetch-organizations.controller'
 import { FetchProfessionalWithNotificationSettingsController } from './controllers/fetch-professional-notification-settings.controller'
+import { FetchProfessionalSettingsController } from './controllers/fetch-professional-settings.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
+import { MeController } from './controllers/me.controller'
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
@@ -63,6 +70,8 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     CreateScheduleConfigurationController,
     CreateOrganizationController,
     EditCancellationPolicyController,
+    EditClientController,
+    EditProfessionalController,
     EditScheduleConfigurationController,
     FetchAvailableProfessionalSlotsController,
     FetchAppointmentsByClientController,
@@ -71,8 +80,10 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchOrganizationController,
     FetchOrganizationByIdController,
     FetchProfessionalController,
+    FetchProfessionalSettingsController,
     FetchProfessionalWithNotificationSettingsController,
     ForgotPasswordController,
+    MeController,
     RemoveProfessionalFromOrganizationController,
     RescheduleAppointmentController,
     UpdateOrganizationController,
@@ -90,12 +101,15 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     CreateProfessionalUseCase,
     CreateScheduleConfigurationUseCase,
     EditCancellationPolicyUseCase,
+    EditClientUseCase,
+    EditProfessionalUseCase,
     EditScheduleConfigurationUseCase,
     FetchAvailableSlotsUseCase,
     FetchClientsUseCase,
     FetchOrganizationByIdUseCase,
     FetchProfessionalUseCase,
     FetchProfessionalWithNotificationSettingsUseCase,
+    FetchProfessionalScheduleSettingsUseCase,
     FetchScheduleByClientIdUseCase,
     FetchScheduleByProfessionalIdUseCase,
     ForgotPasswordUseCase,
