@@ -52,7 +52,7 @@ describe('Remove Professional From Organization', () => {
     const updatedProfessional = await inMemoryProfessionalRepository.findById(
       professional.id.toString()
     )
-    expect(updatedProfessional?.organizationId).toBeUndefined()
+    expect(updatedProfessional?.organizationId).toBeNull()
   })
 
   it('should not be able to remove a professional from a non-existent organization', async () => {
@@ -143,7 +143,7 @@ describe('Remove Professional From Organization', () => {
       professional2.id.toString()
     )
 
-    expect(updatedProfessional1?.organizationId).toBeUndefined()
+    expect(updatedProfessional1?.organizationId).toBeNull()
     expect(updatedProfessional2?.organizationId?.equals(organization.id)).toBe(
       true
     )

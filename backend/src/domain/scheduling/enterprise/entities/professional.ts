@@ -32,6 +32,13 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     return this.props.notificationSettings
   }
 
+  set notificationSettings(
+    notificationSettings: NotificationSettings | undefined
+  ) {
+    this.props.notificationSettings = notificationSettings
+    this.touch()
+  }
+
   get scheduleConfigurationId() {
     return this.props.scheduleConfigurationId
   }
