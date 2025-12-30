@@ -1,11 +1,11 @@
 import z from 'zod'
 
-export const fetchAvailableProfessionalSlotsBodySchema = z.object({
+export const fetchAvailableProfessionalSlotsQuerySchema = z.object({
   professionalId: z.uuid(),
   startDate: z.coerce.date(),
   endDate: z.coerce.date(),
 })
 
-export type FetchAvailableProfessionalSlotsBodySchema = z.infer<
-  typeof fetchAvailableProfessionalSlotsBodySchema
+export type FetchAvailableProfessionalSlotsQuerySchema = z.infer<
+  typeof fetchAvailableProfessionalSlotsQuerySchema
 >

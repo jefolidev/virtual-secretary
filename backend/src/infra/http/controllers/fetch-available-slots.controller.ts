@@ -2,15 +2,15 @@ import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { FetchAvailableSlotsUseCase } from '@/domain/scheduling/application/use-cases/fetch-available-slots'
 import {
   BadRequestException,
-  Body,
   Controller,
   Get,
   NotFoundException,
+  Query,
 } from '@nestjs/common'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
 import {
-  fetchAvailableProfessionalSlotsBodySchema,
-  FetchAvailableProfessionalSlotsBodySchema,
+  fetchAvailableProfessionalSlotsQuerySchema,
+  FetchAvailableProfessionalSlotsQuerySchema,
 } from './dto/fetch-available-professional-slots.dto'
 
 @Controller('/professional')
@@ -21,10 +21,10 @@ export class FetchAvailableProfessionalSlotsController {
 
   @Get('/slots')
   async handle(
-    @Body(new ZodValidationPipe(fetchAvailableProfessionalSlotsBodySchema))
-    body: FetchAvailableProfessionalSlotsBodySchema
+    @Query(new ZodValidationPipe(fetchAvailableProfessionalSlotsQuerySchema))
+    query: FetchAvailableProfessionalSlotsQuerySchema
   ) {
-    const { professionalId, startDate, endDate } = body
+    const { professionalId, startDate, endDate } = query
 
     const result = await this.fetchAvailableProfessionalSlots.execute({
       professionalId,

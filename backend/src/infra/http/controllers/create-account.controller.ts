@@ -47,6 +47,13 @@ export class CreateAccountController {
       }
     }
 
-    return result
+    const { user } = result.value
+
+    return {
+      user_id: user.id.toString(),
+      role: user.role,
+      professional_id: user.professionalId?.toString(),
+      client_id: user.clientId?.toString(),
+    }
   }
 }
