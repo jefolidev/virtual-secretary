@@ -1,10 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from './app.tsx'
+import { RouterProvider } from 'react-router/dom'
 import './index.css'
+import { router } from './routes'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <div className="w-full h-screen ">
+      <RouterProvider router={router} />
+    </div>
   </StrictMode>
 )

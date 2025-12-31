@@ -1,11 +1,3 @@
-import { Button } from './components/ui/button'
-
-function App() {
-  return (
-    <>
-      <Button>Ai caralho</Button>
-    </>
-  )
+export function App() {
+  return <>App</>
 }
-
-export default App
