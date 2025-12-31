@@ -1,4 +1,5 @@
 import { LoginPage } from '@/pages/login'
+import { SignUpPage } from '@/pages/signup'
 import { ScreensEnum } from '@/types/screens'
 import {
   Navigate,
@@ -45,6 +46,14 @@ export const router = createBrowserRouter([
     element: (
       <PublicOnly>
         <LoginPage />
+      </PublicOnly>
+    ),
+  },
+  {
+    path: `/${ScreensEnum.SIGNUP}`,
+    element: (
+      <PublicOnly>
+        <SignUpPage />
       </PublicOnly>
     ),
   },
