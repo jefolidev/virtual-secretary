@@ -1,14 +1,20 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Info } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
-export function AccountDetails() {
+interface AccountDetailsProps {
+  onValidationChange?: (isValid: boolean) => void
+}
+
+export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [phone, setPhone] = useState('')
   const [cpf, setCpf] = useState('')
+  const [birthdate, setBirthdate] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -26,8 +32,35 @@ export function AccountDetails() {
   }
 
   const passwordValidation = validatePassword(password)
+  const allPasswordRequirementsMet =
+    passwordValidation.hasUpperCase &&
+    passwordValidation.hasLowerCase &&
+    passwordValidation.hasNumber &&
+    passwordValidation.hasMinLength
 
   const passwordsMatch = password === confirmPassword && confirmPassword !== ''
+
+  const isFormValid = () => {
+    const cleanPhone = phone.replace(/\D/g, '')
+    const cleanCPF = cpf.replace(/\D/g, '')
+
+    return (
+      name.trim() !== '' &&
+      isValidEmail(email) &&
+      allPasswordRequirementsMet &&
+      passwordsMatch &&
+      cleanPhone.length >= 10 &&
+      cleanCPF.length === 11 &&
+      birthdate !== ''
+    )
+  }
+
+  // Notifica o componente pai sobre mudanças na validação
+  useEffect(() => {
+    if (onValidationChange) {
+      onValidationChange(isFormValid())
+    }
+  }, [name, email, password, confirmPassword, phone, cpf, birthdate])
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '')
@@ -62,18 +95,29 @@ export function AccountDetails() {
   return (
     <div className="space-y-4">
       <div className="grid gap-2">
-        <Label htmlFor="name">Nome completo</Label>
-        <Input id="name" placeholder="Seu nome completo" />
+        <Label htmlFor="name">
+          Nome completo <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="name"
+          placeholder="Seu nome completo"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">
+          Email <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="email"
           type="email"
           placeholder="seu@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          required
         />
         {email && !isValidEmail(email) && (
           <div className="flex items-center gap-2 text-sm text-red-600">
@@ -92,7 +136,9 @@ export function AccountDetails() {
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-2">
           <div className="flex items-center gap-2">
-            <Label htmlFor="password">Senha</Label>
+            <Label htmlFor="password">
+              Senha <span className="text-red-500">*</span>
+            </Label>
             <div className="group relative  ">
               <Info className="h-4 w-4 text-gray-400 cursor-help" />
               <div className="invisible group-hover:visible absolute left-0 top-6 z-10 w-64 rounded-md bg-gray-900 p-3 text-xs text-white shadow-lg">
@@ -149,6 +195,7 @@ export function AccountDetails() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="pr-10"
+              required
             />
             <button
               type="button"
@@ -164,7 +211,9 @@ export function AccountDetails() {
           </div>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="confirmPassword">Confirmar senha</Label>
+          <Label htmlFor="confirmPassword">
+            Confirmar senha <span className="text-red-500">*</span>
+          </Label>
           <div className="relative">
             <Input
               id="confirmPassword"
@@ -179,6 +228,7 @@ export function AccountDetails() {
                   ? 'border-green-500 focus-visible:ring-green-500 pr-20'
                   : 'pr-20'
               }
+              required
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
               {confirmPassword && (
@@ -210,30 +260,44 @@ export function AccountDetails() {
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="phone">Telefone</Label>
+        <Label htmlFor="phone">
+          Telefone <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="phone"
           placeholder="(00) 00000-0000"
           value={phone}
           onChange={handlePhoneChange}
           maxLength={15}
+          required
         />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="cpf">CPF</Label>
+        <Label htmlFor="cpf">
+          CPF <span className="text-red-500">*</span>
+        </Label>
         <Input
           id="cpf"
           placeholder="000.000.000-00"
           value={cpf}
           onChange={handleCPFChange}
           maxLength={14}
+          required
         />
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="birthdate">Data de nascimento</Label>
-        <Input id="birthdate" type="date" />
+        <Label htmlFor="birthdate">
+          Data de nascimento <span className="text-red-500">*</span>
+        </Label>
+        <Input
+          id="birthdate"
+          type="date"
+          value={birthdate}
+          onChange={(e) => setBirthdate(e.target.value)}
+          required
+        />
       </div>
     </div>
   )

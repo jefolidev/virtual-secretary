@@ -1,20 +1,48 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { CloudSun, Moon, Sun } from 'lucide-react'
+import { AlertCircle, CloudSun, Moon, Sun } from 'lucide-react'
+import { useEffect } from 'react'
 
 interface PatientPreferencesProps {
   preferredTimes: Array<'morning' | 'afternoon' | 'evening'>
   onToggleTime: (time: 'morning' | 'afternoon' | 'evening') => void
+  appointmentTypes: {
+    inPerson: boolean
+    online: boolean
+  }
+  onToggleAppointmentType: (type: 'inPerson' | 'online') => void
+  onValidationChange?: (isValid: boolean) => void
 }
 
 export function PatientPreferences({
   preferredTimes,
   onToggleTime,
+  appointmentTypes,
+  onToggleAppointmentType,
+  onValidationChange,
 }: PatientPreferencesProps) {
+  useEffect(() => {
+    if (onValidationChange) {
+      const hasPreferredTime = preferredTimes.length > 0
+      const hasAppointmentType =
+        appointmentTypes.inPerson || appointmentTypes.online
+      onValidationChange(hasPreferredTime && hasAppointmentType)
+    }
+  }, [preferredTimes, appointmentTypes, onValidationChange])
+
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <Label>Períodos de preferência para consultas</Label>
+        <Label>
+          Períodos de preferência para consultas{' '}
+          <span className="text-red-500">*</span>
+        </Label>
+        {preferredTimes.length === 0 && (
+          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
+            <AlertCircle className="h-4 w-4" />
+            <span>Selecione pelo menos um período de preferência</span>
+          </div>
+        )}
         <div className="flex gap-4 justify-center">
           <button
             type="button"
@@ -80,16 +108,32 @@ export function PatientPreferences({
 
       <div className="space-y-4">
         <div className="space-y-3">
-          <Label>Tipo de atendimento</Label>
+          <Label>
+            Tipo de atendimento <span className="text-red-500">*</span>
+          </Label>
+          {!appointmentTypes.inPerson && !appointmentTypes.online && (
+            <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
+              <AlertCircle className="h-4 w-4" />
+              <span>Selecione pelo menos um tipo de atendimento</span>
+            </div>
+          )}
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <Checkbox id="inPerson" />
+              <Checkbox
+                id="inPerson"
+                checked={appointmentTypes.inPerson}
+                onCheckedChange={() => onToggleAppointmentType('inPerson')}
+              />
               <Label htmlFor="inPerson" className="font-normal">
                 Presencial
               </Label>
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="online" />
+              <Checkbox
+                id="online"
+                checked={appointmentTypes.online}
+                onCheckedChange={() => onToggleAppointmentType('online')}
+              />
               <Label htmlFor="online" className="font-normal">
                 Online (Telemedicina)
               </Label>

@@ -1,6 +1,8 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { AlertCircle } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface ProfessionalSchedulingProps {
   workDays: {
@@ -22,24 +24,89 @@ interface ProfessionalSchedulingProps {
       | 'saturday'
       | 'sunday'
   ) => void
+  onValidationChange?: (isValid: boolean) => void
 }
 
 export function ProfessionalScheduling({
   workDays,
   onToggleWorkDay,
+  onValidationChange,
 }: ProfessionalSchedulingProps) {
+  const [appointmentDuration, setAppointmentDuration] = useState('')
+  const [startTime, setStartTime] = useState('')
+  const [endTime, setEndTime] = useState('')
+  const [timeError, setTimeError] = useState('')
+
+  const validateTimes = (start: string, end: string) => {
+    if (start && end) {
+      const [startHour, startMin] = start.split(':').map(Number)
+      const [endHour, endMin] = end.split(':').map(Number)
+
+      const startMinutes = startHour * 60 + startMin
+      const endMinutes = endHour * 60 + endMin
+
+      if (endMinutes <= startMinutes) {
+        setTimeError('O horário de término deve ser maior que o de início')
+        return false
+      }
+    }
+    setTimeError('')
+    return true
+  }
+
+  useEffect(() => {
+    if (onValidationChange) {
+      const hasWorkDay = Object.values(workDays).some((day) => day)
+      const hasAppointmentDuration =
+        appointmentDuration.trim() !== '' && Number(appointmentDuration) > 0
+      const hasStartTime = startTime !== ''
+      const hasEndTime = endTime !== ''
+      const timesValid = !timeError
+
+      onValidationChange(
+        hasWorkDay &&
+          hasAppointmentDuration &&
+          hasStartTime &&
+          hasEndTime &&
+          timesValid
+      )
+    }
+  }, [
+    workDays,
+    appointmentDuration,
+    startTime,
+    endTime,
+    timeError,
+    onValidationChange,
+  ])
+
+  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStartTime = e.target.value
+    setStartTime(newStartTime)
+    validateTimes(newStartTime, endTime)
+  }
+
+  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newEndTime = e.target.value
+    setEndTime(newEndTime)
+    validateTimes(startTime, newEndTime)
+  }
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-2">
           <Label htmlFor="appointmentDuration">
-            Duração da consulta (minutos)
+            Duração da consulta (minutos){' '}
+            <span className="text-red-500">*</span>
           </Label>
           <Input
             id="appointmentDuration"
             type="number"
             placeholder="30"
-            min="0"
+            min="1"
+            value={appointmentDuration}
+            onChange={(e) => setAppointmentDuration(e.target.value)}
             onInput={(e) => {
               const target = e.target as HTMLInputElement
               target.value = target.value.replace(/[^0-9]/g, '')
@@ -47,12 +114,15 @@ export function ProfessionalScheduling({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="breakTime">Intervalo entre consultas (minutos)</Label>
+          <Label htmlFor="breakTime">
+            Tempo de intervalo (minutos) <span className="text-red-500">*</span>
+          </Label>
           <Input
             id="breakTime"
             type="number"
-            placeholder="10"
+            placeholder="15"
             min="0"
+            required
             onInput={(e) => {
               const target = e.target as HTMLInputElement
               target.value = target.value.replace(/[^0-9]/g, '')
@@ -64,13 +134,30 @@ export function ProfessionalScheduling({
       <div className="grid grid-cols-2 gap-3">
         <div className="grid gap-2">
           <Label htmlFor="startTime">Horário de início</Label>
-          <Input id="startTime" type="time" />
+          <Input
+            id="startTime"
+            type="time"
+            value={startTime}
+            onChange={handleStartTimeChange}
+          />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="endTime">Horário de término</Label>
-          <Input id="endTime" type="time" />
+          <Input
+            id="endTime"
+            type="time"
+            value={endTime}
+            onChange={handleEndTimeChange}
+            className={timeError ? 'border-red-500' : ''}
+          />
         </div>
       </div>
+      {timeError && (
+        <div className="flex items-center gap-2 text-sm text-red-600">
+          <AlertCircle className="h-4 w-4" />
+          <span>{timeError}</span>
+        </div>
+      )}
 
       <div className="space-y-3">
         <Label>Dias de atendimento</Label>

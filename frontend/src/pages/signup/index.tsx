@@ -1,5 +1,6 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -21,10 +22,23 @@ import { UserTypeSelection } from './components/user-type-selection'
 import { signupSteps } from './types/index'
 
 export function SignUpPage() {
+  const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState<number>(signupSteps.USER_TYPE)
   const [userType, setUserType] = useState<'professional' | 'patient' | null>(
     null
   )
+  const [isSuccess, setIsSuccess] = useState(false)
+  const [countdown, setCountdown] = useState(5)
+  const [isAccountDetailsValid, setIsAccountDetailsValid] = useState(false)
+  const [isPatientPreferencesValid, setIsPatientPreferencesValid] =
+    useState(false)
+  const [isAddressDetailsValid, setIsAddressDetailsValid] = useState(false)
+  const [isProfessionalSchedulingValid, setIsProfessionalSchedulingValid] =
+    useState(false)
+  const [
+    isProfessionalNotificationsValid,
+    setIsProfessionalNotificationsValid,
+  ] = useState(false)
 
   // Estados para profissionais - notificações
   const [notifications, setNotifications] = useState({
@@ -44,11 +58,19 @@ export function SignUpPage() {
   const [preferredTimes, setPreferredTimes] = useState<
     Array<'morning' | 'afternoon' | 'evening'>
   >([])
+  const [appointmentTypes, setAppointmentTypes] = useState({
+    inPerson: false,
+    online: false,
+  })
 
   const togglePreferredTime = (time: 'morning' | 'afternoon' | 'evening') => {
     setPreferredTimes((prev) =>
       prev.includes(time) ? prev.filter((t) => t !== time) : [...prev, time]
     )
+  }
+
+  const toggleAppointmentType = (type: 'inPerson' | 'online') => {
+    setAppointmentTypes((prev) => ({ ...prev, [type]: !prev[type] }))
   }
 
   // Estados para profissionais - dias de trabalho
@@ -90,6 +112,15 @@ export function SignUpPage() {
     setNotificationChannels((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
+  useEffect(() => {
+    if (isSuccess && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
+      return () => clearTimeout(timer)
+    } else if (isSuccess && countdown === 0) {
+      navigate('/login')
+    }
+  }, [isSuccess, countdown, navigate])
+
   const getTotalSteps = () => {
     if (userType === 'professional') return 6 // USER_TYPE, ACCOUNT, CANCELLATION, SCHEDULING, NOTIFICATIONS, ADDRESS
     if (userType === 'patient') return 4 // USER_TYPE, ACCOUNT, PREFERENCES, ADDRESS
@@ -104,27 +135,34 @@ export function SignUpPage() {
       return userType !== null
     }
 
-    // Etapa 2: Detalhes da conta - sempre pode avançar
+    // Etapa 2: Detalhes da conta - todos os campos são obrigatórios
     if (currentStep === signupSteps.ACCOUNT_DETAILS) {
-      return true
+      return isAccountDetailsValid
     }
 
     // Etapa 3a: Preferências do paciente (currentStep === 2 e userType === 'patient')
     if (currentStep === 2 && userType === 'patient') {
-      return true
+      return isPatientPreferencesValid
     }
 
-    // Etapas do profissional (currentStep === 2, 3, ou 4 e userType === 'professional')
-    if (
-      (currentStep === 2 || currentStep === 3 || currentStep === 4) &&
-      userType === 'professional'
-    ) {
-      return true
+    // Etapa 3b: Política de Cancelamento (Profissional) - OPCIONAL
+    if (currentStep === 2 && userType === 'professional') {
+      return true // Política de cancelamento é opcional
+    }
+
+    // Etapa 4: Configurações de Agendamento (Profissional) - OBRIGATÓRIO
+    if (currentStep === 3 && userType === 'professional') {
+      return isProfessionalSchedulingValid
+    }
+
+    // Etapa 5: Notificações (Profissional) - OBRIGATÓRIO
+    if (currentStep === 4 && userType === 'professional') {
+      return isProfessionalNotificationsValid
     }
 
     // Etapa final: Endereço
     if (currentStep === signupSteps.ADDRESS_DETAILS) {
-      return true
+      return isAddressDetailsValid
     }
 
     return false
@@ -206,6 +244,7 @@ export function SignUpPage() {
 
   const handleSubmit = () => {
     console.log('Formulário finalizado', { userType })
+    setIsSuccess(true)
   }
 
   const getStepTitle = () => {
@@ -254,6 +293,45 @@ export function SignUpPage() {
     return currentStep === signupSteps.ADDRESS_DETAILS
   }
 
+  if (isSuccess) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6">
+            <div className="flex flex-col items-center space-y-4 text-center">
+              <div className="rounded-full bg-green-100 p-3">
+                <CheckCircle2 className="h-12 w-12 text-green-600" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-2xl font-bold text-gray-900">
+                  Cadastro realizado com sucesso! 🎉
+                </h2>
+                <p className="text-gray-600">
+                  Seja bem-vindo(a) à Mindly! Seu cadastro foi concluído e você
+                  já pode fazer login para começar a usar nossa plataforma.
+                </p>
+              </div>
+              <div className="w-full rounded-lg bg-gray-50 p-4">
+                <p className="text-sm text-gray-600">
+                  Você será redirecionado para a tela de login em{' '}
+                  <span className="font-bold text-gray-900">{countdown}</span>{' '}
+                  {countdown === 1 ? 'segundo' : 'segundos'}...
+                </p>
+              </div>
+              <Button
+                onClick={() => navigate('/login')}
+                className="w-full"
+                size="lg"
+              >
+                Ir para o Login agora
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
@@ -284,7 +362,9 @@ export function SignUpPage() {
             )}
 
             {/* Etapa 2: Detalhes da Conta */}
-            {currentStep === signupSteps.ACCOUNT_DETAILS && <AccountDetails />}
+            {currentStep === signupSteps.ACCOUNT_DETAILS && (
+              <AccountDetails onValidationChange={setIsAccountDetailsValid} />
+            )}
 
             {/* Etapa 3a: Preferências do Paciente */}
             {currentStep === signupSteps.PATIENT_PREFERENCES &&
@@ -292,6 +372,9 @@ export function SignUpPage() {
                 <PatientPreferences
                   preferredTimes={preferredTimes}
                   onToggleTime={togglePreferredTime}
+                  appointmentTypes={appointmentTypes}
+                  onToggleAppointmentType={toggleAppointmentType}
+                  onValidationChange={setIsPatientPreferencesValid}
                 />
               )}
 
@@ -305,6 +388,7 @@ export function SignUpPage() {
                 <ProfessionalScheduling
                   workDays={workDays}
                   onToggleWorkDay={toggleWorkDay}
+                  onValidationChange={setIsProfessionalSchedulingValid}
                 />
               )}
 
@@ -316,11 +400,14 @@ export function SignUpPage() {
                   notificationChannels={notificationChannels}
                   onToggleNotification={toggleNotification}
                   onToggleNotificationChannel={toggleNotificationChannel}
+                  onValidationChange={setIsProfessionalNotificationsValid}
                 />
               )}
 
             {/* Etapa Final: Endereço */}
-            {currentStep === signupSteps.ADDRESS_DETAILS && <AddressDetails />}
+            {currentStep === signupSteps.ADDRESS_DETAILS && (
+              <AddressDetails onValidationChange={setIsAddressDetailsValid} />
+            )}
           </CardContent>
 
           <CardFooter className="flex justify-between">

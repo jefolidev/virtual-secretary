@@ -1,5 +1,7 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { AlertCircle } from 'lucide-react'
+import { useEffect } from 'react'
 
 interface ProfessionalNotificationsProps {
   notifications: {
@@ -22,6 +24,7 @@ interface ProfessionalNotificationsProps {
       | 'confirmedList'
   ) => void
   onToggleNotificationChannel: (key: 'email' | 'whatsapp') => void
+  onValidationChange?: (isValid: boolean) => void
 }
 
 export function ProfessionalNotifications({
@@ -29,11 +32,27 @@ export function ProfessionalNotifications({
   notificationChannels,
   onToggleNotification,
   onToggleNotificationChannel,
+  onValidationChange,
 }: ProfessionalNotificationsProps) {
+  useEffect(() => {
+    if (onValidationChange) {
+      const hasNotification = Object.values(notifications).some((n) => n)
+      const hasChannel = notificationChannels.email || notificationChannels.whatsapp
+      onValidationChange(hasNotification && hasChannel)
+    }
+  }, [notifications, notificationChannels, onValidationChange])
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Label>Notificações que deseja receber</Label>
+        <Label>
+          Notificações que deseja receber <span className="text-red-500">*</span>
+        </Label>
+        {!Object.values(notifications).some((n) => n) && (
+          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
+            <AlertCircle className="h-4 w-4" />
+            <span>Selecione pelo menos uma notificação</span>
+          </div>
+        )}
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Checkbox
@@ -89,7 +108,15 @@ export function ProfessionalNotifications({
       </div>
 
       <div className="space-y-3">
-        <Label>Canais de notificação</Label>
+        <Label>
+          Canais de notificação <span className="text-red-500">*</span>
+        </Label>
+        {!notificationChannels.email && !notificationChannels.whatsapp && (
+          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
+            <AlertCircle className="h-4 w-4" />
+            <span>Selecione pelo menos um canal de notificação</span>
+          </div>
+        )}
         <div className="space-y-2">
           <div className="flex items-center space-x-2">
             <Checkbox
