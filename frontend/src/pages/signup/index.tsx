@@ -37,7 +37,6 @@ export function SignUpPage() {
   })
   const [notificationChannels, setNotificationChannels] = useState({
     email: false,
-    sms: false,
     whatsapp: false,
   })
 
@@ -87,7 +86,7 @@ export function SignUpPage() {
     setNotifications((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const toggleNotificationChannel = (key: 'email' | 'sms' | 'whatsapp') => {
+  const toggleNotificationChannel = (key: 'email' | 'whatsapp') => {
     setNotificationChannels((prev) => ({ ...prev, [key]: !prev[key] }))
   }
 

@@ -11,7 +11,6 @@ interface ProfessionalNotificationsProps {
   }
   notificationChannels: {
     email: boolean
-    sms: boolean
     whatsapp: boolean
   }
   onToggleNotification: (
@@ -22,7 +21,7 @@ interface ProfessionalNotificationsProps {
       | 'dailySummary'
       | 'confirmedList'
   ) => void
-  onToggleNotificationChannel: (key: 'email' | 'sms' | 'whatsapp') => void
+  onToggleNotificationChannel: (key: 'email' | 'whatsapp') => void
 }
 
 export function ProfessionalNotifications({
@@ -100,16 +99,6 @@ export function ProfessionalNotifications({
             />
             <Label htmlFor="email" className="font-normal">
               Email
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="sms"
-              checked={notificationChannels.sms}
-              onCheckedChange={() => onToggleNotificationChannel('sms')}
-            />
-            <Label htmlFor="sms" className="font-normal">
-              SMS
             </Label>
           </div>
           <div className="flex items-center space-x-2">

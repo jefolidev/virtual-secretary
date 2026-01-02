@@ -1,12 +1,5 @@
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { CloudSun, Moon, Sun } from 'lucide-react'
 
 interface PatientPreferencesProps {
@@ -86,25 +79,6 @@ export function PatientPreferences({
       </div>
 
       <div className="space-y-4">
-        <div className="grid gap-2">
-          <Label htmlFor="specialty">Especialidade preferencial</Label>
-          <Select>
-            <SelectTrigger id="specialty">
-              <SelectValue placeholder="Selecione uma especialidade" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="cardiology">Cardiologia</SelectItem>
-              <SelectItem value="dermatology">Dermatologia</SelectItem>
-              <SelectItem value="endocrinology">Endocrinologia</SelectItem>
-              <SelectItem value="gynecology">Ginecologia</SelectItem>
-              <SelectItem value="neurology">Neurologia</SelectItem>
-              <SelectItem value="orthopedics">Ortopedia</SelectItem>
-              <SelectItem value="pediatrics">Pediatria</SelectItem>
-              <SelectItem value="psychiatry">Psiquiatria</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="space-y-3">
           <Label>Tipo de atendimento</Label>
           <div className="space-y-2">
