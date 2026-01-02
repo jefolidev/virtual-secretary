@@ -85,7 +85,7 @@ export class Address extends Entity<AddressProps> {
   }
 
   static create(
-    props: Optional<AddressProps, 'createdAt'>,
+    props: Optional<AddressProps, 'createdAt' | 'updatedAt'>,
     id?: UniqueEntityId
   ) {
     const address = new Address(

@@ -94,19 +94,7 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
         ...props,
         cancellationPolicyId: props.cancellationPolicyId ?? undefined,
         scheduleConfigurationId: props.scheduleConfigurationId ?? undefined,
-        notificationSettings:
-          props.notificationSettings ??
-          NotificationSettings.create({
-            channels: ['EMAIL', 'WHATSAPP'],
-            dailySummaryTime: '18:00',
-            enabledTypes: [
-              'CANCELLATION',
-              'CONFIRMED_LIST',
-              'CONFIRMATION',
-              'DAILY_SUMMARY',
-            ],
-            reminderBeforeMinutes: 50,
-          }),
+        notificationSettings: props.notificationSettings,
         createdAt: props.createdAt ?? new Date(),
       },
       id

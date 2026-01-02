@@ -5,6 +5,7 @@ import { Address, AddressProps } from '../../enterprise/entities/address'
 import { Client } from '../../enterprise/entities/client'
 import { Professional } from '../../enterprise/entities/professional'
 import { User } from '../../enterprise/entities/user'
+import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
 import { HashGenerator } from '../cryptography/hash-generator'
 import { AddressRepository } from '../repositories/address.repository'
 import { ClientRepository } from '../repositories/client.repository'
@@ -20,6 +21,14 @@ interface RegisterUserUseCaseRequest {
   phone: string
   cpf: string
   address: AddressProps
+  professionalData?: {
+    sessionPrice: number
+    notificationSettings?: NotificationSettings
+  }
+  clientData?: {
+    periodPreference: ('MORNING' | 'AFTERNOON' | 'EVENING')[]
+    extraPreferences?: string
+  }
   role: 'PROFESSIONAL' | 'CLIENT'
 }
 
@@ -43,6 +52,8 @@ export class RegisterUserUseCase {
     cpf,
     address,
     role,
+    professionalData,
+    clientData,
   }: RegisterUserUseCaseRequest): Promise<RegisterUserUseCaseResponse> {
     const userWithSameEmail = await this.userRepository.findByEmail(email)
 
@@ -55,9 +66,9 @@ export class RegisterUserUseCase {
 
     if (role === 'PROFESSIONAL') {
       professional = Professional.create({
-        sessionPrice: 0,
+        sessionPrice: professionalData?.sessionPrice ?? 0,
+        notificationSettings: professionalData?.notificationSettings,
       })
-
 
       await this.professionalRepository.create(professional)
     }
@@ -65,6 +76,8 @@ export class RegisterUserUseCase {
     if (role === 'CLIENT') {
       client = Client.create({
         appointmentHistory: [],
+        extraPreferences: clientData?.extraPreferences,
+        periodPreference: clientData?.periodPreference,
       })
 
       await this.clientRepository.create(client)
