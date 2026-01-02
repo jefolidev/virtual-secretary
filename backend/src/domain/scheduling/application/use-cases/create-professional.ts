@@ -5,12 +5,20 @@ import { Injectable } from '@nestjs/common'
 import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import { Professional } from '../../enterprise/entities/professional'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
-import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
+import {
+  NotificationChannel,
+  NotificationSettings,
+  NotificationType,
+} from '../../enterprise/entities/value-objects/notification-settings'
 import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface CreateProfessionalUseCaseProps {
   sessionPrice: number
+  channels: NotificationChannel[]
+  dailySummaryTime: string
+  enabledTypes: NotificationType[]
+  reminderBeforeMinutes?: number
 }
 
 type CreateProfessionalUseCaseResponse = Either<
@@ -23,17 +31,16 @@ export class CreateProfessionalUseCase {
 
   async execute({
     sessionPrice,
+    channels,
+    dailySummaryTime,
+    enabledTypes,
+    reminderBeforeMinutes,
   }: CreateProfessionalUseCaseProps): Promise<CreateProfessionalUseCaseResponse> {
     const notificationSettings = NotificationSettings.create({
-      channels: ['EMAIL', 'WHATSAPP'],
-      dailySummaryTime: '18:00',
-      enabledTypes: [
-        'CANCELLATION',
-        'CONFIRMED_LIST',
-        'CONFIRMATION',
-        'DAILY_SUMMARY',
-      ],
-      reminderBeforeMinutes: 50,
+      channels,
+      dailySummaryTime,
+      enabledTypes,
+      reminderBeforeMinutes,
     })
 
     const professional = await Professional.create({
