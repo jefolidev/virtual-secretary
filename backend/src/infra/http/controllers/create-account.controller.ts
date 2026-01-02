@@ -1,5 +1,6 @@
 import { UserAlreadyExists as UserAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/user-already-exists'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
+import { NotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import { Public } from '@/infra/auth/public'
 import { ZodValidationPipe } from '@/infra/http/pipes/zod-validation.pipe'
 import {
@@ -25,16 +26,43 @@ export class CreateAccountController {
   @HttpCode(201)
   @UsePipes(new ZodValidationPipe(createUserAccountBodySchema))
   async handle(@Body() body: CreateUserAccountBodySchema) {
-    const { cpf, email, name, phone, password, address, role } = body
+    const {
+      cpf,
+      email,
+      name,
+      phone,
+      password,
+      address,
+      role,
+      clientData,
+      professionalData,
+    } = body
 
     const result = await this.registerUserUseCase.execute({
-      address,
+      address: {
+        ...address,
+        createdAt: new Date(),
+      },
       cpf,
       email,
       name,
       phone,
       password,
       role,
+      clientData,
+      professionalData: professionalData
+        ? {
+            sessionPrice: professionalData.sessionPrice,
+            notificationSettings: NotificationSettings.create({
+              channels: professionalData.notificationSettings.channels,
+              enabledTypes: professionalData.notificationSettings.enabledTypes,
+              reminderBeforeMinutes:
+                professionalData.notificationSettings.reminderBeforeMinutes,
+              dailySummaryTime:
+                professionalData.notificationSettings.dailySummaryTime,
+            }),
+          }
+        : undefined,
     })
 
     if (result.isLeft()) {
