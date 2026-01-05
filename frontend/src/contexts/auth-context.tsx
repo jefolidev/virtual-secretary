@@ -39,8 +39,8 @@ export interface SignupData {
   birthdate: string
   userType: 'professional' | 'patient'
   // Dados do paciente
-  periodPreference?: Array<'morning' | 'afternoon' | 'evening'>
-  extraPreferences?: string
+  periodPreference: Array<'morning' | 'afternoon' | 'evening'>
+  extraPreferences: string
   // Dados do profissional
   cancellationPolicy?: string
   appointmentDuration?: number
@@ -173,29 +173,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (data: SignupData) => {
     try {
-      // 1. Registra o usuário
+      console.log('🎯 Iniciando processo de cadastro...')
+      console.log('📝 Registrando usuário...')
       const registerData = transformSignupDataToRegisterData(data)
       const response = await registerUser(registerData)
+      console.log('✅ Usuário registrado com sucesso!')
 
       // 2. Se for profissional, salva configurações adicionais
       if (data.userType === 'professional') {
+        console.log('⚕️ Configurando dados profissionais...')
+
         // Salva política de cancelamento (se informada)
         const cancellationPolicy = transformSignupDataToCancellationPolicy(data)
         if (cancellationPolicy) {
+          console.log('📋 Salvando política de cancelamento...')
           await saveCancellationPolicy(response.id, cancellationPolicy)
+          console.log('✅ Política de cancelamento salva!')
         }
 
         // Salva configuração de horários
         const scheduleConfig = transformSignupDataToScheduleConfig(data)
         if (scheduleConfig) {
+          console.log('⏰ Salvando configurações de horário...')
           await saveScheduleConfiguration(response.id, scheduleConfig)
+          console.log('✅ Horários configurados!')
         }
 
         // Salva configurações de notificação
         const notifications = transformSignupDataToNotifications(data)
         if (notifications) {
+          console.log('🔔 Salvando configurações de notificação...')
           await saveProfessionalNotifications(response.id, notifications)
+          console.log('✅ Notificações configuradas!')
         }
+
+        console.log('🎉 Todas as configurações profissionais salvas!')
       }
 
       // 3. Cria o usuário e salva no estado

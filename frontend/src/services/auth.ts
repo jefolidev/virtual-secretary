@@ -9,20 +9,21 @@ export interface RegisterUserData {
   password: string
   phone: string
   cpf: string
-  birthdate: string
-  role: 'CLIENT' | 'PROFESSIONAL' // Backend espera CLIENT/PROFESSIONAL
-  // Dados do paciente
-  periodPreference?: Array<'morning' | 'afternoon' | 'evening'>
-  extraPreferences?: string
-  // Endereço com nomes corretos para o backend
+  role: 'CLIENT' | 'PROFESSIONAL'
+  // Dados do cliente (apenas para CLIENT)
+  clientData?: {
+    periodPreference: Array<'MORNING' | 'AFTERNOON' | 'EVENING'>
+    extraPreferences: string
+  }
+  // Endereço com estrutura correta do backend
   address: {
-    postalCode: string // Backend espera postalCode ao invés de cep
-    addressLine1: string // Backend espera addressLine1 ao invés de street
+    addressLine1: string
+    addressLine2?: string
     neighborhood: string
     city: string
     state: string
-    number?: string
-    complement?: string
+    postalCode: string
+    country: string
   }
 }
 
@@ -111,26 +112,38 @@ export async function saveProfessionalNotifications(
 export function transformSignupDataToRegisterData(
   data: SignupData
 ): RegisterUserData {
-  return {
+  const result: RegisterUserData = {
     name: data.name,
     email: data.email,
     password: data.password,
     phone: data.phone,
     cpf: data.cpf,
-    birthdate: data.birthdate,
-    role: data.userType === 'professional' ? 'PROFESSIONAL' : 'CLIENT', // Mapeia corretamente
-    periodPreference: data.periodPreference,
-    extraPreferences: data.extraPreferences,
+    role: data.userType === 'professional' ? 'PROFESSIONAL' : 'CLIENT',
+    // Dados específicos do cliente
+    clientData:
+      data.userType === 'patient'
+        ? {
+            periodPreference: data.periodPreference.map((p) =>
+              p.toUpperCase()
+            ) as Array<'MORNING' | 'AFTERNOON' | 'EVENING'>,
+            extraPreferences: data.extraPreferences,
+          }
+        : undefined,
     address: {
-      postalCode: data.address.cep, // Mapeia cep para postalCode
-      addressLine1: data.address.street, // Mapeia street para addressLine1
+      addressLine1: data.address.street,
+      addressLine2: data.address.complement || undefined,
       neighborhood: data.address.neighborhood,
       city: data.address.city,
       state: data.address.state,
-      number: data.address.number,
-      complement: data.address.complement,
+      postalCode: data.address.cep,
+      country: 'Brasil',
     },
   }
+
+  console.log('  - Output result.clientData:', result.clientData)
+  console.log('  - Complete result:', result)
+
+  return result
 }
 
 // Função auxiliar para transformar dados do signup em configuração de horários
