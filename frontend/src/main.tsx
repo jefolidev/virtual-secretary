@@ -1,3 +1,4 @@
+import { Toaster } from '@/components/ui/sonner'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router/dom'
@@ -10,6 +11,7 @@ createRoot(document.getElementById('root')!).render(
     <AuthProvider>
       <div className="w-full h-screen ">
         <RouterProvider router={router} />
+        <Toaster position="top-right" richColors />
       </div>
     </AuthProvider>
   </StrictMode>
