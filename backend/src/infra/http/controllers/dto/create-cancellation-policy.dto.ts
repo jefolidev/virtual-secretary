@@ -1,6 +1,7 @@
 import z from 'zod'
 
 export const createCancellationPolicyBodySchema = z.object({
+  professionalId: z.string().uuid('Professional ID must be a valid UUID'),
   minHoursBeforeCancellation: z
     .number()
     .min(6, 'The minimun of hours to cancel the schedule is 6.'),

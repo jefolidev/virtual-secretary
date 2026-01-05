@@ -1,3 +1,5 @@
+import { CpfAlreadyExists as CpfAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/cpf-already-exists'
+import { PhoneAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/phone-already-exists'
 import { UserAlreadyExists as UserAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/user-already-exists'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { NotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
@@ -69,6 +71,10 @@ export class CreateAccountController {
       const error = result.value
       switch (error.constructor) {
         case UserAlreadyExistsError:
+          throw new ConflictException(error.message)
+        case PhoneAlreadyExistsError:
+          throw new ConflictException(error.message)
+        case CpfAlreadyExistsError:
           throw new ConflictException(error.message)
         default:
           throw new BadRequestException(error?.message ?? 'Bad Request')

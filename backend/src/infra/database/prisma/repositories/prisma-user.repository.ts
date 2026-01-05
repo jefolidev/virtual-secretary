@@ -25,6 +25,40 @@ export class PrismaUserRepository implements UserRepository {
     return PrismaUserMapper.toDomain(user)
   }
 
+  async findByPhone(phone: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        phone,
+      },
+      include: {
+        address: true,
+      },
+    })
+
+    if (!user) {
+      return null
+    }
+
+    return PrismaUserMapper.toDomain(user)
+  }
+
+  async findByCpf(cpf: string): Promise<User | null> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        cpf,
+      },
+      include: {
+        address: true,
+      },
+    })
+
+    if (!user) {
+      return null
+    }
+
+    return PrismaUserMapper.toDomain(user)
+  }
+
   async findById(id: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: {

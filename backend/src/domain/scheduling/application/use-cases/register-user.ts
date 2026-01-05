@@ -11,6 +11,8 @@ import { AddressRepository } from '../repositories/address.repository'
 import { ClientRepository } from '../repositories/client.repository'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 import { UserRepository } from '../repositories/user.repository'
+import { CpfAlreadyExists } from './errors/cpf-already-exists'
+import { PhoneAlreadyExistsError } from './errors/phone-already-exists'
 import { UserAlreadyExists } from './errors/user-already-exists'
 import { WeakPasswordError } from './errors/weak-password-error'
 
@@ -32,7 +34,10 @@ interface RegisterUserUseCaseRequest {
   role: 'PROFESSIONAL' | 'CLIENT'
 }
 
-type RegisterUserUseCaseResponse = Either<UserAlreadyExists, { user: User }>
+type RegisterUserUseCaseResponse = Either<
+  UserAlreadyExists | PhoneAlreadyExistsError | CpfAlreadyExists,
+  { user: User }
+>
 
 @Injectable()
 export class RegisterUserUseCase {
@@ -62,17 +67,26 @@ export class RegisterUserUseCase {
       return left(new UserAlreadyExists())
     }
 
+    const userWithSamePhone = await this.userRepository.findByPhone(phone)
+
+    if (userWithSamePhone) {
+      return left(new PhoneAlreadyExistsError())
+    }
+    const userWithSameCpf = await this.userRepository.findByCpf(cpf)
+
+    if (userWithSameCpf) {
+      return left(new CpfAlreadyExists())
+    }
     const isStrongPassword = checkPasswordStrong(password)
 
     if (!isStrongPassword.isValid) {
       throw new WeakPasswordError(isStrongPassword.errors)
     }
 
-    // Após validações, criar e persistir as entidades
+    // Após validações, criar entidades (sem persistir ainda)
     const hashedPassword = await this.hashGenerator.hash(password)
 
     const userAddress = Address.create(address)
-    await this.addressRepository.create(userAddress)
 
     let professional: Professional | undefined = undefined
     let client: Client | undefined = undefined
@@ -82,8 +96,6 @@ export class RegisterUserUseCase {
         sessionPrice: professionalData?.sessionPrice ?? 0,
         notificationSettings: professionalData?.notificationSettings,
       })
-
-      await this.professionalRepository.create(professional)
     }
 
     if (role === 'CLIENT') {
@@ -92,8 +104,6 @@ export class RegisterUserUseCase {
         extraPreferences: clientData?.extraPreferences,
         periodPreference: clientData?.periodPreference,
       })
-
-      await this.clientRepository.create(client)
     }
 
     const user = User.create({
@@ -108,7 +118,34 @@ export class RegisterUserUseCase {
       clientId: client?.id,
     })
 
-    await this.userRepository.create(user)
+    // Persistir todas as entidades de uma vez dentro do try/catch
+    try {
+      await this.addressRepository.create(userAddress)
+
+      if (professional) {
+        await this.professionalRepository.create(professional)
+      }
+
+      if (client) {
+        await this.clientRepository.create(client)
+      }
+
+      await this.userRepository.create(user)
+    } catch (error: any) {
+      // Tratamento para erro P2002 - Unique constraint violation
+      if (error.code === 'P2002') {
+        if (error.meta?.constraint?.fields?.includes('phone')) {
+          return left(new PhoneAlreadyExistsError())
+        }
+        if (error.meta?.constraint?.fields?.includes('email')) {
+          return left(new UserAlreadyExists())
+        }
+        if (error.meta?.constraint?.fields?.includes('cpf')) {
+          return left(new CpfAlreadyExists())
+        }
+      }
+      throw error
+    }
 
     return right({ user })
   }

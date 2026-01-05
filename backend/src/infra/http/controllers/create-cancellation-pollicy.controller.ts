@@ -3,8 +3,7 @@ import { ConflictError } from '@/domain/organization/application/use-cases/confl
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { CreateCancellationPolicyUseCase } from '@/domain/scheduling/application/use-cases/create-cancellation-policy'
 import { ValidationError } from '@/domain/scheduling/application/use-cases/errors/validation-error'
-import { CurrentUser } from '@/infra/auth/current-user-decorator'
-import { UserPayload } from '@/infra/auth/jwt.strategy'
+import { Public } from '@/infra/auth/public'
 import {
   BadRequestException,
   Body,
@@ -28,12 +27,13 @@ export class CreateCancellationPolicyController {
   ) {}
 
   @Post()
+  @Public()
   async handle(
     @Body(new ZodValidationPipe(createCancellationPolicyBodySchema))
-    body: CreateCancellationPolicyBodySchema,
-    @CurrentUser() { sub: userId }: UserPayload
+    body: CreateCancellationPolicyBodySchema
   ) {
     const {
+      professionalId,
       allowReschedule,
       cancelationFeePercentage,
       minDaysBeforeNextAppointment,
@@ -41,14 +41,16 @@ export class CreateCancellationPolicyController {
       description,
     } = body
 
-    const professional = await this.professionalRepository.findByUserId(userId)
+    const professional = await this.professionalRepository.findById(
+      professionalId
+    )
 
     if (!professional) {
-      throw new NotFoundException()
+      throw new NotFoundException('Professional not found')
     }
 
     const result = await this.createCancellationPolicyUseCase.execute({
-      professionalId: professional.id.toString(),
+      professionalId: professionalId,
       allowReschedule,
       cancelationFeePercentage,
       minDaysBeforeNextAppointment,
