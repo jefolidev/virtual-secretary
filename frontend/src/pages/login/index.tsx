@@ -8,14 +8,20 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useAuth } from '@/contexts/auth-context'
 import { ScreensEnum } from '@/types/screens'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { AlertCircle } from 'lucide-react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
 import { loginFormSchema, type LoginFormSchema } from './schemas'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { login } = useAuth()
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
   const form = useForm<LoginFormSchema>({
     resolver: zodResolver(loginFormSchema),
@@ -25,8 +31,23 @@ export function LoginPage() {
     },
   })
 
-  function onSubmit(data: LoginFormSchema) {
-    console.log(data)
+  async function onSubmit(data: LoginFormSchema) {
+    setError('')
+    setIsLoading(true)
+
+    try {
+      await login({
+        email: data.email,
+        password: data.password,
+      })
+      // Redireciona para a página inicial após login bem-sucedido
+      navigate('/')
+    } catch (err) {
+      setError('Email ou senha inválidos. Tente novamente.')
+      console.error('Erro no login:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -40,6 +61,12 @@ export function LoginPage() {
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {error && (
+            <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-md">
+              <AlertCircle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          )}
           <FormField
             control={form.control}
             name="email"
@@ -75,8 +102,12 @@ export function LoginPage() {
             Esqueceu a senha?
           </p>
           <div className="flex">
-            <Button className="w-full rounded-2xl py-5" type="submit">
-              Login
+            <Button
+              className="w-full rounded-2xl py-5"
+              type="submit"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Entrando...' : 'Login'}
             </Button>
           </div>
         </form>
