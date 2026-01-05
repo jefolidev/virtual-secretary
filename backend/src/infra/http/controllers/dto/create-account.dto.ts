@@ -27,7 +27,7 @@ const addressSchema = z.object({
 
 const clientDataSchema = z.object({
   periodPreference: z.array(PeriodPreferenceEnum).optional().default([]),
-  extraPreference: z.string().optional(),
+  extraPreferences: z.string().optional(),
 })
 
 const notificationSettings = z.object({

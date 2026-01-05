@@ -55,10 +55,23 @@ export class RegisterUserUseCase {
     professionalData,
     clientData,
   }: RegisterUserUseCaseRequest): Promise<RegisterUserUseCaseResponse> {
+    // Validações ANTES de persistir qualquer dado
     const userWithSameEmail = await this.userRepository.findByEmail(email)
 
-    const userAddress = Address.create(address)
+    if (userWithSameEmail) {
+      return left(new UserAlreadyExists())
+    }
 
+    const isStrongPassword = checkPasswordStrong(password)
+
+    if (!isStrongPassword.isValid) {
+      throw new WeakPasswordError(isStrongPassword.errors)
+    }
+
+    // Após validações, criar e persistir as entidades
+    const hashedPassword = await this.hashGenerator.hash(password)
+
+    const userAddress = Address.create(address)
     await this.addressRepository.create(userAddress)
 
     let professional: Professional | undefined = undefined
@@ -82,18 +95,6 @@ export class RegisterUserUseCase {
 
       await this.clientRepository.create(client)
     }
-
-    if (userWithSameEmail) {
-      return left(new UserAlreadyExists())
-    }
-
-    const isStrongPassword = checkPasswordStrong(password)
-
-    if (!isStrongPassword.isValid) {
-      throw new WeakPasswordError(isStrongPassword.errors)
-    }
-
-    const hashedPassword = await this.hashGenerator.hash(password)
 
     const user = User.create({
       addressId: userAddress.id,
