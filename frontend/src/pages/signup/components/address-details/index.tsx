@@ -3,30 +3,25 @@ import { Label } from '@/components/ui/label'
 import { fetchAddressByCEP } from '@/services/viacep'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useSignupForm } from '../../contexts/form-context'
 
 interface AddressDetailsProps {
   onValidationChange?: (isValid: boolean) => void
 }
 
 export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
-  const [cep, setCep] = useState('')
-  const [street, setStreet] = useState('')
-  const [complement, setComplement] = useState('')
-  const [neighborhood, setNeighborhood] = useState('')
-  const [city, setCity] = useState('')
-  const [state, setState] = useState('')
-  const [number, setNumber] = useState('')
+  const { formData, updateNestedFormData } = useSignupForm()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
   const isFormValid = () => {
-    const cleanCEP = cep.replace(/\D/g, '')
+    const cleanCEP = formData.address.cep.replace(/\D/g, '')
     return (
       cleanCEP.length === 8 &&
-      street.trim() !== '' &&
-      neighborhood.trim() !== '' &&
-      city.trim() !== '' &&
-      state.trim() !== ''
+      formData.address.street.trim() !== '' &&
+      formData.address.neighborhood.trim() !== '' &&
+      formData.address.city.trim() !== '' &&
+      formData.address.state.trim() !== ''
     )
   }
 
@@ -34,7 +29,13 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
     if (onValidationChange) {
       onValidationChange(isFormValid())
     }
-  }, [cep, street, neighborhood, city, state])
+  }, [
+    formData.address.cep,
+    formData.address.street,
+    formData.address.neighborhood,
+    formData.address.city,
+    formData.address.state,
+  ])
 
   const formatCEP = (value: string) => {
     const numbers = value.replace(/\D/g, '')
@@ -43,7 +44,7 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
 
   const handleCEPChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const formattedCEP = formatCEP(e.target.value)
-    setCep(formattedCEP)
+    updateNestedFormData('address', 'cep', formattedCEP)
 
     const cleanCEP = formattedCEP.replace(/\D/g, '')
 
@@ -58,12 +59,12 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
         // Pequeno delay para dar feedback visual
         await new Promise((resolve) => setTimeout(resolve, 300))
 
-        setStreet(data.logradouro)
-        setNeighborhood(data.bairro)
-        setCity(data.localidade)
-        setState(data.uf)
+        updateNestedFormData('address', 'street', data.logradouro)
+        updateNestedFormData('address', 'neighborhood', data.bairro)
+        updateNestedFormData('address', 'city', data.localidade)
+        updateNestedFormData('address', 'state', data.uf)
         if (data.complemento) {
-          setComplement(data.complemento)
+          updateNestedFormData('address', 'complement', data.complemento)
         }
         setError('')
       } catch (err) {
@@ -75,11 +76,11 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
   }
 
   const clearAddressFields = () => {
-    setStreet('')
-    setNeighborhood('')
-    setCity('')
-    setState('')
-    setComplement('')
+    updateNestedFormData('address', 'street', '')
+    updateNestedFormData('address', 'neighborhood', '')
+    updateNestedFormData('address', 'city', '')
+    updateNestedFormData('address', 'state', '')
+    updateNestedFormData('address', 'complement', '')
   }
 
   return (
@@ -92,7 +93,7 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
           <Input
             id="cep"
             placeholder="00000-000"
-            value={cep}
+            value={formData.address.cep}
             onChange={handleCEPChange}
             maxLength={9}
             required
@@ -115,8 +116,10 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
             <Input
               id="street"
               placeholder="Nome do logradouro"
-              value={street}
-              onChange={(e) => setStreet(e.target.value)}
+              value={formData.address.street}
+              onChange={(e) =>
+                updateNestedFormData('address', 'street', e.target.value)
+              }
               disabled={loading}
               className={loading ? 'animate-pulse' : ''}
               required
@@ -133,8 +136,10 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
           <Input
             id="complement"
             placeholder="Apto, bloco, etc"
-            value={complement}
-            onChange={(e) => setComplement(e.target.value)}
+            value={formData.address.complement}
+            onChange={(e) =>
+              updateNestedFormData('address', 'complement', e.target.value)
+            }
             disabled={loading}
             className={loading ? 'animate-pulse' : ''}
           />
@@ -150,8 +155,10 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
             <Input
               id="neighborhood"
               placeholder="Bairro"
-              value={neighborhood}
-              onChange={(e) => setNeighborhood(e.target.value)}
+              value={formData.address.neighborhood}
+              onChange={(e) =>
+                updateNestedFormData('address', 'neighborhood', e.target.value)
+              }
               disabled={loading}
               className={loading ? 'animate-pulse' : ''}
               required
@@ -168,8 +175,10 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
           <Input
             id="number"
             placeholder="123"
-            value={number}
-            onChange={(e) => setNumber(e.target.value)}
+            value={formData.address.number}
+            onChange={(e) =>
+              updateNestedFormData('address', 'number', e.target.value)
+            }
             disabled={loading}
           />
         </div>
@@ -184,8 +193,10 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
             <Input
               id="city"
               placeholder="Cidade"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
+              value={formData.address.city}
+              onChange={(e) =>
+                updateNestedFormData('address', 'city', e.target.value)
+              }
               disabled={loading}
               className={loading ? 'animate-pulse' : ''}
               required
@@ -205,8 +216,14 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
             <Input
               id="state"
               placeholder="UF"
-              value={state}
-              onChange={(e) => setState(e.target.value.toUpperCase())}
+              value={formData.address.state}
+              onChange={(e) =>
+                updateNestedFormData(
+                  'address',
+                  'state',
+                  e.target.value.toUpperCase()
+                )
+              }
               maxLength={2}
               disabled={loading}
               className={loading ? 'animate-pulse' : ''}

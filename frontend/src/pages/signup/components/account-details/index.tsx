@@ -2,19 +2,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Info } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useSignupForm } from '../../contexts/form-context'
 
 interface AccountDetailsProps {
   onValidationChange?: (isValid: boolean) => void
 }
 
 export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [phone, setPhone] = useState('')
-  const [cpf, setCpf] = useState('')
-  const [birthdate, setBirthdate] = useState('')
+  const { formData, updateFormData } = useSignupForm()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
@@ -27,31 +22,33 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
       hasUpperCase: /[A-Z]/.test(pwd),
       hasLowerCase: /[a-z]/.test(pwd),
       hasNumber: /\d/.test(pwd),
-      hasMinLength: pwd.length >= 6,
+      hasMinLength: pwd.length >= 8,
     }
   }
 
-  const passwordValidation = validatePassword(password)
+  const passwordValidation = validatePassword(formData.password)
   const allPasswordRequirementsMet =
     passwordValidation.hasUpperCase &&
     passwordValidation.hasLowerCase &&
     passwordValidation.hasNumber &&
     passwordValidation.hasMinLength
 
-  const passwordsMatch = password === confirmPassword && confirmPassword !== ''
+  const passwordsMatch =
+    formData.password === formData.confirmPassword &&
+    formData.confirmPassword !== ''
 
   const isFormValid = () => {
-    const cleanPhone = phone.replace(/\D/g, '')
-    const cleanCPF = cpf.replace(/\D/g, '')
+    const cleanPhone = formData.phone.replace(/\D/g, '')
+    const cleanCPF = formData.cpf.replace(/\D/g, '')
 
     return (
-      name.trim() !== '' &&
-      isValidEmail(email) &&
+      formData.name.trim() !== '' &&
+      isValidEmail(formData.email) &&
       allPasswordRequirementsMet &&
       passwordsMatch &&
       cleanPhone.length >= 10 &&
       cleanCPF.length === 11 &&
-      birthdate !== ''
+      formData.birthdate !== ''
     )
   }
 
@@ -60,7 +57,15 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
     if (onValidationChange) {
       onValidationChange(isFormValid())
     }
-  }, [name, email, password, confirmPassword, phone, cpf, birthdate])
+  }, [
+    formData.name,
+    formData.email,
+    formData.password,
+    formData.confirmPassword,
+    formData.phone,
+    formData.cpf,
+    formData.birthdate,
+  ])
 
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, '')
@@ -85,11 +90,11 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
   }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPhone(formatPhone(e.target.value))
+    updateFormData('phone', formatPhone(e.target.value))
   }
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCpf(formatCPF(e.target.value))
+    updateFormData('cpf', formatCPF(e.target.value))
   }
 
   return (
@@ -101,8 +106,8 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
         <Input
           id="name"
           placeholder="Seu nome completo"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          value={formData.name}
+          onChange={(e) => updateFormData('name', e.target.value)}
           required
         />
       </div>
@@ -115,17 +120,17 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
           id="email"
           type="email"
           placeholder="seu@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={formData.email}
+          onChange={(e) => updateFormData('email', e.target.value)}
           required
         />
-        {email && !isValidEmail(email) && (
+        {formData.email && !isValidEmail(formData.email) && (
           <div className="flex items-center gap-2 text-sm text-red-600">
             <AlertCircle className="h-4 w-4" />
             <span>Email inválido</span>
           </div>
         )}
-        {email && isValidEmail(email) && (
+        {formData.email && isValidEmail(formData.email) && (
           <div className="flex items-center gap-2 text-sm text-green-600">
             <CheckCircle2 className="h-4 w-4" />
             <span>Email válido</span>
@@ -145,43 +150,51 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
                 <div className="space-y-1">
                   <div
                     className={
-                      password && passwordValidation.hasUpperCase
+                      formData.password && passwordValidation.hasUpperCase
                         ? 'text-green-400'
                         : ''
                     }
                   >
-                    {password && passwordValidation.hasUpperCase ? '✓' : '○'}{' '}
+                    {formData.password && passwordValidation.hasUpperCase
+                      ? '✓'
+                      : '○'}{' '}
                     Letra maiúscula
                   </div>
                   <div
                     className={
-                      password && passwordValidation.hasLowerCase
+                      formData.password && passwordValidation.hasLowerCase
                         ? 'text-green-400'
                         : ''
                     }
                   >
-                    {password && passwordValidation.hasLowerCase ? '✓' : '○'}{' '}
+                    {formData.password && passwordValidation.hasLowerCase
+                      ? '✓'
+                      : '○'}{' '}
                     Letra minúscula
                   </div>
                   <div
                     className={
-                      password && passwordValidation.hasNumber
+                      formData.password && passwordValidation.hasNumber
                         ? 'text-green-400'
                         : ''
                     }
                   >
-                    {password && passwordValidation.hasNumber ? '✓' : '○'}{' '}
+                    {formData.password && passwordValidation.hasNumber
+                      ? '✓'
+                      : '○'}{' '}
                     Número
                   </div>
                   <div
                     className={
-                      password && passwordValidation.hasMinLength
+                      formData.password && passwordValidation.hasMinLength
                         ? 'text-green-400'
                         : ''
                     }
                   >
-                    {password && passwordValidation.hasMinLength ? '✓' : '○'}{' '}
-                    Mínimo 6 caracteres
+                    {formData.password && passwordValidation.hasMinLength
+                      ? '✓'
+                      : '○'}{' '}
+                    Mínimo 8 caracteres
                   </div>
                 </div>
               </div>
@@ -192,8 +205,8 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
               id="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={(e) => updateFormData('password', e.target.value)}
               className="pr-10"
               required
             />
@@ -219,19 +232,21 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={formData.confirmPassword}
+              onChange={(e) =>
+                updateFormData('confirmPassword', e.target.value)
+              }
               className={
-                confirmPassword && !passwordsMatch
+                formData.confirmPassword && !passwordsMatch
                   ? 'border-red-500 focus-visible:ring-red-500 pr-20'
-                  : confirmPassword && passwordsMatch
+                  : formData.confirmPassword && passwordsMatch
                   ? 'border-green-500 focus-visible:ring-green-500 pr-20'
                   : 'pr-20'
               }
               required
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-              {confirmPassword && (
+              {formData.confirmPassword && (
                 <div>
                   {passwordsMatch ? (
                     <CheckCircle2 className="h-4 w-4 text-green-600" />
@@ -253,7 +268,7 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
               </button>
             </div>
           </div>
-          {confirmPassword && !passwordsMatch && (
+          {formData.confirmPassword && !passwordsMatch && (
             <p className="text-xs text-red-600">As senhas não coincidem</p>
           )}
         </div>
@@ -266,7 +281,7 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
         <Input
           id="phone"
           placeholder="(00) 00000-0000"
-          value={phone}
+          value={formData.phone}
           onChange={handlePhoneChange}
           maxLength={15}
           required
@@ -280,7 +295,7 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
         <Input
           id="cpf"
           placeholder="000.000.000-00"
-          value={cpf}
+          value={formData.cpf}
           onChange={handleCPFChange}
           maxLength={14}
           required
@@ -294,8 +309,8 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
         <Input
           id="birthdate"
           type="date"
-          value={birthdate}
-          onChange={(e) => setBirthdate(e.target.value)}
+          value={formData.birthdate}
+          onChange={(e) => updateFormData('birthdate', e.target.value)}
           required
         />
       </div>
