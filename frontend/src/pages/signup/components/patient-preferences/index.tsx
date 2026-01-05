@@ -1,34 +1,32 @@
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { AlertCircle, CloudSun, Moon, Sun } from 'lucide-react'
 import { useEffect } from 'react'
+import { useSignupForm } from '../../contexts/form-context'
 
 interface PatientPreferencesProps {
-  preferredTimes: Array<'morning' | 'afternoon' | 'evening'>
-  onToggleTime: (time: 'morning' | 'afternoon' | 'evening') => void
-  appointmentTypes: {
-    inPerson: boolean
-    online: boolean
-  }
-  onToggleAppointmentType: (type: 'inPerson' | 'online') => void
   onValidationChange?: (isValid: boolean) => void
 }
 
 export function PatientPreferences({
-  preferredTimes,
-  onToggleTime,
-  appointmentTypes,
-  onToggleAppointmentType,
   onValidationChange,
 }: PatientPreferencesProps) {
+  const { formData, updateFormData } = useSignupForm()
+
+  const handleToggleTime = (time: 'morning' | 'afternoon' | 'evening') => {
+    const currentTimes = formData.periodPreference
+    const newTimes = currentTimes.includes(time)
+      ? currentTimes.filter((t) => t !== time)
+      : [...currentTimes, time]
+    updateFormData('periodPreference', newTimes)
+  }
+
   useEffect(() => {
     if (onValidationChange) {
-      const hasPreferredTime = preferredTimes.length > 0
-      const hasAppointmentType =
-        appointmentTypes.inPerson || appointmentTypes.online
-      onValidationChange(hasPreferredTime && hasAppointmentType)
+      const hasPreferredTime = formData.periodPreference.length > 0
+      onValidationChange(hasPreferredTime)
     }
-  }, [preferredTimes, appointmentTypes, onValidationChange])
+  }, [formData.periodPreference, onValidationChange])
 
   return (
     <div className="space-y-6">
@@ -37,7 +35,7 @@ export function PatientPreferences({
           Períodos de preferência para consultas{' '}
           <span className="text-red-500">*</span>
         </Label>
-        {preferredTimes.length === 0 && (
+        {formData.periodPreference.length === 0 && (
           <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
             <AlertCircle className="h-4 w-4" />
             <span>Selecione pelo menos um período de preferência</span>
@@ -46,16 +44,16 @@ export function PatientPreferences({
         <div className="flex gap-4 justify-center">
           <button
             type="button"
-            onClick={() => onToggleTime('morning')}
+            onClick={() => handleToggleTime('morning')}
             className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
-              preferredTimes.includes('morning')
+              formData.periodPreference.includes('morning')
                 ? 'border-zinc-800 bg-zinc-50'
                 : 'border-zinc-200 hover:border-zinc-300'
             }`}
           >
             <Sun
               className={`h-8 w-8 ${
-                preferredTimes.includes('morning')
+                formData.periodPreference.includes('morning')
                   ? 'text-zinc-800'
                   : 'text-zinc-400'
               }`}
@@ -66,16 +64,16 @@ export function PatientPreferences({
 
           <button
             type="button"
-            onClick={() => onToggleTime('afternoon')}
+            onClick={() => handleToggleTime('afternoon')}
             className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
-              preferredTimes.includes('afternoon')
+              formData.periodPreference.includes('afternoon')
                 ? 'border-zinc-800 bg-zinc-50'
                 : 'border-zinc-200 hover:border-zinc-300'
             }`}
           >
             <CloudSun
               className={`h-8 w-8 ${
-                preferredTimes.includes('afternoon')
+                formData.periodPreference.includes('afternoon')
                   ? 'text-zinc-800'
                   : 'text-zinc-400'
               }`}
@@ -86,16 +84,16 @@ export function PatientPreferences({
 
           <button
             type="button"
-            onClick={() => onToggleTime('evening')}
+            onClick={() => handleToggleTime('evening')}
             className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${
-              preferredTimes.includes('evening')
+              formData.periodPreference.includes('evening')
                 ? 'border-zinc-800 bg-zinc-50'
                 : 'border-zinc-200 hover:border-zinc-300'
             }`}
           >
             <Moon
               className={`h-8 w-8 ${
-                preferredTimes.includes('evening')
+                formData.periodPreference.includes('evening')
                   ? 'text-zinc-800'
                   : 'text-zinc-400'
               }`}
@@ -108,37 +106,21 @@ export function PatientPreferences({
 
       <div className="space-y-4">
         <div className="space-y-3">
-          <Label>
-            Tipo de atendimento <span className="text-red-500">*</span>
-          </Label>
-          {!appointmentTypes.inPerson && !appointmentTypes.online && (
-            <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
-              <AlertCircle className="h-4 w-4" />
-              <span>Selecione pelo menos um tipo de atendimento</span>
-            </div>
-          )}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="inPerson"
-                checked={appointmentTypes.inPerson}
-                onCheckedChange={() => onToggleAppointmentType('inPerson')}
-              />
-              <Label htmlFor="inPerson" className="font-normal">
-                Presencial
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="online"
-                checked={appointmentTypes.online}
-                onCheckedChange={() => onToggleAppointmentType('online')}
-              />
-              <Label htmlFor="online" className="font-normal">
-                Online (Telemedicina)
-              </Label>
-            </div>
-          </div>
+          <Label htmlFor="extraPreferences">Preferências Extras</Label>
+          <Textarea
+            id="extraPreferences"
+            placeholder="Descreva aqui suas preferências adicionais, horários específicos, necessidades especiais, etc."
+            value={formData.extraPreferences}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              updateFormData('extraPreferences', e.target.value)
+            }
+            rows={4}
+            className="resize-none"
+          />
+          <p className="text-xs text-gray-500">
+            Campo opcional para informações adicionais que possam ajudar na
+            organização das suas consultas.
+          </p>
         </div>
       </div>
     </div>

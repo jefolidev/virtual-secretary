@@ -38,7 +38,7 @@ Preferências de consulta para pacientes (períodos preferidos, especialidade, t
 
 **Props:**
 
-- `preferredTimes`: Array com os períodos selecionados
+- `periodPreference`: Array com os períodos selecionados
 - `onToggleTime`: Função callback para alternar períodos
 
 ---
