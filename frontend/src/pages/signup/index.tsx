@@ -1,6 +1,7 @@
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -12,7 +13,13 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { ValidationErrorDisplay } from '@/components/validation-error-display'
 import { useAuth, type SignupData } from '@/contexts/auth-context'
+import {
+  checkDataAvailability,
+  getConflictMessage,
+} from '@/services/validation'
+import { validateSignupData } from '@/utils/validation'
 import { AccountDetails } from './components/account-details'
 import { AddressDetails } from './components/address-details'
 import { PatientPreferences } from './components/patient-preferences'
@@ -38,6 +45,7 @@ function SignUpPageContent() {
   const [currentStep, setCurrentStep] = useState<number>(signupSteps.USER_TYPE)
   const [isSuccess, setIsSuccess] = useState(false)
   const [countdown, setCountdown] = useState(5)
+  const [validationErrors, setValidationErrors] = useState<any[]>([])
   const [isAccountDetailsValid, setIsAccountDetailsValid] = useState(false)
   const [isPatientPreferencesValid, setIsPatientPreferencesValid] =
     useState(false)
@@ -167,6 +175,41 @@ function SignUpPageContent() {
 
   const handleSubmit = async () => {
     try {
+      // Limpa erros anteriores
+      setValidationErrors([])
+
+      // 1️⃣ VALIDAÇÃO DE FORMATO (campos obrigatórios, CPF, etc.)
+      const validation = validateSignupData(formData as SignupData)
+
+      if (!validation.isValid) {
+        setValidationErrors(validation.errors)
+        // Scroll para o topo para mostrar os erros
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+
+      // 2️⃣ VALIDAÇÃO DE DADOS ÚNICOS (email, CPF, telefone duplicados)
+      console.log('🔍 Verificando se dados estão disponíveis...')
+      toast.loading('Verificando dados...', { id: 'checking' })
+
+      const availability = await checkDataAvailability({
+        email: formData.email,
+        cpf: formData.cpf,
+        phone: formData.phone,
+      })
+
+      toast.dismiss('checking')
+
+      if (!availability.available) {
+        const conflictMsg = getConflictMessage(availability.conflicts)
+        toast.error('🚫 Dados já cadastrados!', {
+          description: conflictMsg,
+        })
+        return
+      }
+
+      console.log('✅ Dados disponíveis! Prosseguindo com cadastro...')
+
       const signupData: SignupData = {
         name: formData.name,
         email: formData.email,
@@ -177,11 +220,9 @@ function SignUpPageContent() {
         birthdate: formData.birthdate,
         userType: formData.userType || 'patient',
         periodPreference:
-          formData.userType === 'patient' ? formData.periodPreference : undefined,
+          formData.userType === 'patient' ? formData.periodPreference : [],
         extraPreferences:
-          formData.userType === 'patient'
-            ? formData.extraPreferences
-            : undefined,
+          formData.userType === 'patient' ? formData.extraPreferences : '',
         workDays:
           formData.userType === 'professional' ? formData.workDays : undefined,
         appointmentDuration:
@@ -215,11 +256,72 @@ function SignUpPageContent() {
         address: formData.address,
       }
 
+      console.log('🚀 Debug SignupData antes do envio:')
+      console.log('  - userType:', signupData.userType)
+      console.log('  - periodPreference:', signupData.periodPreference)
+      console.log('  - extraPreferences:', signupData.extraPreferences)
+      console.log('  - formData.periodPreference:', formData.periodPreference)
+      console.log('  - Complete signupData:', signupData)
+
       await signup(signupData)
       setIsSuccess(true)
-    } catch (error) {
+      toast.success('🎉 Cadastro realizado com sucesso!', {
+        description: 'Você será redirecionado para o login em instantes.',
+      })
+    } catch (error: any) {
       console.error('Erro ao cadastrar:', error)
-      // TODO: Mostrar mensagem de erro ao usuário
+
+      // Se for um erro de validação, a mensagem já foi tratada no auth context
+      if (error instanceof Error && error.name === 'ValidationError') {
+        return
+      }
+
+      // Tratamento específico para diferentes tipos de erro
+      if (error?.response?.status === 409) {
+        toast.error('🚫 Dados já cadastrados!', {
+          description:
+            'Este email, CPF ou telefone já está em uso. Tente fazer login ou use outros dados.',
+        })
+      } else if (error?.response?.status === 500) {
+        // Verifica se é um erro de dados duplicados (mesmo com status 500)
+        const errorMessage = error?.response?.data?.message || ''
+        const errorDetails = JSON.stringify(error?.response?.data || {})
+
+        if (
+          errorDetails.includes('duplicate') ||
+          errorDetails.includes('unique') ||
+          errorDetails.includes('phone') ||
+          errorDetails.includes('email') ||
+          errorDetails.includes('cpf') ||
+          errorMessage.includes('already exists') ||
+          errorDetails.includes('P2002') ||
+          errorDetails.includes('UniqueConstraintViolation')
+        ) {
+          toast.error('🚫 Dados já cadastrados!', {
+            description:
+              'Este email, CPF ou telefone já está em uso. Tente outros dados.',
+          })
+        } else {
+          toast.error('🔧 Erro no servidor', {
+            description:
+              'Problema temporário em nossos serviços. Tente novamente em alguns minutos.',
+          })
+        }
+      } else if (
+        error?.response?.status >= 400 &&
+        error?.response?.status < 500
+      ) {
+        toast.error('❌ Dados inválidos', {
+          description:
+            error?.response?.data?.message ||
+            'Verifique os dados informados e tente novamente.',
+        })
+      } else {
+        toast.error('💥 Erro inesperado', {
+          description:
+            'Algo deu errado. Verifique sua conexão e tente novamente.',
+        })
+      }
     }
   }
 
@@ -329,6 +431,11 @@ function SignUpPageContent() {
           </CardHeader>
 
           <CardContent className="py-6">
+            {/* Exibição de erros de validação */}
+            {validationErrors.length > 0 && (
+              <ValidationErrorDisplay errors={validationErrors} />
+            )}
+
             {/* Etapa 1: Tipo de Usuário */}
             {currentStep === signupSteps.USER_TYPE && <UserTypeSelection />}
 
@@ -357,7 +464,7 @@ function SignUpPageContent() {
                 <ProfessionalScheduling
                   onValidationChange={setIsProfessionalSchedulingValid}
                   workDays={formData.workDays}
-                  onToggleWorkDay={(day) => {
+                  onToggleWorkDay={(_day) => {
                     // Implementation needed based on your form context
                   }}
                 />
@@ -369,10 +476,10 @@ function SignUpPageContent() {
                 <ProfessionalNotifications
                   notifications={formData.notifications}
                   notificationChannels={formData.notificationChannels}
-                  onToggleNotification={(key) => {
+                  onToggleNotification={(_key) => {
                     // Implementation needed based on your form context
                   }}
-                  onToggleNotificationChannel={(channel) => {
+                  onToggleNotificationChannel={(_channel) => {
                     // Implementation needed based on your form context
                   }}
                   onValidationChange={setIsProfessionalNotificationsValid}
