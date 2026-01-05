@@ -1,0 +1,43 @@
+import { api } from '@/api/axios'
+
+// Função para verificar se dados já existem no backend
+export async function checkDataAvailability(data: {
+  email: string
+  cpf: string
+  phone: string
+}): Promise<{ available: boolean; conflicts: string[] }> {
+  try {
+    console.log('🔍 Verificando disponibilidade dos dados...')
+    const response = await api.post('/check-availability', data)
+
+    return {
+      available: response.data.available,
+      conflicts: response.data.conflicts || [],
+    }
+  } catch (error: any) {
+    console.error('Erro ao verificar disponibilidade:', error)
+
+    // Se o endpoint não existir (404), assume que está disponível
+    if (error?.response?.status === 404) {
+      console.warn('Endpoint de verificação não encontrado, prosseguindo...')
+      return { available: true, conflicts: [] }
+    }
+
+    // Para outros erros, assume conflito para ser conservador
+    return { available: false, conflicts: ['Erro ao verificar dados'] }
+  }
+}
+
+export function getConflictMessage(conflicts: string[]): string {
+  const conflictMap: Record<string, string> = {
+    email: 'E-mail já está em uso',
+    cpf: 'CPF já está cadastrado',
+    phone: 'Telefone já está em uso',
+  }
+
+  const messages = conflicts
+    .map((conflict) => conflictMap[conflict] || `${conflict} já está em uso`)
+    .join(', ')
+
+  return `Os seguintes dados já estão cadastrados: ${messages}`
+}
