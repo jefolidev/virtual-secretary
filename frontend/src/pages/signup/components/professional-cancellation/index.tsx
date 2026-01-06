@@ -9,7 +9,6 @@ export function ProfessionalCancellation() {
   const { formData, updateFormData } = useSignupForm()
   const [displayPrice, setDisplayPrice] = useState('')
 
-  // Função para formatar valor para moeda brasileira
   const formatCurrency = (value: number): string => {
     if (isNaN(value) || value === 0) return ''
     return new Intl.NumberFormat('pt-BR', {
@@ -19,13 +18,11 @@ export function ProfessionalCancellation() {
     }).format(value)
   }
 
-  // Função para extrair número da string formatada
   const parseCurrency = (value: string): number => {
     const numericValue = value.replace(/[^0-9,]/g, '').replace(',', '.')
     return parseFloat(numericValue) || 0
   }
 
-  // Sincronizar displayPrice com formData.sessionPrice
   useEffect(() => {
     const price = formData.sessionPrice || 0
     if (price > 0) {
@@ -39,13 +36,11 @@ export function ProfessionalCancellation() {
     const inputValue = e.target.value
     setDisplayPrice(inputValue)
 
-    // Atualizar o valor numérico no formData
     const numericValue = parseCurrency(inputValue)
     updateFormData('sessionPrice', numericValue)
   }
 
   const handlePriceBlur = () => {
-    // Reformatar o valor quando o campo perde o foco
     const price = formData.sessionPrice || 0
     if (price > 0) {
       setDisplayPrice(formatCurrency(price))
