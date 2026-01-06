@@ -1,11 +1,16 @@
+import { api } from '@/api/axios'
 import { authServices, type UserLoginData } from '@/api/endpoints/auth'
 import {
   transformSignupDataToRegisterData,
   type RegisterResponse,
 } from '@/services/auth'
-import { createContext, useContext, useEffect, useState } from 'react'
-
-import { jwtDecode } from 'jwt-decode'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 
 export interface User {
   id: string
@@ -105,75 +110,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAuthenticated = !!user
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem('auth_token')
-
-      if (!token) {
-        setUser(null)
-        return
-      }
-
-      const { exp, sub } = jwtDecode(token)
-
-      if (exp) {
-        const ONE_SECOND_IN_MS = 1000
-        const currentTime = Date.now() / ONE_SECOND_IN_MS
-
-        if (exp <= currentTime) {
-          localStorage.removeItem('auth_token')
-          setUser(null)
-          return
-        }
-      }
-
-      if (!user && sub) {
-        localStorage.removeItem('auth_token')
-        setUser(null)
-        return
-      }
-
-      const userData = await authServices.me(token)
-
+      const userData = await authServices.me()
       setUser(userData)
     } catch (error) {
-      console.error('Erro ao verificar autenticação:', error)
-      localStorage.removeItem('auth_token')
       setUser(null)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const { access_token } = await authServices.login(credentials)
+      await authServices.login(credentials)
 
-      localStorage.setItem('auth_token', access_token)
-
-      try {
-        const { sub: userId } = jwtDecode(access_token)
-
-        if (userId) {
-          localStorage.setItem('user_id', userId)
-          const userData = await authServices.me(access_token)
-
-          setUser(userData)
-        } else {
-          localStorage.removeItem('auth_token')
-          throw new Error('Token inválido - ID do usuário não encontrado')
-        }
-      } catch (decodeError) {
-        localStorage.removeItem('auth_token')
-        localStorage.removeItem('user_id')
-
-        throw new Error('Token inválido')
-      }
+      await checkAuth()
     } catch (error) {
       console.error('Erro no login:', error)
       throw error
@@ -217,9 +174,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem('auth_token')
-    setUser(null)
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout')
+    } catch (error) {
+      console.error('Erro no logout:', error)
+    } finally {
+      setUser(null)
+    }
   }
 
   return (

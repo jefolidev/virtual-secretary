@@ -4,32 +4,22 @@ const url = import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3333'
 
 export const api = axios.create({
   baseURL: url,
-  withCredentials: true,
+  withCredentials: true, // Para cookies
 })
 
-// Interceptor para adicionar token nas requisições
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+let isRedirecting = false
 
-// Interceptor para tratar respostas com erro 401 (token expirado)
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expirado ou inválido - limpar e redirecionar para login
-      localStorage.removeItem('auth_token')
-      // Recarregar página para resetar estado da aplicação
-      window.location.href = '/login'
+    if (error.response?.status === 401 && !isRedirecting) {
+      isRedirecting = true
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login'
+      }
+      setTimeout(() => {
+        isRedirecting = false
+      }, 1000)
     }
     return Promise.reject(error)
   }
