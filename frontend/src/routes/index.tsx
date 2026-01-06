@@ -39,7 +39,7 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate replace to={`/${ScreensEnum.DASHBOARD}`} />, // ou LOGIN, depende da sua UX
+    element: <Navigate replace to={`/${ScreensEnum.DASHBOARD}`} />,
   },
   {
     path: `/${ScreensEnum.LOGIN}`,
