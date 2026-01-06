@@ -24,6 +24,7 @@ import { FetchProfessionalScheduleSettingsUseCase } from '@/domain/scheduling/ap
 import { FetchScheduleByClientIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-client-id'
 import { FetchScheduleByProfessionalIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
+import { LogoutUseCase } from '@/domain/scheduling/application/use-cases/logout'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { RescheduleAppointmentUseCase } from '@/domain/scheduling/application/use-cases/reschedule-appointment'
 import { Module } from '@nestjs/common'
@@ -52,6 +53,7 @@ import { FetchProfessionalWithNotificationSettingsController } from './controlle
 import { FetchProfessionalSettingsController } from './controllers/fetch-professional-settings.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
+import { LogoutController } from './controllers/logout.controller'
 import { MeController } from './controllers/me.controller'
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
@@ -83,6 +85,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchProfessionalSettingsController,
     FetchProfessionalWithNotificationSettingsController,
     ForgotPasswordController,
+    LogoutController,
     MeController,
     RemoveProfessionalFromOrganizationController,
     RescheduleAppointmentController,
@@ -113,6 +116,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchScheduleByClientIdUseCase,
     FetchScheduleByProfessionalIdUseCase,
     ForgotPasswordUseCase,
+    LogoutUseCase,
     RegisterUserUseCase,
     RemoveProfessionalFromOrganizationUseCase,
     RescheduleAppointmentUseCase,
