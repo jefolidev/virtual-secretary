@@ -1,3 +1,5 @@
+import { App } from '@/app'
+import { useAuth } from '@/contexts/auth-context'
 import { LoginPage } from '@/pages/login'
 import { SignUpPage } from '@/pages/signup'
 import { ScreensEnum } from '@/types/screens'
@@ -8,14 +10,16 @@ import {
   useLocation,
 } from 'react-router'
 
-function isAuthenticated() {
-  return Boolean(localStorage.getItem('token'))
-}
-
 function RequireAuth() {
   const location = useLocation()
+  const { isAuthenticated, isLoading } = useAuth()
 
-  if (!isAuthenticated()) {
+  // Aguarda o carregamento do estado de auth
+  if (isLoading) {
+    return <div>Carregando...</div>
+  }
+
+  if (!isAuthenticated) {
     return (
       <Navigate
         replace
@@ -29,7 +33,14 @@ function RequireAuth() {
 }
 
 function PublicOnly({ children }: { children: React.ReactNode }) {
-  if (isAuthenticated()) {
+  const { isAuthenticated, isLoading } = useAuth()
+
+  // Aguarda o carregamento do estado de auth
+  if (isLoading) {
+    return <div>Carregando...</div>
+  }
+
+  if (isAuthenticated) {
     return <Navigate replace to={`/${ScreensEnum.DASHBOARD}`} />
   }
 
@@ -39,39 +50,57 @@ function PublicOnly({ children }: { children: React.ReactNode }) {
 export const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate replace to={`/${ScreensEnum.DASHBOARD}`} />,
-  },
-  {
-    path: `/${ScreensEnum.LOGIN}`,
-    element: (
-      <PublicOnly>
-        <LoginPage />
-      </PublicOnly>
-    ),
-  },
-  {
-    path: `/${ScreensEnum.SIGNUP}`,
-    element: (
-      <PublicOnly>
-        <SignUpPage />
-      </PublicOnly>
-    ),
-  },
-  {
-    element: <RequireAuth />,
+    element: <App />,
     children: [
       {
-        path: `/${ScreensEnum.DASHBOARD}`,
-        element: <div>Dashboard</div>,
+        index: true,
+        element: <Navigate replace to={`/${ScreensEnum.DASHBOARD}`} />,
       },
       {
-        path: `/${ScreensEnum.SETTINGS}`,
-        element: <div>Settings</div>,
+        path: ScreensEnum.LOGIN,
+        element: (
+          <PublicOnly>
+            <LoginPage />
+          </PublicOnly>
+        ),
+      },
+      {
+        path: ScreensEnum.SIGNUP,
+        element: (
+          <PublicOnly>
+            <SignUpPage />
+          </PublicOnly>
+        ),
+      },
+      {
+        element: <RequireAuth />,
+        children: [
+          {
+            path: ScreensEnum.DASHBOARD,
+            element: <div>Dashboard</div>,
+          },
+          {
+            path: ScreensEnum.SETTINGS,
+            element: <div>Settings</div>,
+          },
+          {
+            path: 'appointments',
+            element: <div>Agendamentos</div>,
+          },
+          {
+            path: 'messages',
+            element: <div>Mensagens</div>,
+          },
+          {
+            path: 'search',
+            element: <div>Buscar</div>,
+          },
+        ],
+      },
+      {
+        path: '*',
+        element: <div>Página não encontrada</div>,
       },
     ],
-  },
-  {
-    path: '*',
-    element: <div>Página não encontrada</div>,
   },
 ])
