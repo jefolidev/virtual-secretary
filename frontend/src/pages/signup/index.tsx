@@ -421,7 +421,10 @@ function SignUpPageContent() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <div
+      data-page="signup"
+      className="flex min-h-screen items-center justify-center p-4"
+    >
       <div className="w-full max-w-2xl space-y-6">
         {/* Progress Bar */}
         <div className="space-y-2">

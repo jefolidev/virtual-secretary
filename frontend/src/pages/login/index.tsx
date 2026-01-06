@@ -73,7 +73,10 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div
+      data-page="login"
+      className="min-h-screen flex items-center justify-center p-4"
+    >
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center text-center mb-2">
           <h1 className="text-2xl font-bold mb-2">Bem vindo ao Mindly</h1>

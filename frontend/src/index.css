@@ -119,7 +119,13 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Arimo', 'Inter', system-ui, -apple-system, sans-serif;
     font-optical-sizing: auto;
+  }
+
+  /* Manter Inter para páginas de login e signup */
+  body:has([data-page='login']),
+  body:has([data-page='signup']) {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
