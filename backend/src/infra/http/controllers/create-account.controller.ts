@@ -1,6 +1,7 @@
 import { CpfAlreadyExists as CpfAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/cpf-already-exists'
 import { PhoneAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/phone-already-exists'
 import { UserAlreadyExists as UserAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/user-already-exists'
+import { ValidationError as ValidationErrorException } from '@/domain/scheduling/application/use-cases/errors/validation-error'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { NotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import { Public } from '@/infra/auth/public'
@@ -63,6 +64,8 @@ export class CreateAccountController {
               dailySummaryTime:
                 professionalData.notificationSettings.dailySummaryTime,
             }),
+            cancellationPolicy: professionalData.cancellationPolicy,
+            scheduleConfiguration: professionalData.scheduleConfiguration,
           }
         : undefined,
     })
@@ -76,6 +79,8 @@ export class CreateAccountController {
           throw new ConflictException(error.message)
         case CpfAlreadyExistsError:
           throw new ConflictException(error.message)
+        case ValidationErrorException:
+          throw new BadRequestException(error.message)
         default:
           throw new BadRequestException(error?.message ?? 'Bad Request')
       }
