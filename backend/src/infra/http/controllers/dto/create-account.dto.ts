@@ -46,11 +46,34 @@ const notificationSettings = z.object({
     .regex(/^\d{2}:\d{2}$/, 'Formato de hora inválido, esperado HH:MM'),
 })
 
+const cancellationPolicySchema = z.object({
+  minHoursBeforeCancellation: z
+    .number()
+    .min(6, 'O mínimo de horas para cancelar é 6'),
+  minDaysBeforeNextAppointment: z
+    .number()
+    .min(1, 'O mínimo de dias para próximo agendamento é 1'),
+  cancelationFeePercentage: z.number().min(0).max(100),
+  allowReschedule: z.boolean(),
+  description: z.string().optional(),
+})
+
+const scheduleConfigurationSchema = z.object({
+  bufferIntervalMinutes: z.number().min(0),
+  daysOfWeek: z.array(z.number().min(0).max(6)),
+  startTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato de hora inválido'),
+  endTime: z.string().regex(/^\d{2}:\d{2}$/, 'Formato de hora inválido'),
+  holidays: z.array(z.string()).default([]),
+  sessionDurationMinutes: z.number().min(1),
+})
+
 const professionalDataSchema = z.object({
   sessionPrice: z
     .number()
     .min(0, 'Session price must be a non-negative number'),
   notificationSettings: notificationSettings,
+  cancellationPolicy: cancellationPolicySchema.optional(),
+  scheduleConfiguration: scheduleConfigurationSchema.optional(),
 })
 
 export const createUserAccountBodySchema = z.object({
