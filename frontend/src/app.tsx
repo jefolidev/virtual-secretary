@@ -24,46 +24,106 @@ import {
 import { useAuth } from '@/contexts/auth-context'
 import { ThemeProvider, useTheme } from '@/hooks/use-theme'
 import {
+  Banknote,
   Bell,
+  Bot,
+  Building,
   Calendar,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
-  Home,
-  Inbox,
+  Clock,
+  CreditCard,
+  DollarSign,
+  FileText,
+  LayoutDashboard,
   LogOut,
+  MessageSquare,
   Moon,
-  Search,
   Settings,
+  Star,
   Sun,
+  Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 
-const items = [
+const menuItems = [
   {
     title: 'Dashboard',
     url: '/dashboard',
-    icon: Home,
+    icon: LayoutDashboard,
+    description: 'Resumo do dia e alertas',
   },
   {
-    title: 'Agendamentos',
-    url: '/appointments',
+    title: 'Agenda',
     icon: Calendar,
+    items: [
+      {
+        title: 'Calendário',
+        url: '/agenda/calendario',
+        icon: Calendar,
+      },
+      {
+        title: 'Bloqueios de Horário',
+        url: '/agenda/bloqueios',
+        icon: Clock,
+      },
+    ],
   },
   {
-    title: 'Mensagens',
-    url: '/messages',
-    icon: Inbox,
+    title: 'Minha Secretária (IA)',
+    url: '/secretaria-ia',
+    icon: Bot,
+    description: 'Configure sua assistente virtual',
   },
   {
-    title: 'Buscar',
-    url: '/search',
-    icon: Search,
+    title: 'Pacientes',
+    icon: Users,
+    items: [
+      {
+        title: 'Fichas/Prontuários',
+        url: '/pacientes/fichas',
+        icon: FileText,
+      },
+      {
+        title: 'Avaliações (NPS)',
+        url: '/pacientes/avaliacoes',
+        icon: Star,
+      },
+    ],
   },
   {
-    title: 'Configurações',
-    url: '/settings',
-    icon: Settings,
+    title: 'Financeiro',
+    icon: DollarSign,
+    items: [
+      {
+        title: 'Recebimentos',
+        url: '/financeiro/recebimentos',
+        icon: CreditCard,
+      },
+      {
+        title: 'Dados Bancários',
+        url: '/financeiro/dados-bancarios',
+        icon: Banknote,
+      },
+    ],
+  },
+  {
+    title: 'Configurações da Clínica',
+    icon: Building,
+    items: [
+      {
+        title: 'Horários de Trabalho',
+        url: '/configuracoes/horarios',
+        icon: Clock,
+      },
+      {
+        title: 'Mensagens Automáticas',
+        url: '/configuracoes/mensagens',
+        icon: MessageSquare,
+      },
+    ],
   },
 ]
 
@@ -71,6 +131,7 @@ function AppContent() {
   const location = useLocation()
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
+  const [expandedMenus, setExpandedMenus] = useState<string[]>([])
 
   // Estado persistente da sidebar
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -91,6 +152,14 @@ function AppContent() {
     } else {
       setTheme('light')
     }
+  }
+
+  const toggleMenu = (menuTitle: string) => {
+    setExpandedMenus((prev) =>
+      prev.includes(menuTitle)
+        ? prev.filter((item) => item !== menuTitle)
+        : [...prev, menuTitle]
+    )
   }
 
   // Rotas que não devem mostrar a sidebar
@@ -135,18 +204,68 @@ function AppContent() {
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                {items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname === item.url}
-                    >
-                      <Link to={item.url}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
+                {menuItems.map((item) => (
+                  <div key={item.title}>
+                    {/* Item principal */}
+                    {item.url ? (
+                      // Item sem submenu - link direto
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={location.pathname === item.url}
+                        >
+                          <Link to={item.url}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ) : (
+                      // Item com submenu - expansível
+                      <>
+                        <SidebarMenuItem>
+                          <SidebarMenuButton
+                            onClick={() => toggleMenu(item.title)}
+                            className="w-full justify-between"
+                          >
+                            <div className="flex items-center gap-3">
+                              <item.icon className="h-4 w-4" />
+                              <span>{item.title}</span>
+                            </div>
+                            <ChevronRight
+                              className={`h-4 w-4 transition-transform duration-200 group-data-[collapsible=icon]:hidden ${
+                                expandedMenus.includes(item.title)
+                                  ? 'rotate-90'
+                                  : ''
+                              }`}
+                            />
+                          </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                        {/* Submenus */}
+                        {expandedMenus.includes(item.title) && item.items && (
+                          <div className="ml-6 space-y-1 group-data-[collapsible=icon]:ml-0">
+                            {item.items.map((subItem) => (
+                              <SidebarMenuItem key={subItem.title}>
+                                <SidebarMenuButton
+                                  asChild
+                                  isActive={location.pathname === subItem.url}
+                                  className="text-sm pl-6 group-data-[collapsible=icon]:pl-2 opacity-90 hover:opacity-100 text-muted-foreground hover:text-foreground data-[active=true]:opacity-100 data-[active=true]:text-foreground"
+                                >
+                                  <Link to={subItem.url}>
+                                    <subItem.icon className="h-3.5 w-3.5 opacity-80" />
+                                    <span className="group-data-[collapsible=icon]:sr-only">
+                                      {subItem.title}
+                                    </span>
+                                  </Link>
+                                </SidebarMenuButton>
+                              </SidebarMenuItem>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
                 ))}
               </SidebarMenu>
             </SidebarGroupContent>
@@ -222,7 +341,7 @@ function AppContent() {
                   <div className="py-1">
                     <DropdownMenuItem
                       onClick={logout}
-                      className="mx-1 flex items-center gap-2 px-2 py-1.5 text-red-600 focus:text-red-600"
+                      className="mx-1 flex items-center gap-2 px-2 py-1.5 "
                     >
                       <LogOut className="h-4 w-4" />
                       Sair
@@ -240,8 +359,25 @@ function AppContent() {
           <SidebarTrigger />
           <Separator orientation="vertical" className="mr-2 h-6" />
           <h1 className="font-semibold">
-            {items.find((item) => item.url === location.pathname)?.title ||
-              'Mindly'}
+            {(() => {
+              // Busca por item principal direto
+              const mainItem = menuItems.find(
+                (item) => item.url === location.pathname
+              )
+              if (mainItem) return mainItem.title
+
+              // Busca em subitens
+              for (const item of menuItems) {
+                if (item.items) {
+                  const subItem = item.items.find(
+                    (sub) => sub.url === location.pathname
+                  )
+                  if (subItem) return subItem.title
+                }
+              }
+
+              return 'Mindly'
+            })()}
           </h1>
         </header>
 
