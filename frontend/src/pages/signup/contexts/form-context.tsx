@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 export interface FormData {
   // Dados da conta
@@ -29,6 +29,7 @@ export interface FormData {
   }
 
   // Dados do profissional - configurações
+  sessionPrice: number
   appointmentDuration: number
   breakTime: number
   startTime: string
@@ -53,6 +54,7 @@ export interface FormData {
   allowReschedule: boolean
   cancelationFeePercentage: number
   minHoursBeforeCancellation: number
+  minDaysBeforeNextAppointment: number
 
   // Endereço
   address: {
@@ -74,6 +76,7 @@ interface SignupFormContextType {
     nestedField: string,
     value: any
   ) => void
+  clearFormData: () => void
 }
 
 const SignupFormContext = createContext<SignupFormContextType | undefined>(
@@ -109,6 +112,7 @@ const initialFormData: FormData = {
   },
 
   // Dados do profissional - configurações
+  sessionPrice: 0,
   appointmentDuration: 60,
   breakTime: 15,
   startTime: '09:00',
@@ -133,6 +137,7 @@ const initialFormData: FormData = {
   allowReschedule: true,
   cancelationFeePercentage: 0,
   minHoursBeforeCancellation: 24,
+  minDaysBeforeNextAppointment: 1,
 
   // Endereço
   address: {
@@ -151,7 +156,29 @@ export function SignupFormProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [formData, setFormData] = useState<FormData>(initialFormData)
+  // Tentar carregar dados do localStorage primeiro
+  const getInitialFormData = (): FormData => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('signupFormData')
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch {
+          return initialFormData
+        }
+      }
+    }
+    return initialFormData
+  }
+
+  const [formData, setFormData] = useState<FormData>(getInitialFormData)
+
+  // Salvar no localStorage sempre que o formData mudar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('signupFormData', JSON.stringify(formData))
+    }
+  }, [formData])
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -171,9 +198,16 @@ export function SignupFormProvider({
     }))
   }
 
+  const clearFormData = () => {
+    setFormData(initialFormData)
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('signupFormData')
+    }
+  }
+
   return (
     <SignupFormContext.Provider
-      value={{ formData, updateFormData, updateNestedFormData }}
+      value={{ formData, updateFormData, updateNestedFormData, clearFormData }}
     >
       {children}
     </SignupFormContext.Provider>

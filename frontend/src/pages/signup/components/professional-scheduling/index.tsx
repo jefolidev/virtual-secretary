@@ -24,17 +24,24 @@ interface ProfessionalSchedulingProps {
       | 'saturday'
       | 'sunday'
   ) => void
+  appointmentDuration: number
+  breakTime: number
+  startTime: string
+  endTime: string
+  onFieldChange: (field: string, value: string | number) => void
   onValidationChange?: (isValid: boolean) => void
 }
 
 export function ProfessionalScheduling({
   workDays,
   onToggleWorkDay,
+  appointmentDuration,
+  breakTime,
+  startTime,
+  endTime,
+  onFieldChange,
   onValidationChange,
 }: ProfessionalSchedulingProps) {
-  const [appointmentDuration, setAppointmentDuration] = useState('')
-  const [startTime, setStartTime] = useState('')
-  const [endTime, setEndTime] = useState('')
   const [timeError, setTimeError] = useState('')
 
   const validateTimes = (start: string, end: string) => {
@@ -57,8 +64,8 @@ export function ProfessionalScheduling({
   useEffect(() => {
     if (onValidationChange) {
       const hasWorkDay = Object.values(workDays).some((day) => day)
-      const hasAppointmentDuration =
-        appointmentDuration.trim() !== '' && Number(appointmentDuration) > 0
+      const hasAppointmentDuration = appointmentDuration > 0
+      const hasBreakTime = breakTime >= 0
       const hasStartTime = startTime !== ''
       const hasEndTime = endTime !== ''
       const timesValid = !timeError
@@ -66,6 +73,7 @@ export function ProfessionalScheduling({
       onValidationChange(
         hasWorkDay &&
           hasAppointmentDuration &&
+          hasBreakTime &&
           hasStartTime &&
           hasEndTime &&
           timesValid
@@ -74,6 +82,7 @@ export function ProfessionalScheduling({
   }, [
     workDays,
     appointmentDuration,
+    breakTime,
     startTime,
     endTime,
     timeError,
@@ -82,13 +91,13 @@ export function ProfessionalScheduling({
 
   const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newStartTime = e.target.value
-    setStartTime(newStartTime)
+    onFieldChange('startTime', newStartTime)
     validateTimes(newStartTime, endTime)
   }
 
   const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newEndTime = e.target.value
-    setEndTime(newEndTime)
+    onFieldChange('endTime', newEndTime)
     validateTimes(startTime, newEndTime)
   }
 
@@ -106,7 +115,9 @@ export function ProfessionalScheduling({
             placeholder="30"
             min="1"
             value={appointmentDuration}
-            onChange={(e) => setAppointmentDuration(e.target.value)}
+            onChange={(e) =>
+              onFieldChange('appointmentDuration', Number(e.target.value))
+            }
             onInput={(e) => {
               const target = e.target as HTMLInputElement
               target.value = target.value.replace(/[^0-9]/g, '')
@@ -122,7 +133,8 @@ export function ProfessionalScheduling({
             type="number"
             placeholder="15"
             min="0"
-            required
+            value={breakTime}
+            onChange={(e) => onFieldChange('breakTime', Number(e.target.value))}
             onInput={(e) => {
               const target = e.target as HTMLInputElement
               target.value = target.value.replace(/[^0-9]/g, '')

@@ -10,6 +10,7 @@ interface ProfessionalNotificationsProps {
     confirmations: boolean
     dailySummary: boolean
     confirmedList: boolean
+    payments: boolean
   }
   notificationChannels: {
     email: boolean
@@ -22,6 +23,7 @@ interface ProfessionalNotificationsProps {
       | 'confirmations'
       | 'dailySummary'
       | 'confirmedList'
+      | 'payments'
   ) => void
   onToggleNotificationChannel: (key: 'email' | 'whatsapp') => void
   onValidationChange?: (isValid: boolean) => void
@@ -37,7 +39,8 @@ export function ProfessionalNotifications({
   useEffect(() => {
     if (onValidationChange) {
       const hasNotification = Object.values(notifications).some((n) => n)
-      const hasChannel = notificationChannels.email || notificationChannels.whatsapp
+      const hasChannel =
+        notificationChannels.email || notificationChannels.whatsapp
       onValidationChange(hasNotification && hasChannel)
     }
   }, [notifications, notificationChannels, onValidationChange])
@@ -45,7 +48,8 @@ export function ProfessionalNotifications({
     <div className="space-y-6">
       <div className="space-y-3">
         <Label>
-          Notificações que deseja receber <span className="text-red-500">*</span>
+          Notificações que deseja receber{' '}
+          <span className="text-red-500">*</span>
         </Label>
         {!Object.values(notifications).some((n) => n) && (
           <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
@@ -102,6 +106,16 @@ export function ProfessionalNotifications({
             />
             <Label htmlFor="confirmedList" className="font-normal">
               Lista de confirmados do dia
+            </Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="payments"
+              checked={notifications.payments}
+              onCheckedChange={() => onToggleNotification('payments')}
+            />
+            <Label htmlFor="payments" className="font-normal">
+              Notificações de pagamento
             </Label>
           </div>
         </div>

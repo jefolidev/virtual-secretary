@@ -19,11 +19,6 @@ export function PatientPreferences({
       ? currentTimes.filter((t) => t !== time)
       : [...currentTimes, time]
 
-    console.log('🔍 Debug PatientPreferences:')
-    console.log('  - Time clicked:', time)
-    console.log('  - Current times:', currentTimes)
-    console.log('  - New times:', newTimes)
-
     updateFormData('periodPreference', newTimes)
   }
 

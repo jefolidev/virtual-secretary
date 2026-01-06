@@ -1,12 +1,6 @@
 import {
   registerUser,
-  saveCancellationPolicy,
-  saveProfessionalNotifications,
-  saveScheduleConfiguration,
-  transformSignupDataToCancellationPolicy,
-  transformSignupDataToNotifications,
   transformSignupDataToRegisterData,
-  transformSignupDataToScheduleConfig,
 } from '@/services/auth'
 import { createContext, useContext, useEffect, useState } from 'react'
 
@@ -42,7 +36,12 @@ export interface SignupData {
   periodPreference: Array<'morning' | 'afternoon' | 'evening'>
   extraPreferences: string
   // Dados do profissional
+  sessionPrice?: number
   cancellationPolicy?: string
+  minHoursBeforeCancellation?: number
+  minDaysBeforeNextAppointment?: number
+  cancelationFeePercentage?: number
+  allowReschedule?: boolean
   appointmentDuration?: number
   breakTime?: number
   startTime?: string
@@ -62,6 +61,7 @@ export interface SignupData {
     confirmations: boolean
     dailySummary: boolean
     confirmedList: boolean
+    payments: boolean
   }
   notificationChannels?: {
     email: boolean
@@ -174,41 +174,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signup = async (data: SignupData) => {
     try {
       console.log('🎯 Iniciando processo de cadastro...')
+
+      // 1. Validação prévia para profissionais
+      if (data.userType === 'professional') {
+        // Validar se todos os dados obrigatórios do profissional estão presentes
+        const requiredFields = {
+          sessionPrice: data.sessionPrice,
+          workDays:
+            data.workDays && Object.values(data.workDays).some((day) => day),
+          appointmentDuration: data.appointmentDuration,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          notifications: data.notifications,
+          notificationChannels: data.notificationChannels,
+        }
+
+        const missingFields = Object.entries(requiredFields)
+          .filter(
+            ([_, value]) => !value || (typeof value === 'number' && value <= 0)
+          )
+          .map(([key]) => key)
+
+        if (missingFields.length > 0) {
+          throw new Error(
+            `Dados obrigatórios do profissional estão faltando: ${missingFields.join(
+              ', '
+            )}`
+          )
+        }
+      }
+
       console.log('📝 Registrando usuário...')
       const registerData = transformSignupDataToRegisterData(data)
       const response = await registerUser(registerData)
       console.log('✅ Usuário registrado com sucesso!')
 
-      // 2. Se for profissional, salva configurações adicionais
-      if (data.userType === 'professional') {
-        console.log('⚕️ Configurando dados profissionais...')
-
-        // Salva política de cancelamento (se informada)
-        const cancellationPolicy = transformSignupDataToCancellationPolicy(data)
-        if (cancellationPolicy) {
-          console.log('📋 Salvando política de cancelamento...')
-          await saveCancellationPolicy(response.id, cancellationPolicy)
-          console.log('✅ Política de cancelamento salva!')
-        }
-
-        // Salva configuração de horários
-        const scheduleConfig = transformSignupDataToScheduleConfig(data)
-        if (scheduleConfig) {
-          console.log('⏰ Salvando configurações de horário...')
-          await saveScheduleConfiguration(response.id, scheduleConfig)
-          console.log('✅ Horários configurados!')
-        }
-
-        // Salva configurações de notificação
-        const notifications = transformSignupDataToNotifications(data)
-        if (notifications) {
-          console.log('🔔 Salvando configurações de notificação...')
-          await saveProfessionalNotifications(response.id, notifications)
-          console.log('✅ Notificações configuradas!')
-        }
-
-        console.log('🎉 Todas as configurações profissionais salvas!')
-      }
+      // Nota: Para profissionais, todos os dados são enviados na estrutura professionalData
+      // em uma única requisição, garantindo consistência transacional
 
       // 3. Cria o usuário e salva no estado
       const newUser: User = {

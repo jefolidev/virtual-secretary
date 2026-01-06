@@ -41,7 +41,8 @@ export function SignUpPage() {
 function SignUpPageContent() {
   const navigate = useNavigate()
   const { signup } = useAuth()
-  const { formData } = useSignupForm()
+  const { formData, updateFormData, updateNestedFormData, clearFormData } =
+    useSignupForm()
   const [currentStep, setCurrentStep] = useState<number>(signupSteps.USER_TYPE)
   const [isSuccess, setIsSuccess] = useState(false)
   const [countdown, setCountdown] = useState(5)
@@ -239,6 +240,22 @@ function SignUpPageContent() {
           formData.userType === 'professional'
             ? formData.cancellationPolicy
             : undefined,
+        minHoursBeforeCancellation:
+          formData.userType === 'professional'
+            ? formData.minHoursBeforeCancellation
+            : undefined,
+        cancelationFeePercentage:
+          formData.userType === 'professional'
+            ? formData.cancelationFeePercentage
+            : undefined,
+        allowReschedule:
+          formData.userType === 'professional'
+            ? formData.allowReschedule
+            : undefined,
+        minDaysBeforeNextAppointment:
+          formData.userType === 'professional'
+            ? formData.minDaysBeforeNextAppointment
+            : undefined,
         notifications:
           formData.userType === 'professional'
             ? {
@@ -247,23 +264,22 @@ function SignUpPageContent() {
                 confirmations: formData.notifications.confirmations,
                 dailySummary: formData.notifications.dailySummary,
                 confirmedList: formData.notifications.confirmedList,
+                payments: formData.notifications.payments,
               }
             : undefined,
         notificationChannels:
           formData.userType === 'professional'
             ? formData.notificationChannels
             : undefined,
+        sessionPrice:
+          formData.userType === 'professional'
+            ? formData.sessionPrice
+            : undefined,
         address: formData.address,
       }
 
-      console.log('🚀 Debug SignupData antes do envio:')
-      console.log('  - userType:', signupData.userType)
-      console.log('  - periodPreference:', signupData.periodPreference)
-      console.log('  - extraPreferences:', signupData.extraPreferences)
-      console.log('  - formData.periodPreference:', formData.periodPreference)
-      console.log('  - Complete signupData:', signupData)
-
       await signup(signupData)
+      clearFormData() // Limpar dados do formulário após sucesso
       setIsSuccess(true)
       toast.success('🎉 Cadastro realizado com sucesso!', {
         description: 'Você será redirecionado para o login em instantes.',
@@ -464,8 +480,19 @@ function SignUpPageContent() {
                 <ProfessionalScheduling
                   onValidationChange={setIsProfessionalSchedulingValid}
                   workDays={formData.workDays}
-                  onToggleWorkDay={(_day) => {
-                    // Implementation needed based on your form context
+                  appointmentDuration={formData.appointmentDuration}
+                  breakTime={formData.breakTime}
+                  startTime={formData.startTime}
+                  endTime={formData.endTime}
+                  onToggleWorkDay={(day) => {
+                    updateNestedFormData(
+                      'workDays',
+                      day,
+                      !formData.workDays[day]
+                    )
+                  }}
+                  onFieldChange={(field, value) => {
+                    updateFormData(field as keyof typeof formData, value)
                   }}
                 />
               )}
@@ -476,11 +503,19 @@ function SignUpPageContent() {
                 <ProfessionalNotifications
                   notifications={formData.notifications}
                   notificationChannels={formData.notificationChannels}
-                  onToggleNotification={(_key) => {
-                    // Implementation needed based on your form context
+                  onToggleNotification={(key) => {
+                    updateNestedFormData(
+                      'notifications',
+                      key,
+                      !formData.notifications[key]
+                    )
                   }}
-                  onToggleNotificationChannel={(_channel) => {
-                    // Implementation needed based on your form context
+                  onToggleNotificationChannel={(channel) => {
+                    updateNestedFormData(
+                      'notificationChannels',
+                      channel,
+                      !formData.notificationChannels[channel]
+                    )
                   }}
                   onValidationChange={setIsProfessionalNotificationsValid}
                 />

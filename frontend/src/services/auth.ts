@@ -15,6 +15,38 @@ export interface RegisterUserData {
     periodPreference: Array<'MORNING' | 'AFTERNOON' | 'EVENING'>
     extraPreferences: string
   }
+  // Dados do profissional (apenas para PROFESSIONAL)
+  professionalData?: {
+    sessionPrice: number
+    notificationSettings: {
+      channels: Array<'EMAIL' | 'WHATSAPP'>
+      enabledTypes: Array<
+        | 'CONFIRMATION'
+        | 'CANCELLATION'
+        | 'NEW_APPOINTMENT'
+        | 'DAILY_SUMMARY'
+        | 'CONFIRMED_LIST'
+        | 'PAYMENT_STATUS'
+      >
+      reminderBeforeMinutes: number
+      dailySummaryTime: string
+    }
+    cancellationPolicy: {
+      minHoursBeforeCancellation: number
+      minDaysBeforeNextAppointment: number
+      cancelationFeePercentage: number
+      allowReschedule: boolean
+      description: string
+    }
+    scheduleConfiguration: {
+      bufferIntervalMinutes: number
+      daysOfWeek: number[]
+      startTime: string
+      endTime: string
+      holidays: string[]
+      sessionDurationMinutes: number
+    }
+  }
   // Endereço com estrutura correta do backend
   address: {
     addressLine1: string
@@ -129,6 +161,71 @@ export function transformSignupDataToRegisterData(
             extraPreferences: data.extraPreferences,
           }
         : undefined,
+    // Dados específicos do profissional
+    professionalData:
+      data.userType === 'professional'
+        ? {
+            sessionPrice: data.sessionPrice || 0,
+            notificationSettings: {
+              channels: [
+                ...(data.notificationChannels?.email ? ['EMAIL' as const] : []),
+                ...(data.notificationChannels?.whatsapp
+                  ? ['WHATSAPP' as const]
+                  : []),
+              ],
+              enabledTypes: [
+                ...(data.notifications?.newAppointments
+                  ? ['NEW_APPOINTMENT' as const]
+                  : []),
+                ...(data.notifications?.cancellations
+                  ? ['CANCELLATION' as const]
+                  : []),
+                ...(data.notifications?.confirmations
+                  ? ['CONFIRMATION' as const]
+                  : []),
+                ...(data.notifications?.dailySummary
+                  ? ['DAILY_SUMMARY' as const]
+                  : []),
+                ...(data.notifications?.confirmedList
+                  ? ['CONFIRMED_LIST' as const]
+                  : []),
+                ...(data.notifications?.payments
+                  ? ['PAYMENT_STATUS' as const]
+                  : []),
+              ],
+              reminderBeforeMinutes: 60,
+              dailySummaryTime: '08:00',
+            },
+            cancellationPolicy: {
+              minHoursBeforeCancellation: data.minHoursBeforeCancellation || 24,
+              minDaysBeforeNextAppointment:
+                data.minDaysBeforeNextAppointment || 1,
+              cancelationFeePercentage: data.cancelationFeePercentage || 0,
+              allowReschedule:
+                data.allowReschedule !== undefined
+                  ? data.allowReschedule
+                  : true,
+              description:
+                data.cancellationPolicy || 'Política padrão de cancelamento',
+            },
+            scheduleConfiguration: {
+              bufferIntervalMinutes: data.breakTime || 15,
+              daysOfWeek: [
+                ...(data.workDays?.sunday ? [0] : []),
+                ...(data.workDays?.monday ? [1] : []),
+                ...(data.workDays?.tuesday ? [2] : []),
+                ...(data.workDays?.wednesday ? [3] : []),
+                ...(data.workDays?.thursday ? [4] : []),
+                ...(data.workDays?.friday ? [5] : []),
+                ...(data.workDays?.saturday ? [6] : []),
+              ],
+              startTime: data.startTime || '09:00',
+              endTime: data.endTime || '18:00',
+              holidays: [],
+              sessionDurationMinutes: data.appointmentDuration || 60,
+            },
+          }
+        : undefined,
     address: {
       addressLine1: data.address.street,
       addressLine2: data.address.complement || undefined,
@@ -139,9 +236,6 @@ export function transformSignupDataToRegisterData(
       country: 'Brasil',
     },
   }
-
-  console.log('  - Output result.clientData:', result.clientData)
-  console.log('  - Complete result:', result)
 
   return result
 }
@@ -184,10 +278,11 @@ export function transformSignupDataToCancellationPolicy(
   }
 
   return {
-    allowReschedule: true,
-    cancelationFeePercentage: 0,
-    minDaysBeforeNextAppointment: 0,
-    minHoursBeforeCancellation: 24,
+    allowReschedule:
+      data.allowReschedule !== undefined ? data.allowReschedule : true,
+    cancelationFeePercentage: data.cancelationFeePercentage || 0,
+    minDaysBeforeNextAppointment: data.minDaysBeforeNextAppointment || 1,
+    minHoursBeforeCancellation: data.minHoursBeforeCancellation || 24,
     description: data.cancellationPolicy || 'Política padrão de cancelamento',
   }
 }
