@@ -176,20 +176,17 @@ function SignUpPageContent() {
 
   const handleSubmit = async () => {
     try {
-      // Limpa erros anteriores
       setValidationErrors([])
 
-      // 1️⃣ VALIDAÇÃO DE FORMATO (campos obrigatórios, CPF, etc.)
       const validation = validateSignupData(formData as SignupData)
 
       if (!validation.isValid) {
         setValidationErrors(validation.errors)
-        // Scroll para o topo para mostrar os erros
+
         window.scrollTo({ top: 0, behavior: 'smooth' })
         return
       }
 
-      // 2️⃣ VALIDAÇÃO DE DADOS ÚNICOS (email, CPF, telefone duplicados)
       console.log('🔍 Verificando se dados estão disponíveis...')
       toast.loading('Verificando dados...', { id: 'checking' })
 
@@ -279,7 +276,7 @@ function SignUpPageContent() {
       }
 
       await signup(signupData)
-      clearFormData() // Limpar dados do formulário após sucesso
+      clearFormData()
       setIsSuccess(true)
       toast.success('🎉 Cadastro realizado com sucesso!', {
         description: 'Você será redirecionado para o login em instantes.',
@@ -287,19 +284,16 @@ function SignUpPageContent() {
     } catch (error: any) {
       console.error('Erro ao cadastrar:', error)
 
-      // Se for um erro de validação, a mensagem já foi tratada no auth context
       if (error instanceof Error && error.name === 'ValidationError') {
         return
       }
 
-      // Tratamento específico para diferentes tipos de erro
       if (error?.response?.status === 409) {
         toast.error('🚫 Dados já cadastrados!', {
           description:
             'Este email, CPF ou telefone já está em uso. Tente fazer login ou use outros dados.',
         })
       } else if (error?.response?.status === 500) {
-        // Verifica se é um erro de dados duplicados (mesmo com status 500)
         const errorMessage = error?.response?.data?.message || ''
         const errorDetails = JSON.stringify(error?.response?.data || {})
 

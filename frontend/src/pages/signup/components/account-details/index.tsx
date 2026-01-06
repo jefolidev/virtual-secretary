@@ -52,7 +52,6 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
     )
   }
 
-  // Notifica o componente pai sobre mudanças na validação
   useEffect(() => {
     if (onValidationChange) {
       onValidationChange(isFormValid())

@@ -1,7 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 
 export interface FormData {
-  // Dados da conta
   name: string
   email: string
   password: string
@@ -10,14 +9,11 @@ export interface FormData {
   cpf: string
   birthdate: string
 
-  // Tipo de usuário
   userType: 'professional' | 'patient' | null
 
-  // Dados do paciente
   periodPreference: Array<'morning' | 'afternoon' | 'evening'>
-  extraPreferences: string // Campo de texto para preferências extras
+  extraPreferences: string
 
-  // Dados do profissional - dias de trabalho
   workDays: {
     monday: boolean
     tuesday: boolean
@@ -28,14 +24,12 @@ export interface FormData {
     sunday: boolean
   }
 
-  // Dados do profissional - configurações
   sessionPrice: number
   appointmentDuration: number
   breakTime: number
   startTime: string
   endTime: string
 
-  // Dados do profissional - notificações
   notifications: {
     newAppointments: boolean
     cancellations: boolean
@@ -49,14 +43,12 @@ export interface FormData {
     whatsapp: boolean
   }
 
-  // Dados do profissional - política de cancelamento
   cancellationPolicy: string
   allowReschedule: boolean
   cancelationFeePercentage: number
   minHoursBeforeCancellation: number
   minDaysBeforeNextAppointment: number
 
-  // Endereço
   address: {
     cep: string
     street: string
@@ -84,7 +76,6 @@ const SignupFormContext = createContext<SignupFormContextType | undefined>(
 )
 
 const initialFormData: FormData = {
-  // Dados da conta
   name: '',
   email: '',
   password: '',
@@ -93,14 +84,11 @@ const initialFormData: FormData = {
   cpf: '',
   birthdate: '',
 
-  // Tipo de usuário
   userType: null,
 
-  // Dados do paciente
   periodPreference: [],
   extraPreferences: '',
 
-  // Dados do profissional - dias de trabalho
   workDays: {
     monday: false,
     tuesday: false,
@@ -111,14 +99,12 @@ const initialFormData: FormData = {
     sunday: false,
   },
 
-  // Dados do profissional - configurações
   sessionPrice: 0,
   appointmentDuration: 60,
   breakTime: 15,
   startTime: '09:00',
   endTime: '18:00',
 
-  // Dados do profissional - notificações
   notifications: {
     newAppointments: false,
     cancellations: false,
@@ -138,7 +124,6 @@ const initialFormData: FormData = {
   minHoursBeforeCancellation: 24,
   minDaysBeforeNextAppointment: 1,
 
-  // Endereço
   address: {
     cep: '',
     street: '',

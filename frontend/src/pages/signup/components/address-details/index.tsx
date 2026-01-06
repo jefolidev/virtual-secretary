@@ -56,7 +56,6 @@ export function AddressDetails({ onValidationChange }: AddressDetailsProps) {
       try {
         const data = await fetchAddressByCEP(cleanCEP)
 
-        // Pequeno delay para dar feedback visual
         await new Promise((resolve) => setTimeout(resolve, 300))
 
         updateNestedFormData('address', 'street', data.logradouro)
