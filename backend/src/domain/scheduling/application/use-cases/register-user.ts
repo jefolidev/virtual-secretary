@@ -2,18 +2,24 @@ import { Either, left, right } from '@/core/either'
 import { checkPasswordStrong } from '@/utils/checkPasswordStrong'
 import { Injectable } from '@nestjs/common'
 import { Address, AddressProps } from '../../enterprise/entities/address'
+import { CancellationPolicy } from '../../enterprise/entities/cancellation-policy'
 import { Client } from '../../enterprise/entities/client'
 import { Professional } from '../../enterprise/entities/professional'
+import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 import { User } from '../../enterprise/entities/user'
 import { NotificationSettings } from '../../enterprise/entities/value-objects/notification-settings'
+import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
 import { HashGenerator } from '../cryptography/hash-generator'
 import { AddressRepository } from '../repositories/address.repository'
+import { CancellationPolicyRepository } from '../repositories/cancellation-policy.repository'
 import { ClientRepository } from '../repositories/client.repository'
 import { ProfessionalRepository } from '../repositories/professional.repository'
+import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { UserRepository } from '../repositories/user.repository'
 import { CpfAlreadyExists } from './errors/cpf-already-exists'
 import { PhoneAlreadyExistsError } from './errors/phone-already-exists'
 import { UserAlreadyExists } from './errors/user-already-exists'
+import { ValidationError } from './errors/validation-error'
 import { WeakPasswordError } from './errors/weak-password-error'
 
 interface RegisterUserUseCaseRequest {
@@ -26,6 +32,21 @@ interface RegisterUserUseCaseRequest {
   professionalData?: {
     sessionPrice: number
     notificationSettings?: NotificationSettings
+    cancellationPolicy?: {
+      minHoursBeforeCancellation: number
+      minDaysBeforeNextAppointment: number
+      cancelationFeePercentage: number
+      allowReschedule: boolean
+      description?: string
+    }
+    scheduleConfiguration?: {
+      bufferIntervalMinutes: number
+      daysOfWeek: number[]
+      startTime: string
+      endTime: string
+      holidays: string[]
+      sessionDurationMinutes: number
+    }
   }
   clientData?: {
     periodPreference: ('MORNING' | 'AFTERNOON' | 'EVENING')[]
@@ -35,7 +56,10 @@ interface RegisterUserUseCaseRequest {
 }
 
 type RegisterUserUseCaseResponse = Either<
-  UserAlreadyExists | PhoneAlreadyExistsError | CpfAlreadyExists,
+  | UserAlreadyExists
+  | PhoneAlreadyExistsError
+  | CpfAlreadyExists
+  | ValidationError,
   { user: User }
 >
 
@@ -46,7 +70,9 @@ export class RegisterUserUseCase {
     private readonly hashGenerator: HashGenerator,
     private readonly clientRepository: ClientRepository,
     private readonly professionalRepository: ProfessionalRepository,
-    private readonly addressRepository: AddressRepository
+    private readonly addressRepository: AddressRepository,
+    private readonly cancellationPolicyRepository: CancellationPolicyRepository,
+    private readonly scheduleConfigurationRepository: ScheduleConfigurationRepository
   ) {}
 
   async execute({
@@ -90,12 +116,46 @@ export class RegisterUserUseCase {
 
     let professional: Professional | undefined = undefined
     let client: Client | undefined = undefined
+    let cancellationPolicy: CancellationPolicy | undefined = undefined
+    let scheduleConfiguration: ScheduleConfiguration | undefined = undefined
 
     if (role === 'PROFESSIONAL') {
       professional = Professional.create({
         sessionPrice: professionalData?.sessionPrice ?? 0,
         notificationSettings: professionalData?.notificationSettings,
       })
+
+      // Criar política de cancelamento se fornecida
+      if (professionalData?.cancellationPolicy) {
+        const policyData = professionalData.cancellationPolicy
+        cancellationPolicy = CancellationPolicy.create({
+          professionalId: professional.id,
+          minHoursBeforeCancellation: policyData.minHoursBeforeCancellation,
+          minDaysBeforeNextAppointment: policyData.minDaysBeforeNextAppointment,
+          cancelationFeePercentage: policyData.cancelationFeePercentage,
+          allowReschedule: policyData.allowReschedule,
+          description: policyData.description || '',
+        })
+        professional.cancellationPolicyId = cancellationPolicy.id
+      }
+
+      // Criar configuração de horários se fornecida
+      if (professionalData?.scheduleConfiguration) {
+        const configData = professionalData.scheduleConfiguration
+        scheduleConfiguration = ScheduleConfiguration.create({
+          professionalId: professional.id,
+          bufferIntervalMinutes: configData.bufferIntervalMinutes,
+          workingDays: new WorkingDaysList(configData.daysOfWeek),
+          workingHours: {
+            start: configData.startTime,
+            end: configData.endTime,
+          },
+          holidays: configData.holidays.map((holiday) => new Date(holiday)),
+          sessionDurationMinutes: configData.sessionDurationMinutes,
+          enableGoogleMeet: false,
+        })
+        professional.scheduleConfigurationId = scheduleConfiguration.id
+      }
     }
 
     if (role === 'CLIENT') {
@@ -118,12 +178,74 @@ export class RegisterUserUseCase {
       clientId: client?.id,
     })
 
-    // Persistir todas as entidades de uma vez dentro do try/catch
+    // Validações prévias rigorosas para evitar dados órfãos
+    if (role === 'PROFESSIONAL') {
+      if (professionalData?.cancellationPolicy) {
+        const policy = professionalData.cancellationPolicy
+        if (policy.minHoursBeforeCancellation < 6) {
+          return left(
+            new ValidationError('Política: mínimo de 6 horas para cancelamento')
+          )
+        }
+        if (policy.minDaysBeforeNextAppointment < 1) {
+          return left(
+            new ValidationError(
+              'Política: mínimo de 1 dia para próximo agendamento'
+            )
+          )
+        }
+        if (
+          policy.cancelationFeePercentage < 0 ||
+          policy.cancelationFeePercentage > 100
+        ) {
+          return left(
+            new ValidationError('Política: taxa deve estar entre 0 e 100%')
+          )
+        }
+      }
+
+      if (professionalData?.scheduleConfiguration) {
+        const config = professionalData.scheduleConfiguration
+        if (!config.daysOfWeek || config.daysOfWeek.length === 0) {
+          return left(
+            new ValidationError(
+              'Configuração: pelo menos um dia da semana obrigatório'
+            )
+          )
+        }
+        if (!config.startTime || !config.endTime) {
+          return left(
+            new ValidationError(
+              'Configuração: horários de início e fim obrigatórios'
+            )
+          )
+        }
+        if (config.sessionDurationMinutes < 1) {
+          return left(
+            new ValidationError(
+              'Configuração: duração da sessão deve ser maior que 0'
+            )
+          )
+        }
+      }
+    }
+
+    // Após todas as validações, persistir usando repositories existentes
     try {
       await this.addressRepository.create(userAddress)
 
+      // Criar profissional PRIMEIRO (para que as foreign keys funcionem)
       if (professional) {
         await this.professionalRepository.create(professional)
+      }
+
+      // Agora criar as entidades que dependem do profissional
+      if (cancellationPolicy) {
+        await this.cancellationPolicyRepository.create(cancellationPolicy)
+      }
+
+      if (scheduleConfiguration) {
+        await this.scheduleConfigurationRepository.create(scheduleConfiguration)
       }
 
       if (client) {
