@@ -11,7 +11,6 @@ export function ValidationErrorDisplay({
 }: ValidationErrorDisplayProps) {
   if (errors.length === 0) return null
 
-  // Agrupa erros por etapa
   const errorsByStep = errors.reduce(
     (acc: Record<number, ValidationError[]>, error) => {
       const step = error.step ?? 0

@@ -11,18 +11,13 @@ export interface ValidationResult {
   errors: ValidationError[]
 }
 
-// Validação de CPF
 function validateCPF(cpf: string): boolean {
-  // Remove caracteres não numéricos
   const cleanCPF = cpf.replace(/\D/g, '')
 
-  // Verifica se tem 11 dígitos
   if (cleanCPF.length !== 11) return false
 
-  // Verifica se todos os dígitos são iguais
   if (/^(\d)\1{10}$/.test(cleanCPF)) return false
 
-  // Validação do dígito verificador
   let sum = 0
   for (let i = 0; i < 9; i++) {
     sum += parseInt(cleanCPF.charAt(i)) * (10 - i)
@@ -42,20 +37,17 @@ function validateCPF(cpf: string): boolean {
   return true
 }
 
-// Validação de email
 function validateEmail(email: string): boolean {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   return emailRegex.test(email)
 }
 
-// Validação de telefone brasileiro
 function validatePhone(phone: string): boolean {
   const cleanPhone = phone.replace(/\D/g, '')
-  // Aceita formato (11) 99999-9999 ou (11) 9999-9999
+
   return cleanPhone.length === 11 || cleanPhone.length === 10
 }
 
-// Validação de senha
 function validatePassword(password: string): {
   isValid: boolean
   message?: string
@@ -87,17 +79,14 @@ function validatePassword(password: string): {
   return { isValid: true }
 }
 
-// Validação de CEP
 function validateCEP(cep: string): boolean {
   const cleanCEP = cep.replace(/\D/g, '')
   return cleanCEP.length === 8
 }
 
-// Validação completa de todos os dados do formulário
 export function validateSignupData(data: SignupData): ValidationResult {
   const errors: ValidationError[] = []
 
-  // Etapa 1: Tipo de usuário
   if (!data.userType) {
     errors.push({
       field: 'userType',
@@ -106,7 +95,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
     })
   }
 
-  // Etapa 2: Detalhes da conta
   if (!data.name || data.name.trim().length < 2) {
     errors.push({
       field: 'name',
@@ -163,7 +151,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
       step: 1,
     })
   } else {
-    // Verifica se a pessoa tem pelo menos 16 anos
     const birthDate = new Date(data.birthdate)
     const today = new Date()
     let age = today.getFullYear() - birthDate.getFullYear()
@@ -185,7 +172,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
     }
   }
 
-  // Etapa 3a: Preferências do paciente (se aplicável)
   if (data.userType === 'patient') {
     if (!data.periodPreference || data.periodPreference.length === 0) {
       errors.push({
@@ -196,11 +182,7 @@ export function validateSignupData(data: SignupData): ValidationResult {
     }
   }
 
-  // Etapa 3b-5: Configurações profissionais (se aplicável)
   if (data.userType === 'professional') {
-    // Validação de política de cancelamento (opcional)
-
-    // Validação de horários de trabalho
     if (!data.workDays || Object.values(data.workDays).every((day) => !day)) {
       errors.push({
         field: 'workDays',
@@ -232,7 +214,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
       })
     }
 
-    // Validação de horários
     if (!data.startTime) {
       errors.push({
         field: 'startTime',
@@ -257,7 +238,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
       })
     }
 
-    // Validação de notificações (pelo menos uma deve estar ativa)
     if (
       data.notifications &&
       Object.values(data.notifications).every((notification) => !notification)
@@ -269,7 +249,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
       })
     }
 
-    // Validação de canais de notificação (pelo menos um deve estar ativo)
     if (
       data.notificationChannels &&
       Object.values(data.notificationChannels).every((channel) => !channel)
@@ -282,7 +261,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
     }
   }
 
-  // Etapa final: Endereço
   if (!data.address) {
     errors.push({
       field: 'address',

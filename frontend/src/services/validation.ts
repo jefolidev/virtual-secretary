@@ -1,6 +1,5 @@
 import { api } from '@/api/axios'
 
-// Função para verificar se dados já existem no backend
 export async function checkDataAvailability(data: {
   email: string
   cpf: string
@@ -17,13 +16,11 @@ export async function checkDataAvailability(data: {
   } catch (error: any) {
     console.error('Erro ao verificar disponibilidade:', error)
 
-    // Se o endpoint não existir (404), assume que está disponível
     if (error?.response?.status === 404) {
       console.warn('Endpoint de verificação não encontrado, prosseguindo...')
       return { available: true, conflicts: [] }
     }
 
-    // Para outros erros, assume conflito para ser conservador
     return { available: false, conflicts: ['Erro ao verificar dados'] }
   }
 }
