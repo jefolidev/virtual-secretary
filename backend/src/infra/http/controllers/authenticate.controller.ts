@@ -7,9 +7,11 @@ import {
   Body,
   Controller,
   Post,
+  Res,
   UnauthorizedException,
   UsePipes,
 } from '@nestjs/common'
+import { Response } from 'express'
 import z from 'zod'
 
 const authenticateBodySchema = z.object({
@@ -28,7 +30,10 @@ export class AuthenticateController {
 
   @Post()
   @UsePipes(new ZodValidationPipe(authenticateBodySchema))
-  async handle(@Body() body: AuthenticateBodySchema) {
+  async handle(
+    @Body() body: AuthenticateBodySchema,
+    @Res({ passthrough: true }) res: Response
+  ) {
     const { email, password } = body
 
     const result = await this.authenticateStudentUseCase.execute({
@@ -46,8 +51,17 @@ export class AuthenticateController {
       }
     }
 
+    const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24
+
     const { accessToken } = result.value
 
-    return { access_token: accessToken }
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: ONE_DAY_IN_MS, // 7 days
+    })
+
+    return { message: 'Authenticated successfully' }
   }
 }
