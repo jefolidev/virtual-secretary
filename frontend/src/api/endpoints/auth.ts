@@ -17,7 +17,7 @@ export interface UserLoginData {
 interface AuthServicesEndPoints {
   signUp: (data: RegisterUserData) => Promise<RegisterResponse>
   login: (credentials: LoginBodySchema) => Promise<{ access_token: string }>
-  me: (token: string) => Promise<UserLoginData>
+  me: () => Promise<UserLoginData>
 }
 
 export const authServices: AuthServicesEndPoints = {
@@ -37,6 +37,7 @@ export const authServices: AuthServicesEndPoints = {
   }: LoginBodySchema): Promise<{ access_token: string }> => {
     try {
       const response = await api.post('/login', { email, password })
+
       return response.data
     } catch (error) {
       console.error('Erro ao fazer login:', error)
@@ -44,13 +45,10 @@ export const authServices: AuthServicesEndPoints = {
     }
   },
 
-  me: async (token: string): Promise<UserLoginData> => {
+  me: async (): Promise<UserLoginData> => {
     try {
-      const response = await api.get(`/me`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
+      const response = await api.get(`/me`)
+
       return response.data
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error)

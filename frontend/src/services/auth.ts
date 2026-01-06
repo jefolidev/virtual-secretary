@@ -10,12 +10,12 @@ export interface RegisterUserData {
   phone: string
   cpf: string
   role: 'CLIENT' | 'PROFESSIONAL'
-  // Dados do cliente (apenas para CLIENT)
+
   clientData?: {
     periodPreference: Array<'MORNING' | 'AFTERNOON' | 'EVENING'>
     extraPreferences: string
   }
-  // Dados do profissional (apenas para PROFESSIONAL)
+
   professionalData?: {
     sessionPrice: number
     notificationSettings: {
@@ -47,7 +47,7 @@ export interface RegisterUserData {
       sessionDurationMinutes: number
     }
   }
-  // Endereço com estrutura correta do backend
+
   address: {
     addressLine1: string
     addressLine2?: string
@@ -78,9 +78,6 @@ export interface ProfessionalNotifications {
   }
 }
 
-// Registra o usuário (cliente ou profissional)
-
-// Configura política de cancelamento (apenas profissionais)
 export async function saveCancellationPolicy(
   professionalId: string,
   policy: CancellationPolicy
@@ -96,7 +93,6 @@ export async function saveCancellationPolicy(
   }
 }
 
-// Configura horários de trabalho (apenas profissionais)
 export async function saveScheduleConfiguration(
   professionalId: string,
   config: ScheduleConfiguration
@@ -112,7 +108,6 @@ export async function saveScheduleConfiguration(
   }
 }
 
-// Configura notificações (apenas profissionais)
 export async function saveProfessionalNotifications(
   professionalId: string,
   notifications: ProfessionalNotifications
@@ -128,7 +123,6 @@ export async function saveProfessionalNotifications(
   }
 }
 
-// Função auxiliar para transformar dados do signup em formato para API
 export function transformSignupDataToRegisterData(
   data: SignupData
 ): RegisterUserData {
@@ -139,7 +133,7 @@ export function transformSignupDataToRegisterData(
     phone: data.phone,
     cpf: data.cpf,
     role: data.userType === 'professional' ? 'PROFESSIONAL' : 'CLIENT',
-    // Dados específicos do cliente
+
     clientData:
       data.userType === 'patient'
         ? {
@@ -149,7 +143,7 @@ export function transformSignupDataToRegisterData(
             extraPreferences: data.extraPreferences,
           }
         : undefined,
-    // Dados específicos do profissional
+
     professionalData:
       data.userType === 'professional'
         ? {
@@ -228,7 +222,6 @@ export function transformSignupDataToRegisterData(
   return result
 }
 
-// Função auxiliar para transformar dados do signup em configuração de horários
 export function transformSignupDataToScheduleConfig(
   data: SignupData
 ): ScheduleConfiguration | null {
@@ -236,7 +229,6 @@ export function transformSignupDataToScheduleConfig(
     return null
   }
 
-  // Converte os dias da semana para números (0 = domingo, 1 = segunda, etc.)
   const daysOfWeek: number[] = []
   if (data.workDays.sunday) daysOfWeek.push(0)
   if (data.workDays.monday) daysOfWeek.push(1)
@@ -257,7 +249,6 @@ export function transformSignupDataToScheduleConfig(
   }
 }
 
-// Função auxiliar para transformar dados do signup em política de cancelamento
 export function transformSignupDataToCancellationPolicy(
   data: SignupData
 ): CancellationPolicy | null {
@@ -275,7 +266,6 @@ export function transformSignupDataToCancellationPolicy(
   }
 }
 
-// Função auxiliar para transformar dados do signup em notificações
 export function transformSignupDataToNotifications(
   data: SignupData
 ): ProfessionalNotifications | null {
