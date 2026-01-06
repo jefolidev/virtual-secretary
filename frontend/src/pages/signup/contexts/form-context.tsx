@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useState } from 'react'
 
 export interface FormData {
   // Dados da conta
@@ -132,7 +132,6 @@ const initialFormData: FormData = {
     whatsapp: false,
   },
 
-  // Dados do profissional - política de cancelamento
   cancellationPolicy: '',
   allowReschedule: true,
   cancelationFeePercentage: 0,
@@ -156,29 +155,7 @@ export function SignupFormProvider({
 }: {
   children: React.ReactNode
 }) {
-  // Tentar carregar dados do localStorage primeiro
-  const getInitialFormData = (): FormData => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('signupFormData')
-      if (saved) {
-        try {
-          return JSON.parse(saved)
-        } catch {
-          return initialFormData
-        }
-      }
-    }
-    return initialFormData
-  }
-
-  const [formData, setFormData] = useState<FormData>(getInitialFormData)
-
-  // Salvar no localStorage sempre que o formData mudar
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('signupFormData', JSON.stringify(formData))
-    }
-  }, [formData])
+  const [formData, setFormData] = useState<FormData>(initialFormData)
 
   const updateFormData = (field: keyof FormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -200,9 +177,6 @@ export function SignupFormProvider({
 
   const clearFormData = () => {
     setFormData(initialFormData)
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('signupFormData')
-    }
   }
 
   return (

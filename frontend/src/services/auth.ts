@@ -60,11 +60,10 @@ export interface RegisterUserData {
 }
 
 export interface RegisterResponse {
-  id: string
-  name: string
-  email: string
-  userType: 'professional' | 'patient'
-  token: string
+  user_id: string
+  role: 'CLIENT' | 'PROFESSIONAL'
+  client_id?: string
+  professional_id?: string
 }
 
 export interface ProfessionalNotifications {
@@ -80,17 +79,6 @@ export interface ProfessionalNotifications {
 }
 
 // Registra o usuário (cliente ou profissional)
-export async function registerUser(
-  userData: RegisterUserData
-): Promise<RegisterResponse> {
-  try {
-    const response = await api.post('/register', userData)
-    return response.data
-  } catch (error) {
-    console.error('Erro ao registrar usuário:', error)
-    throw error
-  }
-}
 
 // Configura política de cancelamento (apenas profissionais)
 export async function saveCancellationPolicy(

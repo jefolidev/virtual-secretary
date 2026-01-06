@@ -1,8 +1,11 @@
+import { authServices, type UserLoginData } from '@/api/endpoints/auth'
 import {
-  registerUser,
   transformSignupDataToRegisterData,
+  type RegisterResponse,
 } from '@/services/auth'
 import { createContext, useContext, useEffect, useState } from 'react'
+
+import { jwtDecode } from 'jwt-decode'
 
 export interface User {
   id: string
@@ -32,10 +35,10 @@ export interface SignupData {
   cpf: string
   birthdate: string
   userType: 'professional' | 'patient'
-  // Dados do paciente
+
   periodPreference: Array<'morning' | 'afternoon' | 'evening'>
   extraPreferences: string
-  // Dados do profissional
+
   sessionPrice?: number
   cancellationPolicy?: string
   minHoursBeforeCancellation?: number
@@ -67,7 +70,7 @@ export interface SignupData {
     email: boolean
     whatsapp: boolean
   }
-  // Endereço
+
   address: {
     cep: string
     street: string
@@ -85,11 +88,11 @@ export interface LoginCredentials {
 }
 
 interface AuthContextType {
-  user: User | null
+  user: UserLoginData | null
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<void>
-  signup: (data: SignupData) => Promise<void>
+  signup: (data: SignupData) => Promise<RegisterResponse>
   logout: () => void
   checkAuth: () => Promise<void>
 }
@@ -97,12 +100,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<UserLoginData | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const isAuthenticated = !!user
 
-  // Verifica autenticação ao carregar a aplicação
   useEffect(() => {
     checkAuth()
   }, [])
@@ -110,30 +112,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = async () => {
     setIsLoading(true)
     try {
-      // Verifica se há token no localStorage
       const token = localStorage.getItem('auth_token')
-      const savedUser = localStorage.getItem('user_data')
 
-      if (token && savedUser) {
-        // TODO: Validar token com backend
-        // const response = await fetch('/api/auth/verify', {
-        //   headers: { Authorization: `Bearer ${token}` }
-        // })
-        // if (response.ok) {
-        //   const userData = await response.json()
-        //   setUser(userData)
-        // } else {
-        //   localStorage.removeItem('auth_token')
-        //   localStorage.removeItem('user_data')
-        // }
-
-        // Por enquanto, apenas carrega do localStorage
-        setUser(JSON.parse(savedUser))
+      if (!token) {
+        setUser(null)
+        return
       }
+
+      const { exp, sub } = jwtDecode(token)
+
+      if (exp) {
+        const ONE_SECOND_IN_MS = 1000
+        const currentTime = Date.now() / ONE_SECOND_IN_MS
+
+        if (exp <= currentTime) {
+          localStorage.removeItem('auth_token')
+          setUser(null)
+          return
+        }
+      }
+
+      if (!user && sub) {
+        localStorage.removeItem('auth_token')
+        setUser(null)
+        return
+      }
+
+      const userData = await authServices.me(token)
+
+      setUser(userData)
     } catch (error) {
       console.error('Erro ao verificar autenticação:', error)
       localStorage.removeItem('auth_token')
-      localStorage.removeItem('user_data')
+      setUser(null)
     } finally {
       setIsLoading(false)
     }
@@ -141,30 +152,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      // TODO: Integrar com backend
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(credentials)
-      // })
-      // if (!response.ok) throw new Error('Credenciais inválidas')
-      // const { token, user } = await response.json()
+      const { access_token } = await authServices.login(credentials)
 
-      // Simulação temporária
-      const mockUser: User = {
-        id: '1',
-        name: 'Usuário Teste',
-        email: credentials.email,
-        userType: 'patient',
+      localStorage.setItem('auth_token', access_token)
+
+      try {
+        const { sub: userId } = jwtDecode(access_token)
+
+        if (userId) {
+          localStorage.setItem('user_id', userId)
+          const userData = await authServices.me(access_token)
+
+          setUser(userData)
+        } else {
+          localStorage.removeItem('auth_token')
+          throw new Error('Token inválido - ID do usuário não encontrado')
+        }
+      } catch (decodeError) {
+        localStorage.removeItem('auth_token')
+        localStorage.removeItem('user_id')
+
+        throw new Error('Token inválido')
       }
-
-      const mockToken = 'mock_jwt_token_' + Date.now()
-
-      // Salva no localStorage
-      localStorage.setItem('auth_token', mockToken)
-      localStorage.setItem('user_data', JSON.stringify(mockUser))
-
-      setUser(mockUser)
     } catch (error) {
       console.error('Erro no login:', error)
       throw error
@@ -173,11 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signup = async (data: SignupData) => {
     try {
-      console.log('🎯 Iniciando processo de cadastro...')
-
-      // 1. Validação prévia para profissionais
       if (data.userType === 'professional') {
-        // Validar se todos os dados obrigatórios do profissional estão presentes
         const requiredFields = {
           sessionPrice: data.sessionPrice,
           workDays:
@@ -204,31 +209,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
 
-      console.log('📝 Registrando usuário...')
       const registerData = transformSignupDataToRegisterData(data)
-      const response = await registerUser(registerData)
-      console.log('✅ Usuário registrado com sucesso!')
-
-      // Nota: Para profissionais, todos os dados são enviados na estrutura professionalData
-      // em uma única requisição, garantindo consistência transacional
-
-      // 3. Cria o usuário e salva no estado
-      const newUser: User = {
-        id: response.id,
-        name: response.name,
-        email: response.email,
-        userType: response.userType,
-        phone: data.phone,
-        cpf: data.cpf,
-        birthdate: data.birthdate,
-        address: data.address,
-      }
-
-      // Salva token e dados do usuário
-      localStorage.setItem('auth_token', response.token)
-      localStorage.setItem('user_data', JSON.stringify(newUser))
-
-      setUser(newUser)
+      return await authServices.signUp(registerData)
     } catch (error) {
       console.error('Erro no cadastro:', error)
       throw error
@@ -236,14 +218,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const logout = () => {
-    // TODO: Invalidar token no backend
-    // fetch('/api/auth/logout', {
-    //   method: 'POST',
-    //   headers: { Authorization: `Bearer ${token}` }
-    // })
-
     localStorage.removeItem('auth_token')
-    localStorage.removeItem('user_data')
     setUser(null)
   }
 
