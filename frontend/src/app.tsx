@@ -51,7 +51,7 @@ import { Link, Outlet, useLocation } from 'react-router'
 const menuItems = [
   {
     title: 'Dashboard',
-    url: '/dashboard',
+    url: 'dashboard',
     icon: LayoutDashboard,
     description: 'Resumo do dia e alertas',
   },
@@ -61,19 +61,19 @@ const menuItems = [
     items: [
       {
         title: 'Calendário',
-        url: '/agenda/calendario',
+        url: 'agenda/calendario',
         icon: Calendar,
       },
       {
         title: 'Bloqueios de Horário',
-        url: '/agenda/bloqueios',
+        url: 'agenda/bloqueios',
         icon: Clock,
       },
     ],
   },
   {
     title: 'Minha Secretária (IA)',
-    url: '/secretaria-ia',
+    url: 'secretaria-ia',
     icon: Bot,
     description: 'Configure sua assistente virtual',
   },
@@ -83,12 +83,12 @@ const menuItems = [
     items: [
       {
         title: 'Fichas/Prontuários',
-        url: '/pacientes/fichas',
+        url: 'pacientes/fichas',
         icon: FileText,
       },
       {
         title: 'Avaliações (NPS)',
-        url: '/pacientes/avaliacoes',
+        url: 'pacientes/avaliacoes',
         icon: Star,
       },
     ],
@@ -99,12 +99,12 @@ const menuItems = [
     items: [
       {
         title: 'Recebimentos',
-        url: '/financeiro/recebimentos',
+        url: 'financeiro/recebimentos',
         icon: CreditCard,
       },
       {
         title: 'Dados Bancários',
-        url: '/financeiro/dados-bancarios',
+        url: 'financeiro/dados-bancarios',
         icon: Banknote,
       },
     ],
@@ -115,12 +115,12 @@ const menuItems = [
     items: [
       {
         title: 'Horários de Trabalho',
-        url: '/configuracoes/horarios',
+        url: 'configuracoes/horarios',
         icon: Clock,
       },
       {
         title: 'Mensagens Automáticas',
-        url: '/configuracoes/mensagens',
+        url: 'configuracoes/mensagens',
         icon: MessageSquare,
       },
     ],

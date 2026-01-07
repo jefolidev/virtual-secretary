@@ -1,6 +1,7 @@
 import { App } from '@/app'
 import { useAuth } from '@/contexts/auth-context'
 import { LoginPage } from '@/pages/login'
+import { ScheduleCalendarPage } from '@/pages/schedule/calendar'
 import { SignUpPage } from '@/pages/signup'
 import { ScreensEnum } from '@/types/screens'
 import {
@@ -83,6 +84,48 @@ export const router = createBrowserRouter([
             path: ScreensEnum.SETTINGS,
             element: <div>Settings</div>,
           },
+          // Agenda
+          {
+            path: 'agenda/calendario',
+            element: <ScheduleCalendarPage />,
+          },
+          {
+            path: 'agenda/bloqueios',
+            element: <div>Bloqueios de Horário</div>,
+          },
+          // Minha Secretária IA
+          {
+            path: 'secretaria-ia',
+            element: <div>Minha Secretária IA</div>,
+          },
+          // Pacientes
+          {
+            path: 'pacientes/fichas',
+            element: <div>Fichas/Prontuários</div>,
+          },
+          {
+            path: 'pacientes/avaliacoes',
+            element: <div>Avaliações (NPS)</div>,
+          },
+          // Financeiro
+          {
+            path: 'financeiro/recebimentos',
+            element: <div>Recebimentos</div>,
+          },
+          {
+            path: 'financeiro/dados-bancarios',
+            element: <div>Dados Bancários</div>,
+          },
+          // Configurações da Clínica
+          {
+            path: 'configuracoes/horarios',
+            element: <div>Horários de Trabalho</div>,
+          },
+          {
+            path: 'configuracoes/mensagens',
+            element: <div>Mensagens Automáticas</div>,
+          },
+          // Rotas legacy mantidas temporariamente
           {
             path: 'appointments',
             element: <div>Agendamentos</div>,
