@@ -17,6 +17,8 @@ export class PrismaAppointmentMapper {
       startDateTime: raw.startDateTime,
       status: raw.status,
       paymentStatus: raw.paymentStatus,
+      startedAt: raw.startedAt,
+      totalElapsedMs: raw.totalElapsedMs ? BigInt(raw.totalElapsedMs) : null,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
     }
@@ -50,6 +52,8 @@ export class PrismaAppointmentMapper {
         rescheduleDateTime,
         status: raw.status,
         paymentStatus: raw.paymentStatus as any,
+        startedAt: raw.startedAt,
+        totalElapsedMs: raw.totalElapsedMs ? Number(raw.totalElapsedMs) : null,
         updatedAt: raw.updatedAt,
       },
       new UniqueEntityId(raw.id)

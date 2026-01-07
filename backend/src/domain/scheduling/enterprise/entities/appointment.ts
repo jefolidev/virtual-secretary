@@ -35,6 +35,8 @@ export interface AppointmentProps {
   googleMeetLink?: string
   rescheduleDateTime?: { start: Date; end: Date }
   isPaid: boolean
+  startedAt?: Date | null
+  totalElapsedMs?: number | null
   createdAt: Date
   updatedAt?: Date | null
 }
@@ -134,6 +136,24 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     return this.props.isPaid
   }
 
+  get startedAt() {
+    return this.props.startedAt
+  }
+
+  set startedAt(startedAt: Date | null) {
+    this.props.startedAt = startedAt
+    this.touch()
+  }
+
+  get totalElapsedMs() {
+    return this.props.totalElapsedMs ?? 0
+  }
+
+  set totalElapsedMs(totalElapsedMs: number | null) {
+    this.props.totalElapsedMs = totalElapsedMs
+    this.touch()
+  }
+
   public linkPayment(paymentId: UniqueEntityId): void {
     if (this.props.paymentId) {
       throw new Error('Schedule already has a payment id.')
@@ -204,6 +224,63 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.addDomainEvent(new CanceledAppointmentEvent(this))
   }
 
+  public start() {
+    if (this.props.status !== 'SCHEDULED') {
+      throw new Error('Can only start a scheduled appointment')
+    }
+
+    this.props.status = 'IN_PROGRESS'
+    this.props.startedAt = new Date()
+    this.touch()
+  }
+
+  public pause() {
+    if (this.props.status !== 'IN_PROGRESS') {
+      throw new Error('Can only pause an appointment that is in progress')
+    }
+
+    if (!this.props.startedAt) {
+      throw new Error('Cannot pause: appointment has no started_at timestamp')
+    }
+
+    const now = new Date()
+    const elapsedMs = now.getTime() - this.props.startedAt.getTime()
+
+    this.props.totalElapsedMs = (this.props.totalElapsedMs ?? 0) + elapsedMs
+    this.props.startedAt = null
+    this.touch()
+  }
+
+  public resume() {
+    if (this.props.status !== 'IN_PROGRESS') {
+      throw new Error('Can only resume an appointment that is in progress')
+    }
+
+    if (this.props.startedAt) {
+      throw new Error('Cannot resume: appointment is already running')
+    }
+
+    this.props.startedAt = new Date()
+    this.touch()
+  }
+
+  public complete() {
+    if (this.props.status !== 'IN_PROGRESS') {
+      throw new Error('Can only complete an appointment that is in progress')
+    }
+
+    // If appointment is currently running (not paused), calculate final elapsed time
+    if (this.props.startedAt) {
+      const now = new Date()
+      const elapsedMs = now.getTime() - this.props.startedAt.getTime()
+      this.props.totalElapsedMs = (this.props.totalElapsedMs ?? 0) + elapsedMs
+    }
+
+    this.props.status = 'COMPLETED'
+    this.props.startedAt = null
+    this.touch()
+  }
+
   private isCompletedOrInProgress(): boolean {
     return (
       this.props.status === 'IN_PROGRESS' || this.props.status === 'COMPLETED'
@@ -249,7 +326,12 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   static create(
     props: Optional<
       AppointmentProps,
-      'createdAt' | 'status' | 'isPaid' | 'paymentStatus'
+      | 'createdAt'
+      | 'status'
+      | 'isPaid'
+      | 'paymentStatus'
+      | 'startedAt'
+      | 'totalElapsedMs'
     >,
     id?: UniqueEntityId
   ) {
@@ -259,6 +341,8 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
         status: props.status ?? 'SCHEDULED',
         paymentStatus: 'PENDING',
         isPaid: props.isPaid ?? false,
+        startedAt: props.startedAt ?? null,
+        totalElapsedMs: props.totalElapsedMs ?? null,
         createdAt: props.createdAt ?? new Date(),
       },
       id

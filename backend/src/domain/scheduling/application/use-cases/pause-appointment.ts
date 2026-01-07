@@ -8,19 +8,19 @@ import type { AppointmentsRepository } from '../repositories/appointments.reposi
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional.repository'
 
-export interface StartAppointmentUseCaseRequest {
+export interface PauseAppointmentUseCaseRequest {
   appointmentId: string
   professionalId: string
 }
 
-export type StartAppointmentUseCaseResponse = Either<
+export type PauseAppointmentUseCaseResponse = Either<
   NotAllowedError | NotFoundError | BadRequestError,
   {
     appointment: Appointment
   }
 >
 
-export class StartAppointmentUseCase {
+export class PauseAppointmentUseCase {
   constructor(
     readonly appointmentsRepository: AppointmentsRepository,
     readonly clientRepository: ClientRepository,
@@ -30,7 +30,7 @@ export class StartAppointmentUseCase {
   async execute({
     appointmentId,
     professionalId,
-  }: StartAppointmentUseCaseRequest): Promise<StartAppointmentUseCaseResponse> {
+  }: PauseAppointmentUseCaseRequest): Promise<PauseAppointmentUseCaseResponse> {
     const appointment = await this.appointmentsRepository.findById(
       appointmentId.toString()
     )
@@ -52,12 +52,12 @@ export class StartAppointmentUseCase {
     if (!appointment.professionalId.equals(new UniqueEntityId(professionalId)))
       return left(
         new NotAllowedError(
-          'You cannot start an appointment that is not yours.'
+          'You cannot pause an appointment that is not yours.'
         )
       )
 
     try {
-      appointment.start()
+      appointment.pause()
       await this.appointmentsRepository.save(appointment)
 
       return right({

@@ -19,6 +19,8 @@ export class AppointmentsPresenter {
       agreed_price: appointment.agreedPrice,
       google_meet_link: appointment.googleMeetLink,
       status: appointment.status,
+      started_at: appointment.startedAt,
+      total_elapsed_ms: appointment.totalElapsedMs,
       created_at: appointment.createdAt,
       updated_at: appointment.updatedAt,
     }

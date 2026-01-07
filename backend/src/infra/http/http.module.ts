@@ -55,8 +55,10 @@ import { FetchProfessionalController } from './controllers/fetch-professionals.c
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
 import { LogoutController } from './controllers/logout.controller'
 import { MeController } from './controllers/me.controller'
+import { PauseAppointmentController } from './controllers/pause-appointment.controller'
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
+import { StartAppointmentController } from './controllers/start-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
 
 @Module({
@@ -65,6 +67,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     AddProfessionalToOrganizationController,
     AuthenticateController,
     CancelAppointmentController,
+    CompleteAppointmentController,
     ConfirmAppointmentController,
     CreateAccountController,
     CreateCancellationPolicyController,
@@ -87,14 +90,17 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     ForgotPasswordController,
     LogoutController,
     MeController,
+    PauseAppointmentController,
     RemoveProfessionalFromOrganizationController,
     RescheduleAppointmentController,
+    StartAppointmentController,
     UpdateOrganizationController,
   ],
   providers: [
     AddProfessionalToOrganizationUseCase,
     AuthenticateStudentUseCase,
     CancelAppointmentUseCase,
+    CompleteAppointmentUseCase,
     ConfirmAppointmentUseCase,
     CreateAddressUseCase,
     CreateAppointmentUseCase,
@@ -117,9 +123,11 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchScheduleByProfessionalIdUseCase,
     ForgotPasswordUseCase,
     LogoutUseCase,
+    PauseAppointmentUseCase,
     RegisterUserUseCase,
     RemoveProfessionalFromOrganizationUseCase,
     RescheduleAppointmentUseCase,
+    StartAppointmentUseCase,
     UpdateOrganizationUseCase,
   ],
 })

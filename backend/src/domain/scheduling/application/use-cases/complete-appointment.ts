@@ -8,19 +8,20 @@ import type { AppointmentsRepository } from '../repositories/appointments.reposi
 import type { ClientRepository } from '../repositories/client.repository'
 import type { ProfessionalRepository } from '../repositories/professional.repository'
 
-export interface StartAppointmentUseCaseRequest {
+export interface CompleteAppointmentUseCaseRequest {
   appointmentId: string
   professionalId: string
 }
 
-export type StartAppointmentUseCaseResponse = Either<
+export type CompleteAppointmentUseCaseResponse = Either<
   NotAllowedError | NotFoundError | BadRequestError,
   {
     appointment: Appointment
+    totalElapsedMs: number | null
   }
 >
 
-export class StartAppointmentUseCase {
+export class CompleteAppointmentUseCase {
   constructor(
     readonly appointmentsRepository: AppointmentsRepository,
     readonly clientRepository: ClientRepository,
@@ -30,7 +31,7 @@ export class StartAppointmentUseCase {
   async execute({
     appointmentId,
     professionalId,
-  }: StartAppointmentUseCaseRequest): Promise<StartAppointmentUseCaseResponse> {
+  }: CompleteAppointmentUseCaseRequest): Promise<CompleteAppointmentUseCaseResponse> {
     const appointment = await this.appointmentsRepository.findById(
       appointmentId.toString()
     )
@@ -52,16 +53,17 @@ export class StartAppointmentUseCase {
     if (!appointment.professionalId.equals(new UniqueEntityId(professionalId)))
       return left(
         new NotAllowedError(
-          'You cannot start an appointment that is not yours.'
+          'You cannot complete an appointment that is not yours.'
         )
       )
 
     try {
-      appointment.start()
+      appointment.complete()
       await this.appointmentsRepository.save(appointment)
 
       return right({
         appointment,
+        totalElapsedMs: appointment.totalElapsedMs,
       })
     } catch (error) {
       return left(new BadRequestError(error.message))
