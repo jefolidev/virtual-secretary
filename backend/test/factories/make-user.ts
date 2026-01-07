@@ -13,14 +13,17 @@ export class UserFactory {
     id?: UniqueEntityId
   ) {
     const password = faker.internet.password({ length: 12 })
+    const address = makeAddress()
 
     const user = User.create(
       {
         name: faker.person.fullName(),
         email: faker.internet.email(),
         password,
-        address: makeAddress(),
+        addressId: address.id,
         cpf: '07609254371',
+        gender: faker.helpers.arrayElement(['MALE', 'FEMALE'] as const),
+        birthDate: faker.date.past({ years: 50 }),
         role: 'CLIENT',
         phone: faker.phone.number(),
         clientId: new UniqueEntityId('client-id'),
@@ -38,14 +41,17 @@ export class UserFactory {
     id?: UniqueEntityId
   ) {
     const password = faker.internet.password({ length: 12 })
+    const address = makeAddress()
 
     const user = User.create(
       {
         name: faker.person.fullName(),
         email: faker.internet.email(),
         password,
-        address: makeAddress(),
+        addressId: address.id,
         cpf: '07609254371',
+        gender: faker.helpers.arrayElement(['MALE', 'FEMALE'] as const),
+        birthDate: faker.date.past({ years: 50 }),
         role: 'PROFESSIONAL',
         phone: faker.phone.number(),
         clientId: undefined,

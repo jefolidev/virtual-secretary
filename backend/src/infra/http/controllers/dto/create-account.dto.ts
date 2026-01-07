@@ -2,6 +2,7 @@ import z from 'zod'
 
 //
 const RoleEnum = z.enum(['CLIENT', 'PROFESSIONAL'])
+const GenderEnum = z.enum(['MALE', 'FEMALE'])
 const PeriodPreferenceEnum = z.enum(['MORNING', 'AFTERNOON', 'EVENING'])
 
 const NotificationChannelEnum = z.enum(['EMAIL', 'WHATSAPP'])
@@ -82,6 +83,10 @@ export const createUserAccountBodySchema = z.object({
   cpf: z.string().min(11, 'CPF must have at least 11 digits').max(14),
   phone: z.string().min(10, 'Phone must have at least 10 digits'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
+  gender: GenderEnum,
+  birthDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+    message: 'Invalid date format',
+  }),
   role: RoleEnum,
   address: addressSchema,
   clientData: clientDataSchema.optional(),

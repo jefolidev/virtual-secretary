@@ -20,6 +20,8 @@ export class MeController {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      gender: user.gender,
+      birth_date: user.birthDate,
       role: user.role,
       professional_id: user.professionalId?.toString(),
       client_id: user.clientId?.toString(),

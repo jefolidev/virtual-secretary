@@ -28,6 +28,8 @@ interface RegisterUserUseCaseRequest {
   password: string
   phone: string
   cpf: string
+  gender: 'MALE' | 'FEMALE'
+  birthDate: Date
   address: AddressProps
   professionalData?: {
     sessionPrice: number
@@ -81,6 +83,8 @@ export class RegisterUserUseCase {
     password,
     phone,
     cpf,
+    gender,
+    birthDate,
     address,
     role,
     professionalData,
@@ -172,6 +176,8 @@ export class RegisterUserUseCase {
       email,
       password: hashedPassword,
       cpf,
+      gender,
+      birthDate,
       role,
       phone,
       professionalId: professional?.id,

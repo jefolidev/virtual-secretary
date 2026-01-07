@@ -35,6 +35,8 @@ export class CreateAccountController {
       name,
       phone,
       password,
+      gender,
+      birthDate,
       address,
       role,
       clientData,
@@ -51,6 +53,8 @@ export class CreateAccountController {
       name,
       phone,
       password,
+      gender,
+      birthDate: new Date(birthDate),
       role,
       clientData,
       professionalData: professionalData

@@ -12,6 +12,8 @@ export interface UserProps {
   password: string
   role: 'PROFESSIONAL' | 'CLIENT'
   cpf: string
+  gender: 'MALE' | 'FEMALE'
+  birthDate: Date
   createdAt: Date
   updatedAt?: Date | null
 }
@@ -82,6 +84,24 @@ export class User extends Entity<UserProps> {
     return this.props.cpf
   }
 
+  get gender() {
+    return this.props.gender
+  }
+
+  set gender(gender: 'MALE' | 'FEMALE') {
+    this.props.gender = gender
+    this.touch()
+  }
+
+  get birthDate() {
+    return this.props.birthDate
+  }
+
+  set birthDate(birthDate: Date) {
+    this.props.birthDate = birthDate
+    this.touch()
+  }
+
   get createdAt() {
     return this.props.createdAt
   }
@@ -109,6 +129,8 @@ export class User extends Entity<UserProps> {
       password,
       phone,
       role,
+      gender,
+      birthDate,
       createdAt,
     }: Optional<UserProps, 'createdAt' | 'updatedAt'>,
     id?: UniqueEntityId
@@ -124,6 +146,8 @@ export class User extends Entity<UserProps> {
         role,
         phone,
         addressId,
+        gender,
+        birthDate,
         createdAt: createdAt ?? new Date(),
       },
       id

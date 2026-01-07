@@ -30,6 +30,8 @@ describe('Reset password ', () => {
       clientId: undefined,
       cpf: '07609254371',
       phone: '85987146194',
+      gender: 'MALE',
+      birthDate: new Date('1990-01-01'),
       role: 'CLIENT',
     })
 
@@ -73,6 +75,8 @@ describe('Reset password ', () => {
       clientId: undefined,
       cpf: '07609254371',
       phone: '85987146194',
+      gender: 'MALE',
+      birthDate: new Date('1990-01-01'),
       role: 'CLIENT',
     })
 
@@ -100,6 +104,8 @@ describe('Reset password ', () => {
       clientId: undefined,
       cpf: '07609254371',
       phone: '85987146194',
+      gender: 'FEMALE',
+      birthDate: new Date('1985-05-15'),
       role: 'CLIENT',
     })
 

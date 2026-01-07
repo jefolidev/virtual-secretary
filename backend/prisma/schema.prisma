@@ -34,6 +34,8 @@ model User {
   phone     String    @unique
   role      Role
   password  String
+  gender    Genders
+  birthDate DateTime  @map("birth_date")
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
@@ -252,4 +254,9 @@ enum WeekDays {
   THURSDAY
   FRIDAY
   SATURDAY
+}
+
+enum Genders {
+  MALE
+  FEMALE
 }
