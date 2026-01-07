@@ -127,7 +127,7 @@ export function ScheduleCalendarPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 max-w-full">
+    <div className="flex flex-col gap-4 h-full">
       {/* Cabeçalho com contador */}
       <div className="flex items-center gap-3 shrink-0">
         <CalendarIcon className="h-5 w-5 text-primary" />
@@ -138,26 +138,26 @@ export function ScheduleCalendarPage() {
       </div>
 
       {/* Barra de ferramentas */}
-      <CalendarToolbar
-        currentDate={currentDate}
-        viewMode={viewMode}
-        selectedPatient={selectedPatient}
-        filters={filters}
-        uniquePatients={uniquePatients}
-        onDateNavigate={navigateDate}
-        onGoToToday={goToToday}
-        onViewModeChange={setViewMode}
-        onPatientChange={setSelectedPatient}
-        onFiltersChange={setFilters}
-      />
+      <div className="shrink-0">
+        <CalendarToolbar
+          currentDate={currentDate}
+          viewMode={viewMode}
+          selectedPatient={selectedPatient}
+          filters={filters}
+          uniquePatients={uniquePatients}
+          onDateNavigate={navigateDate}
+          onGoToToday={goToToday}
+          onViewModeChange={setViewMode}
+          onPatientChange={setSelectedPatient}
+          onFiltersChange={setFilters}
+        />
+      </div>
 
       {/* Calendário */}
-      <div>
-        <Card>
-          <CardContent className="p-0">
-            <div className="w-full overflow-x-auto overflow-y-hidden">
-              {renderCalendar()}
-            </div>
+      <div className="flex-1 min-h-0">
+        <Card className="h-full">
+          <CardContent className="p-0 h-full">
+            <div className="w-full h-full">{renderCalendar()}</div>
           </CardContent>
         </Card>
       </div>

@@ -178,6 +178,19 @@ function SignUpPageContent() {
     try {
       setValidationErrors([])
 
+      // Check if userType is selected before validation
+      if (!formData.userType) {
+        setValidationErrors([
+          {
+            field: 'userType',
+            message: 'Selecione o tipo de usuário',
+            step: 0,
+          },
+        ])
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+
       const validation = validateSignupData(formData as SignupData)
 
       if (!validation.isValid) {
@@ -197,16 +210,44 @@ function SignUpPageContent() {
       })
 
       toast.dismiss('checking')
+      console.log('📋 Resultado availability:', availability)
 
       if (!availability.available) {
         const conflictMsg = getConflictMessage(availability.conflicts)
+        console.log('❌ Dados NÃO disponíveis, retornando early...')
         toast.error('🚫 Dados já cadastrados!', {
           description: conflictMsg,
         })
         return
       }
 
-      console.log('✅ Dados disponíveis! Prosseguindo com cadastro...')
+      // Validação final antes de enviar
+      if (!formData.birthDate || formData.birthDate.trim() === '') {
+        setValidationErrors([
+          {
+            field: 'birthDate',
+            message: 'Data de nascimento é obrigatória',
+            step: 1,
+          },
+        ])
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+
+      if (
+        !formData.gender ||
+        (formData.gender !== 'MALE' && formData.gender !== 'FEMALE')
+      ) {
+        setValidationErrors([
+          {
+            field: 'gender',
+            message: 'Gênero é obrigatório',
+            step: 1,
+          },
+        ])
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
 
       const signupData: SignupData = {
         name: formData.name,
@@ -215,7 +256,8 @@ function SignUpPageContent() {
         confirmPassword: formData.confirmPassword,
         phone: formData.phone,
         cpf: formData.cpf,
-        birthdate: formData.birthdate,
+        birthDate: formData.birthDate,
+        gender: formData.gender as 'MALE' | 'FEMALE',
         userType: formData.userType || 'patient',
         periodPreference:
           formData.userType === 'patient' ? formData.periodPreference : [],

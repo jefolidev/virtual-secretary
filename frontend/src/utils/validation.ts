@@ -144,14 +144,14 @@ export function validateSignupData(data: SignupData): ValidationResult {
     })
   }
 
-  if (!data.birthdate) {
+  if (!data.birthDate) {
     errors.push({
-      field: 'birthdate',
+      field: 'birthDate',
       message: 'Data de nascimento é obrigatória',
       step: 1,
     })
   } else {
-    const birthDate = new Date(data.birthdate)
+    const birthDate = new Date(data.birthDate)
     const today = new Date()
     let age = today.getFullYear() - birthDate.getFullYear()
     const monthDiff = today.getMonth() - birthDate.getMonth()
@@ -170,6 +170,14 @@ export function validateSignupData(data: SignupData): ValidationResult {
         step: 1,
       })
     }
+  }
+
+  if (!data.gender) {
+    errors.push({
+      field: 'gender',
+      message: 'Seleção de gênero é obrigatória',
+      step: 1,
+    })
   }
 
   if (data.userType === 'patient') {

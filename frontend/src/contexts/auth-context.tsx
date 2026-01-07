@@ -38,7 +38,8 @@ export interface SignupData {
   confirmPassword: string
   phone: string
   cpf: string
-  birthdate: string
+  birthDate: string
+  gender: 'MALE' | 'FEMALE'
   userType: 'professional' | 'patient'
 
   periodPreference: Array<'morning' | 'afternoon' | 'evening'>

@@ -1,5 +1,12 @@
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Info } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useSignupForm } from '../../contexts/form-context'
@@ -48,7 +55,10 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
       passwordsMatch &&
       cleanPhone.length >= 10 &&
       cleanCPF.length === 11 &&
-      formData.birthdate !== ''
+      formData.birthDate !== '' &&
+      formData.birthDate.trim() !== '' &&
+      formData.gender !== '' &&
+      (formData.gender === 'MALE' || formData.gender === 'FEMALE')
     )
   }
 
@@ -63,7 +73,8 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
     formData.confirmPassword,
     formData.phone,
     formData.cpf,
-    formData.birthdate,
+    formData.birthDate,
+    formData.gender,
   ])
 
   const formatPhone = (value: string) => {
@@ -98,17 +109,39 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-2">
-        <Label htmlFor="name">
-          Nome completo <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="name"
-          placeholder="Seu nome completo"
-          value={formData.name}
-          onChange={(e) => updateFormData('name', e.target.value)}
-          required
-        />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 grid gap-2">
+          <Label htmlFor="name">
+            Nome completo <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="name"
+            placeholder="Seu nome completo"
+            value={formData.name}
+            onChange={(e) => updateFormData('name', e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="gender">
+            Gênero <span className="text-red-500">*</span>
+          </Label>
+          <Select
+            value={formData.gender}
+            onValueChange={(value) => {
+              updateFormData('gender', value)
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MALE">Masculino</SelectItem>
+              <SelectItem value="FEMALE">Feminino</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="grid gap-2">
@@ -308,8 +341,10 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
         <Input
           id="birthdate"
           type="date"
-          value={formData.birthdate}
-          onChange={(e) => updateFormData('birthdate', e.target.value)}
+          value={formData.birthDate}
+          onChange={(e) => {
+            updateFormData('birthDate', e.target.value)
+          }}
           required
         />
       </div>

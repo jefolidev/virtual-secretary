@@ -4,6 +4,7 @@ import { addressSchema } from './address-schema'
 
 const PeriodPreferenceEnum = z.enum(['MORNING', 'AFTERNOON', 'EVENING'])
 const NotificationChannelEnum = z.enum(['EMAIL', 'WHATSAPP'])
+const GenderEnum = z.enum(['MALE', 'FEMALE'])
 
 const NotificationType = z.enum([
   'NEW_APPOINTMENT',
@@ -50,6 +51,8 @@ export const userAccountSchema = z
     confirmPassword: z.string(),
     role: RoleEnum,
     address: addressSchema,
+    birthDate: z.coerce.date(),
+    gender: GenderEnum,
     clientDataSchema: clientDataSchema.optional(),
     professionalDataSchema: professionalDataSchema.optional(),
   })

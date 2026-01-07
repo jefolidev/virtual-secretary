@@ -9,6 +9,8 @@ export interface RegisterUserData {
   password: string
   phone: string
   cpf: string
+  birthDate: string
+  gender: 'MALE' | 'FEMALE'
   role: 'CLIENT' | 'PROFESSIONAL'
 
   clientData?: {
@@ -126,12 +128,24 @@ export async function saveProfessionalNotifications(
 export function transformSignupDataToRegisterData(
   data: SignupData
 ): RegisterUserData {
+  // Validar e corrigir birthDate
+  if (!data.birthDate || data.birthDate.trim() === '') {
+    throw new Error('Data de nascimento é obrigatória')
+  }
+
+  // Validar e corrigir gender
+  if (!data.gender || (data.gender !== 'MALE' && data.gender !== 'FEMALE')) {
+    throw new Error('Gênero deve ser MALE ou FEMALE')
+  }
+
   const result: RegisterUserData = {
     name: data.name,
     email: data.email,
     password: data.password,
     phone: data.phone,
     cpf: data.cpf,
+    birthDate: data.birthDate,
+    gender: data.gender,
     role: data.userType === 'professional' ? 'PROFESSIONAL' : 'CLIENT',
 
     clientData:
