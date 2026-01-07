@@ -381,7 +381,7 @@ function AppContent() {
           </h1>
         </header>
 
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 overflow-auto max-h-screen">
           <Outlet />
         </div>
       </SidebarInset>
