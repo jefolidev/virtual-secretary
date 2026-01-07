@@ -137,7 +137,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   }
 
   get startedAt() {
-    return this.props.startedAt
+    return this.props.startedAt ?? null
   }
 
   set startedAt(startedAt: Date | null) {
