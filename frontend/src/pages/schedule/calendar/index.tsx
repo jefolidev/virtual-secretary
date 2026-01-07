@@ -127,9 +127,9 @@ export function ScheduleCalendarPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col h-full overflow-hidden p-6">
       {/* Cabeçalho com contador */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div className="flex items-center gap-3 shrink-0 pb-2">
         <CalendarIcon className="h-5 w-5 text-primary" />
         <span className="text-2xl font-bold">
           {filteredAppointments.length}
@@ -138,7 +138,7 @@ export function ScheduleCalendarPage() {
       </div>
 
       {/* Barra de ferramentas */}
-      <div className="shrink-0">
+      <div className="shrink-0 pb-2 my-2">
         <CalendarToolbar
           currentDate={currentDate}
           viewMode={viewMode}
@@ -154,7 +154,7 @@ export function ScheduleCalendarPage() {
       </div>
 
       {/* Calendário */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 pb-4">
         <Card className="h-full">
           <CardContent className="p-0 h-full">
             <div className="w-full h-full">{renderCalendar()}</div>

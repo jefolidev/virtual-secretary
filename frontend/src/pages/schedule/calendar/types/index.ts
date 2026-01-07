@@ -23,9 +23,10 @@ export type ViewMode = 'day' | 'week' | 'month'
 
 export interface AppointmentCardProps {
   appointment: Appointment
-  isWeekView?: boolean
   style?: React.CSSProperties
   className?: string
+  onClick?: () => void
+  hasActiveSession?: boolean
 }
 
 export interface DayScheduleGridProps {

@@ -1,47 +1,65 @@
 import type { Appointment } from '../types'
 
-// Constantes
-export const HOUR_HEIGHT = 120 // altura em pixels por hora (padrão)
-export const MIN_ROW_HEIGHT = 50 // altura mínima quando não há agendamentos
-export const CARD_HEIGHT = 75 // altura base de um card (reduzida)
-export const CARD_PADDING = 16 // padding total entre cards (8px * 2)
+// Constantes simplificadas
+export const HOUR_HEIGHT = 115 // altura fixa por hora
+export const MIN_ROW_HEIGHT = 50 // altura mínima das linhas quando não há appointments
+export const SLOTS_PER_HOUR = 1 // slots por hora (sempre 1 para simplicidade)
 
-// Função para calcular altura dinâmica baseada na quantidade de agendamentos
-export const calculateDynamicRowHeight = (
+// Função para calcular altura dinâmica de cada slot baseada nos appointments
+export const calculateSlotHeight = (
   appointments: Appointment[],
-  timeSlot: string
-): number => {
-  const timeAppointments = appointments.filter((apt) => apt.time === timeSlot)
+  time: string
+) => {
+  const slotAppointments = appointments.filter((apt) => apt.time === time)
 
-  if (timeAppointments.length === 0) {
-    return MIN_ROW_HEIGHT // Altura padrão quando não há agendamentos
+  if (slotAppointments.length === 0) {
+    return MIN_ROW_HEIGHT // 50px quando não há appointments
   }
 
-  if (timeAppointments.length === 1) {
-    return Math.max(CARD_HEIGHT + CARD_PADDING * 2, 120) // Altura aumentada para um card
-  }
+  // Calcular altura baseada no número de appointments sobrepostos
+  const maxOverlap = Math.max(1, slotAppointments.length)
+  const baseHeight = Math.max(HOUR_HEIGHT, maxOverlap * 60) // Mínimo 115px, ou 60px por appointment
 
-  // Para múltiplos agendamentos, verificar se há cancelados e ativos
-  const cancelledAppointments = timeAppointments.filter((apt) =>
-    ['cancelado', 'remarcado', 'no-show'].includes(apt.status)
-  )
-  const activeAppointments = timeAppointments.filter(
-    (apt) => !['cancelado', 'remarcado', 'no-show'].includes(apt.status)
-  )
-
-  // Se há tanto cancelados quanto ativos, empilhar verticalmente
-  if (cancelledAppointments.length > 0 && activeAppointments.length > 0) {
-    return (CARD_HEIGHT + CARD_PADDING) * 2 + CARD_PADDING * 4 // Altura aumentada para cards empilhados
-  }
-
-  // Se são todos do mesmo tipo mas múltiplos, lado a lado (altura um pouco maior que single)
-  if (timeAppointments.length > 1) {
-    return Math.max(CARD_HEIGHT + CARD_PADDING * 2, 125) // Altura aumentada para múltiplos
-  }
-
-  // Fallback para altura padrão
-  return Math.max(CARD_HEIGHT + CARD_PADDING * 2, 120) // Altura aumentada
+  return baseHeight
 }
+
+// Função para gerar slots de horário
+export const generateTimeSlots = (startHour = 7, endHour = 22) => {
+  const slots = []
+  for (let hour = startHour; hour <= endHour; hour++) {
+    slots.push(`${hour.toString().padStart(2, '0')}:00`)
+  }
+  return slots
+}
+
+// Converter horário para minutos
+export const timeToMinutes = (time: string) => {
+  const [hours, minutes] = time.split(':').map(Number)
+  return hours * 60 + minutes
+}
+
+// Calcular posição de um agendamento de forma simples
+export const getAppointmentPosition = (
+  appointment: Appointment,
+  startHour = 7
+) => {
+  const startMinutes = timeToMinutes(appointment.time)
+  const gridStartMinutes = startHour * 60
+
+  // Posição baseada na diferença de minutos desde o início da grade
+  const top = ((startMinutes - gridStartMinutes) / 60) * HOUR_HEIGHT
+
+  // Altura baseada na duração
+  const endMinutes = appointment.endTime
+    ? timeToMinutes(appointment.endTime)
+    : startMinutes + (appointment.duration || 60)
+  const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT
+
+  return { top, height }
+}
+
+// Função simples para altura das linhas (sempre fixa)
+export const getRowHeight = () => HOUR_HEIGHT
 
 // Utilitários de data
 export const formatDate = (
@@ -108,57 +126,4 @@ export const getMonthDays = (date: Date) => {
   }
 
   return days
-}
-
-// Utilitários para horários
-export const generateTimeSlots = (startHour = 8, endHour = 18) => {
-  const slots = []
-  for (let hour = startHour; hour <= endHour; hour++) {
-    slots.push(`${hour.toString().padStart(2, '0')}:00`)
-  }
-  return slots
-}
-
-export const timeToMinutes = (time: string) => {
-  const [hours, minutes] = time.split(':').map(Number)
-  return hours * 60 + minutes
-}
-
-export const getAppointmentPosition = (
-  appointment: Appointment,
-  startHour = 8,
-  timeSlots?: string[],
-  getRowHeight?: (time: string) => number
-) => {
-  const startMinutes = timeToMinutes(appointment.time)
-  const endMinutes = appointment.endTime
-    ? timeToMinutes(appointment.endTime)
-    : startMinutes + (appointment.duration || 60)
-  const gridStartMinutes = startHour * 60
-
-  let top = 0
-
-  // Se temos função de altura dinâmica, calcular top considerando alturas variáveis
-  if (getRowHeight && timeSlots) {
-    const appointmentHour = Math.floor(startMinutes / 60)
-
-    for (let hour = startHour; hour < appointmentHour; hour++) {
-      const timeSlot = `${hour.toString().padStart(2, '0')}:00`
-      top += getRowHeight(timeSlot)
-    }
-
-    // Adicionar offset dentro da hora atual
-    const minutesIntoHour = startMinutes - appointmentHour * 60
-    const currentRowHeight = getRowHeight(
-      `${appointmentHour.toString().padStart(2, '0')}:00`
-    )
-    top += (minutesIntoHour / 60) * currentRowHeight
-  } else {
-    // Cálculo original para quando não há alturas dinâmicas
-    top = ((startMinutes - gridStartMinutes) / 60) * HOUR_HEIGHT
-  }
-
-  const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT
-
-  return { top, height }
 }
