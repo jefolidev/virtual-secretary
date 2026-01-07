@@ -1,8 +1,10 @@
 import { FakeHasher } from '@test/cryptography/fake-hasher'
 import { makeAddress } from '@test/factories/make-address'
 import { InMemoryAddressRepository } from '@test/repositories/in-memory-address.repository'
+import { InMemoryCancellationPolicyRepository } from '@test/repositories/in-memory-cancellation-policy.repository'
 import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
+import { InMemoryScheduleConfigurationRepository } from '@test/repositories/in-memory-schedule-configuration.repository'
 import { InMemoryUserRepository } from '@test/repositories/in-memory-user.repository'
 import { RegisterUserUseCase } from './register-user'
 
@@ -10,6 +12,8 @@ let inMemoryUsersRepository: InMemoryUserRepository
 let inMemoryClientRepository: InMemoryClientRepository
 let inMemoryProfessionalRepository: InMemoryProfessionalRepository
 let inMemoryAddressRepository: InMemoryAddressRepository
+let inMemoryCancellationPolicyRepository: InMemoryCancellationPolicyRepository
+let inMemoryScheduleConfigurationRepository: InMemoryScheduleConfigurationRepository
 let fakeHasher: FakeHasher
 
 let sut: RegisterUserUseCase
@@ -20,15 +24,20 @@ describe('Register User', () => {
     fakeHasher = new FakeHasher()
     inMemoryClientRepository = new InMemoryClientRepository()
     inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
-    inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
     inMemoryAddressRepository = new InMemoryAddressRepository()
+    inMemoryCancellationPolicyRepository =
+      new InMemoryCancellationPolicyRepository()
+    inMemoryScheduleConfigurationRepository =
+      new InMemoryScheduleConfigurationRepository()
 
     sut = new RegisterUserUseCase(
       inMemoryUsersRepository,
       fakeHasher,
       inMemoryClientRepository,
       inMemoryProfessionalRepository,
-      inMemoryAddressRepository
+      inMemoryAddressRepository,
+      inMemoryCancellationPolicyRepository,
+      inMemoryScheduleConfigurationRepository
     )
   })
 
@@ -41,6 +50,8 @@ describe('Register User', () => {
       address,
       cpf: '07609254371',
       phone: '85987146194',
+      gender: 'MALE',
+      birthDate: new Date('1990-01-01'),
       role: 'CLIENT',
     })
 
@@ -66,6 +77,8 @@ describe('Register User', () => {
       address,
       cpf: '07609254371',
       phone: '85987146194',
+      gender: 'MALE',
+      birthDate: new Date('1990-01-01'),
       role: 'PROFESSIONAL',
     })
 
@@ -87,6 +100,8 @@ describe('Register User', () => {
       password: 'JohnDoe123',
       cpf: '07609254371',
       phone: '85987146194',
+      gender: 'MALE',
+      birthDate: new Date('1990-01-01'),
       role: 'PROFESSIONAL',
       address,
     })
