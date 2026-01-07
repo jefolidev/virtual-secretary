@@ -14,9 +14,12 @@ export function DayCard({
   const isToday = isSameDay(date, today)
   const isPastDate = date < today && !isToday
 
-  const dayAppointments = appointments.filter(
-    (apt) => apt.date === date.toISOString().split('T')[0]
-  )
+  const dayAppointments = appointments
+    .filter((apt) => apt.date === date.toISOString().split('T')[0])
+    .sort((a, b) => a.time.localeCompare(b.time)) // Ordenar por horário mais próximo
+
+  const displayAppointments = dayAppointments.slice(0, 2) // Apenas os 2 primeiros
+  const remainingCount = Math.max(0, dayAppointments.length - 2)
 
   const getCardSize = () => {
     switch (viewMode) {
@@ -25,7 +28,7 @@ export function DayCard({
       case 'week':
         return 'min-h-[200px] w-full'
       case 'month':
-        return 'min-h-[120px] w-full aspect-square'
+        return 'min-h-[140px] w-full aspect-square' // Aumentar altura para acomodar cards melhorados
       default:
         return 'h-20'
     }
@@ -43,22 +46,26 @@ export function DayCard({
       `}
     >
       <CardContent
-        className={`p-3 h-full flex flex-col overflow-hidden ${
-          viewMode === 'month' ? 'p-2' : ''
+        className={`h-full flex flex-col overflow-hidden ${
+          viewMode === 'month' ? 'px-2 -my-2 ' : 'p-3'
         }`}
       >
-        <div className="flex items-center justify-between mb-2 shrink-0">
+        <div className="flex items-center justify-between mb-1 shrink-0">
           <span
             className={`
-              ${viewMode === 'month' ? 'text-sm' : 'text-base'} font-medium
-              ${isToday ? 'text-primary font-bold' : ''}
-              ${isPastDate ? 'text-muted-foreground' : ''}
+              ${
+                viewMode === 'month'
+                  ? 'text-base font-bold'
+                  : 'text-base font-medium'
+              } 
+              ${isToday ? 'text-primary font-bold text-lg' : ''}
+              ${isPastDate ? 'text-muted-foreground' : 'text-foreground'}
             `}
           >
             {formatDate(date, 'day')}
           </span>
           {dayAppointments.length > 0 && (
-            <span className="text-xs text-muted-foreground bg-primary/10 px-1 rounded">
+            <span className="text-xs text-muted-foreground bg-primary/10 px-1.5 py-0.5 rounded">
               {dayAppointments.length}
             </span>
           )}
@@ -73,28 +80,40 @@ export function DayCard({
                   : ''
               }`}
             >
-              {dayAppointments
-                .slice(0, viewMode === 'month' ? 3 : dayAppointments.length)
-                .map((apt) => {
-                  const styles = getStatusStyles(apt.status)
-                  return (
-                    <div
-                      key={apt.id}
-                      className={`
+              {(viewMode === 'month'
+                ? displayAppointments
+                : dayAppointments
+              ).map((apt) => {
+                const styles = getStatusStyles(apt.status)
+                const isPaid = apt.status === 'pago'
+                const isNotPaid = apt.status === 'nao-pago'
+
+                return (
+                  <div
+                    key={apt.id}
+                    className={`
                       ${
-                        viewMode === 'month' ? 'p-1 text-xs' : 'p-2 text-sm'
-                      } rounded border-l-2 overflow-hidden
-                      ${styles.bg}  ${styles.text}
+                        viewMode === 'month'
+                          ? 'px-2.5 py-1.5 text-xs rounded-md'
+                          : 'p-2 text-sm rounded border-l-2'
+                      } overflow-hidden transition-colors
+                      ${
+                        viewMode === 'month'
+                          ? 'bg-card border border-border'
+                          : `${styles.bg} ${styles.border}`
+                      } 
+                      ${viewMode === 'month' ? 'text-foreground' : styles.text}
                     `}
+                  >
+                    <div className="font-medium truncate">
+                      {apt.patientName}
+                    </div>
+                    <div
+                      className={`opacity-80 flex items-center justify-between gap-1 ${
+                        viewMode === 'month' ? 'text-xs' : 'text-sm'
+                      }`}
                     >
-                      <div className="font-medium truncate">
-                        {apt.patientName}
-                      </div>
-                      <div
-                        className={`opacity-75 flex items-center gap-1 ${
-                          viewMode === 'month' ? 'text-xs' : 'text-sm'
-                        }`}
-                      >
+                      <div className="flex items-center gap-1">
                         <Clock
                           className={`${
                             viewMode === 'month' ? 'h-3 w-3' : 'h-4 w-4'
@@ -102,18 +121,21 @@ export function DayCard({
                         />
                         {apt.time}
                       </div>
-
-                      {(viewMode === 'day' || viewMode === 'week') && (
-                        <div className="text-xs opacity-75 mt-1">
-                          {styles.label}
-                        </div>
-                      )}
                     </div>
-                  )
-                })}
-              {viewMode === 'month' && dayAppointments.length > 3 && (
-                <div className="text-xs text-muted-foreground text-center bg-muted/50 rounded p-1">
-                  +{dayAppointments.length - 3} mais
+
+                    <div
+                      className={`text-xs opacity-75 mt-1 ${
+                        viewMode === 'month' ? 'text-xs' : ''
+                      }`}
+                    >
+                      {styles.label}
+                    </div>
+                  </div>
+                )
+              })}
+              {viewMode === 'month' && remainingCount > 0 && (
+                <div className="text-xs text-muted-foreground text-center bg-muted/30 border border-muted rounded-md p-2 font-medium">
+                  +{remainingCount} agendamento{remainingCount > 1 ? 's' : ''}
                 </div>
               )}
             </div>
