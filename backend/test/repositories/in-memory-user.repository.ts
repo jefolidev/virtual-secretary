@@ -28,6 +28,26 @@ export class InMemoryUserRepository implements UserRepository {
     return user
   }
 
+  async findByPhone(phone: string) {
+    const user = this.items.find((item) => item.phone === phone)
+
+    if (!user) {
+      return null
+    }
+
+    return user
+  }
+
+  async findByCpf(cpf: string) {
+    const user = this.items.find((item) => item.cpf === cpf)
+
+    if (!user) {
+      return null
+    }
+
+    return user
+  }
+
   async create(user: User) {
     this.items.push(user)
 
