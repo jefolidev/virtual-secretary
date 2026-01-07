@@ -43,6 +43,8 @@ export class CreateAccountController {
       professionalData,
     } = body
 
+    console.log(body)
+
     const result = await this.registerUserUseCase.execute({
       address: {
         ...address,
@@ -53,7 +55,7 @@ export class CreateAccountController {
       name,
       phone,
       password,
-      gender,
+      gender: gender.toUpperCase() as 'MALE' | 'FEMALE',
       birthDate: new Date(birthDate),
       role,
       clientData,

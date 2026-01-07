@@ -84,9 +84,7 @@ export const createUserAccountBodySchema = z.object({
   phone: z.string().min(10, 'Phone must have at least 10 digits'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   gender: GenderEnum,
-  birthDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: 'Invalid date format',
-  }),
+  birthDate: z.coerce.date(),
   role: RoleEnum,
   address: addressSchema,
   clientData: clientDataSchema.optional(),
