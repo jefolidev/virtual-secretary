@@ -61,19 +61,19 @@ const menuItems = [
     items: [
       {
         title: 'Calendário',
-        url: 'agenda/calendario',
+        url: 'schedule/calendar',
         icon: Calendar,
       },
       {
         title: 'Bloqueios de Horário',
-        url: 'agenda/bloqueios',
+        url: 'schedule/blocks',
         icon: Clock,
       },
     ],
   },
   {
     title: 'Minha Secretária (IA)',
-    url: 'secretaria-ia',
+    url: 'ai-secretary',
     icon: Bot,
     description: 'Configure sua assistente virtual',
   },
@@ -83,12 +83,12 @@ const menuItems = [
     items: [
       {
         title: 'Fichas/Prontuários',
-        url: 'pacientes/fichas',
+        url: 'patients/records',
         icon: FileText,
       },
       {
         title: 'Avaliações (NPS)',
-        url: 'pacientes/avaliacoes',
+        url: 'patients/evaluations',
         icon: Star,
       },
     ],
@@ -99,12 +99,12 @@ const menuItems = [
     items: [
       {
         title: 'Recebimentos',
-        url: 'financeiro/recebimentos',
+        url: 'financial/receivables',
         icon: CreditCard,
       },
       {
         title: 'Dados Bancários',
-        url: 'financeiro/dados-bancarios',
+        url: 'financial/bank-data',
         icon: Banknote,
       },
     ],
@@ -115,12 +115,12 @@ const menuItems = [
     items: [
       {
         title: 'Horários de Trabalho',
-        url: 'configuracoes/horarios',
+        url: 'clinic-settings/schedules',
         icon: Clock,
       },
       {
         title: 'Mensagens Automáticas',
-        url: 'configuracoes/mensagens',
+        url: 'clinic-settings/messages',
         icon: MessageSquare,
       },
     ],

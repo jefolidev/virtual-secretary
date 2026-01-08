@@ -2,6 +2,10 @@ import { App } from '@/app'
 import { useAuth } from '@/contexts/auth-context'
 import { LoginPage } from '@/pages/login'
 import { ScheduleCalendarPage } from '@/pages/schedule/calendar'
+import { SettingsPage } from '@/pages/settings'
+import { AccountSettingsPage } from '@/pages/settings/pages/account/index'
+import { ConsultationsSettingsPage } from '@/pages/settings/pages/consultations/index'
+import { NotificationsSettingsPage } from '@/pages/settings/pages/notifications/index'
 import { SignUpPage } from '@/pages/signup'
 import { ScreensEnum } from '@/types/screens'
 import {
@@ -82,50 +86,68 @@ export const router = createBrowserRouter([
           },
           {
             path: ScreensEnum.SETTINGS,
-            element: <div>Settings</div>,
+            element: <SettingsPage />,
+            children: [
+              {
+                index: true,
+                element: <Navigate replace to="account" />,
+              },
+              {
+                path: 'account',
+                element: <AccountSettingsPage />,
+              },
+              {
+                path: 'notifications',
+                element: <NotificationsSettingsPage />,
+              },
+              {
+                path: 'consultations',
+                element: <ConsultationsSettingsPage />,
+              },
+            ],
           },
-          // Agenda
+          // Schedule
           {
-            path: 'agenda/calendario',
+            path: 'schedule/calendar',
             element: <ScheduleCalendarPage />,
           },
           {
-            path: 'agenda/bloqueios',
+            path: 'schedule/blocks',
             element: <div>Bloqueios de Horário</div>,
           },
-          // Minha Secretária IA
+          // AI Secretary
           {
-            path: 'secretaria-ia',
+            path: 'ai-secretary',
             element: <div>Minha Secretária IA</div>,
           },
-          // Pacientes
+          // Patients
           {
-            path: 'pacientes/fichas',
+            path: 'patients/records',
             element: <div>Fichas/Prontuários</div>,
           },
           {
-            path: 'pacientes/avaliacoes',
+            path: 'patients/evaluations',
             element: <div>Avaliações (NPS)</div>,
           },
-          // Financeiro
+          // Financial
           {
-            path: 'financeiro/recebimentos',
+            path: 'financial/receivables',
             element: <div>Recebimentos</div>,
           },
           {
-            path: 'financeiro/dados-bancarios',
+            path: 'financial/bank-data',
             element: <div>Dados Bancários</div>,
           },
-          // Configurações da Clínica
+          // Clinic Settings
           {
-            path: 'configuracoes/horarios',
+            path: 'clinic-settings/schedules',
             element: <div>Horários de Trabalho</div>,
           },
           {
-            path: 'configuracoes/mensagens',
+            path: 'clinic-settings/messages',
             element: <div>Mensagens Automáticas</div>,
           },
-          // Rotas legacy mantidas temporariamente
+          // Legacy routes maintained temporarily
           {
             path: 'appointments',
             element: <div>Agendamentos</div>,
