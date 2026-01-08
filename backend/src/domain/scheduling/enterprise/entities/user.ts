@@ -41,6 +41,11 @@ export class User extends Entity<UserProps> {
     return this.props.phone
   }
 
+  set phone(phone: string) {
+    this.props.phone = phone
+    this.touch()
+  }
+
   set professionalId(professionalId: UniqueEntityId | undefined) {
     this.props.professionalId = professionalId
     this.touch()
@@ -52,6 +57,11 @@ export class User extends Entity<UserProps> {
 
   get name() {
     return this.props.name
+  }
+
+  set name(name: string) {
+    this.props.name = name
+    this.touch()
   }
 
   get email() {

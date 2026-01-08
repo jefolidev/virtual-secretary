@@ -65,4 +65,16 @@ export class InMemoryUserRepository implements UserRepository {
 
     this.items[userIndex].password = password
   }
+
+  async save(user: User): Promise<void> {
+    const userIndex = this.items.findIndex((item) => item.id.equals(user.id))
+
+    if (userIndex === -1) {
+      throw new Error('User not found')
+    }
+
+    this.items[userIndex] = user
+
+    DomainEvents.dispatchEventsForAggregate(user.id)
+  }
 }

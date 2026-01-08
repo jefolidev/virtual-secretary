@@ -10,6 +10,7 @@ import { InMemoryClientRepository } from '@test/repositories/in-memory-client.re
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemoryScheduleConfigurationRepository } from '@test/repositories/in-memory-schedule-configuration.repository'
 import { NotAllowedError } from '../../../../core/errors/not-allowed-error'
+import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
 import { RescheduleAppointmentUseCase } from './reschedule-appointment'
 
@@ -51,7 +52,7 @@ describe('Reschedule Appointment', () => {
       new UniqueEntityId('professional-id')
     )
 
-    inMemoryProfessionalRepository.create(professional)
+    await inMemoryProfessionalRepository.create(professional)
 
     const scheduleConfiguration = makeScheduleConfiguration(
       {
@@ -76,7 +77,7 @@ describe('Reschedule Appointment', () => {
       'reschedule-policy-id'
     )
 
-    inMemoryProfessionalRepository.save(professional)
+    await inMemoryProfessionalRepository.save(professional)
 
     const appointment = makeAppointment(
       {
@@ -217,7 +218,6 @@ describe('Reschedule Appointment', () => {
 
     await inMemoryAppointmentRepository.create(appointment)
 
-    // Criar um appointment que conflita com o horário de reagendamento
     const overlapAppointment = makeAppointment(
       {
         clientId: client.id,
@@ -236,17 +236,9 @@ describe('Reschedule Appointment', () => {
       startDateTime: new Date('2026-01-05T10:00:00.000Z'),
     })
 
-    const overlappingAppointments =
-      await inMemoryAppointmentRepository.findOverlapping(
-        professional.id.toString(),
-        new Date('2026-01-05T10:00:00.000Z'),
-        new Date('2026-01-05T11:00:00.000Z')
-      )
-
     expect(response.isLeft()).toBe(true)
 
     if (response.isLeft()) {
-      expect(overlappingAppointments).toHaveLength(1)
       expect(response.value).toBeInstanceOf(NoDisponibilityError)
     }
   })
@@ -298,7 +290,7 @@ describe('Reschedule Appointment', () => {
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2020-01-05T10:00:00.000Z'), // Past date
+      startDateTime: new Date('2020-01-05T10:00:00.000Z'),
     })
 
     expect(response.isLeft()).toBe(true)
@@ -315,7 +307,233 @@ describe('Reschedule Appointment', () => {
 
     expect(response.isLeft()).toBe(true)
     if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NotFoundError)
       expect(response.value.message).toBe('Appointment not found')
+    }
+  })
+
+  it('should not be able to reschedule a cancelled appointment', async () => {
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {
+        cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
+        scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
+      },
+      new UniqueEntityId('professional-id')
+    )
+    await inMemoryProfessionalRepository.create(professional)
+
+    const appointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: professional.id,
+        status: 'CANCELLED',
+      },
+      new UniqueEntityId('appointment-id')
+    )
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NotAllowedError)
+    }
+  })
+
+  it('should not be able to reschedule if client not found', async () => {
+    const professional = makeProfessional(
+      {
+        cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
+        scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
+      },
+      new UniqueEntityId('professional-id')
+    )
+    await inMemoryProfessionalRepository.create(professional)
+
+    const appointment = makeAppointment(
+      {
+        clientId: new UniqueEntityId('non-existent-client'),
+        professionalId: professional.id,
+      },
+      new UniqueEntityId('appointment-id')
+    )
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NotFoundError)
+      expect(response.value.message).toBe('Client not found')
+    }
+  })
+
+  it('should not be able to reschedule if professional not found', async () => {
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
+    await inMemoryClientRepository.create(client)
+
+    const appointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: new UniqueEntityId('non-existent-professional'),
+      },
+      new UniqueEntityId('appointment-id')
+    )
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NotFoundError)
+      expect(response.value.message).toBe('Professional not found')
+    }
+  })
+
+  it('should not be able to reschedule if schedule configuration not found', async () => {
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {
+        cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
+        scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
+      },
+      new UniqueEntityId('professional-id')
+    )
+    await inMemoryProfessionalRepository.create(professional)
+
+    const appointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: professional.id,
+      },
+      new UniqueEntityId('appointment-id')
+    )
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NotFoundError)
+      expect(response.value.message).toBe(
+        'Professional schedule configuration not found'
+      )
+    }
+  })
+
+  it('should not be able to reschedule if cancellation policy not found', async () => {
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {
+        cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
+        scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
+      },
+      new UniqueEntityId('professional-id')
+    )
+    await inMemoryProfessionalRepository.create(professional)
+
+    const scheduleConfiguration = makeScheduleConfiguration(
+      {
+        professionalId: professional.id,
+        sessionDurationMinutes: 60,
+      },
+      new UniqueEntityId('schedule-config-id')
+    )
+    await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
+
+    const appointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: professional.id,
+      },
+      new UniqueEntityId('appointment-id')
+    )
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+    })
+
+    expect(response.isLeft()).toBe(true)
+    if (response.isLeft()) {
+      expect(response.value).toBeInstanceOf(NotAllowedError)
+      expect(response.value.message).toBe(
+        'Professional does not allow reschedule'
+      )
+    }
+  })
+
+  it('should correctly calculate end time based on session duration', async () => {
+    const client = makeClient(undefined, new UniqueEntityId('client-id'))
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {
+        cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
+        scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
+      },
+      new UniqueEntityId('professional-id')
+    )
+    await inMemoryProfessionalRepository.create(professional)
+
+    const scheduleConfiguration = makeScheduleConfiguration(
+      {
+        professionalId: professional.id,
+        sessionDurationMinutes: 90,
+      },
+      new UniqueEntityId('schedule-config-id')
+    )
+    await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
+
+    const reschedulelationPolicy = makeCancellationPolicy(
+      {
+        professionalId: professional.id,
+      },
+      new UniqueEntityId('reschedule-policy-id')
+    )
+    await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
+
+    const appointment = makeAppointment(
+      {
+        clientId: client.id,
+        professionalId: professional.id,
+      },
+      new UniqueEntityId('appointment-id')
+    )
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const startDateTime = new Date('2026-01-05T10:00:00.000Z')
+    const response = await sut.execute({
+      id: appointment.id.toString(),
+      startDateTime,
+    })
+
+    expect(response.isRight()).toBe(true)
+    if (response.isRight()) {
+      expect(response.value.appointment.startDateTime).toEqual(startDateTime)
+      expect(response.value.appointment.endDateTime).toEqual(
+        new Date('2026-01-05T11:30:00.000Z')
+      )
     }
   })
 })

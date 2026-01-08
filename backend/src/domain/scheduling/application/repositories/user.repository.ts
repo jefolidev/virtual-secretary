@@ -7,4 +7,5 @@ export abstract class UserRepository {
   abstract findById(id: string): Promise<User | null>
   abstract resetPassword(userId: string, password: string): Promise<void>
   abstract create(user: User): Promise<void>
+  abstract save(user: User): Promise<void>
 }

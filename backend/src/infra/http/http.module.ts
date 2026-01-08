@@ -60,6 +60,10 @@ import { RemoveProfessionalFromOrganizationController } from './controllers/remo
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { StartAppointmentController } from './controllers/start-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
+import { PauseAppointmentUseCase } from '@/domain/scheduling/application/use-cases/pause-appointment'
+import { StartAppointmentUseCase } from '@/domain/scheduling/application/use-cases/start-appointment'
+import { CompleteAppointmentUseCase } from '@/domain/scheduling/application/use-cases/complete-appointment'
+import { CompleteAppointmentController } from './controllers/complete-appointment.controller'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],

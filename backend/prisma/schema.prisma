@@ -52,20 +52,22 @@ model User {
 }
 
 model Appointment {
-  id                 String        @id @default(uuid())
-  clientId           String        @map("client_id")
-  professionalId     String        @map("professional_id")
-  startDateTime      DateTime      @map("start_date_time")
-  endDateTime        DateTime      @map("end_date_time")
+  id                 String     @id @default(uuid())
+  clientId           String     @map("client_id")
+  professionalId     String     @map("professional_id")
+  startDateTime      DateTime   @map("start_date_time")
+  endDateTime        DateTime   @map("end_date_time")
   modality           Modalities
-  status             Status        @default(SCHEDULED)
-  paymentStatus      PaymentStatus @default(PENDING)
-  agreedPrice        Decimal       @map("agreed_price") @db.Decimal(10, 2)
-  googleMeetLink     String?       @map("google_meet_link")
-  rescheduleDateTime Json?         @map("reschedule_date_time")
-  paymentExpiresAt   DateTime?     @map("payment_expires_at")
-  startedAt          DateTime?     @map("started_at")
-  totalElapsedMs     BigInt?       @default(0) @map("total_elapsed_ms")
+  status             Status     @default(SCHEDULED)
+  googleMeetLink     String?    @map("google_meet_link")
+  rescheduleDateTime Json?      @map("reschedule_date_time")
+  startedAt          DateTime?  @map("started_at")
+  totalElapsedMs     BigInt?    @default(0) @map("total_elapsed_ms")
+
+  agreedPrice          Decimal       @map("agreed_price") @db.Decimal(10, 2)
+  paymentStatus        PaymentStatus @default(PENDING) @map("payment_status")
+  paymentExpiresAt     DateTime?     @map("payment_expires_at")
+  currentTransactionId DateTime?     @map("current_transaction_id")
 
   client       Client       @relation(fields: [clientId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
@@ -79,6 +81,7 @@ model Appointment {
 
 model Professional {
   id                     String        @id @default(uuid())
+  mercadoPagoAccountId   String?       @unique @map("mercado_pago_account_id")
   notificationSettingsId String?       @unique @map("notification_settings_id")
   organizationId         String?       @map("organization_id")
   sessionPrice           Decimal       @map("session_price")
@@ -181,16 +184,22 @@ model Address {
 }
 
 model Transaction {
-  id                   String         @id @default(uuid())
-  appointmentId        String         @unique @map("appointment_id")
-  stripePaymentItentId String         @map("stripe_payment_itent_id")
-  amount               Decimal
-  status               PaymentStatus  @default(PROCESSING)
-  method               PaymentMethods
+  id            String @id @default(uuid())
+  appointmentId String @unique @map("appointment_id")
+
+  externalReference String @map("external_reference")
+
+  pixCopyPaste String? @map("pix_copy_paste")
+  pixQrCodeURL String? @map("pix_qr_code_url")
+
+  amount Decimal        @db.Decimal(10, 2)
+  status PaymentStatus  @default(PROCESSING)
+  method PaymentMethods
 
   appointment Appointment? @relation(fields: [appointmentId], references: [id])
 
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  paidAt    DateTime? @map("paid_at")
 
   @@map("transactions")
 }

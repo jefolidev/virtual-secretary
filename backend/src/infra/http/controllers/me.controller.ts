@@ -19,6 +19,7 @@ export class MeController {
       user_id: user.id.toString(),
       name: user.name,
       email: user.email,
+      cpf: user.cpf,
       phone: user.phone,
       gender: user.gender,
       birth_date: user.birthDate,
