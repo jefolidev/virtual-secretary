@@ -20,14 +20,14 @@ import {
   editScheduleConfigurationBodySchema,
 } from './dto/edit-schedule-configuration.dto'
 
-@Controller('profissional/schedule-configuration')
+@Controller('me')
 export class EditScheduleConfigurationController {
   constructor(
     private readonly editScheduleConfiguration: EditScheduleConfigurationUseCase,
     private readonly professionalRepository: ProfessionalRepository
   ) {}
 
-  @Put()
+  @Put('/schedule-configuration')
   @UsePipes()
   async handle(
     @Body(new ZodValidationPipe(editScheduleConfigurationBodySchema))

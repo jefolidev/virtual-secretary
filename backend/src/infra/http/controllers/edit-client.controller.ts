@@ -19,14 +19,14 @@ import {
   editClientBodySchema,
 } from './dto/edit-client.dto'
 
-@Controller('client')
+@Controller('me/')
 export class EditClientController {
   constructor(
     private readonly editClient: EditClientUseCase,
     private readonly clientRepository: ClientRepository
   ) {}
 
-  @Put()
+  @Put('/client')
   @UsePipes()
   async handle(
     @Body(new ZodValidationPipe(editClientBodySchema))

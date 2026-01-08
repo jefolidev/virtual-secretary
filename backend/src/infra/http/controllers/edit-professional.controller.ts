@@ -19,14 +19,14 @@ import {
   editProfessionalBodySchema,
 } from './dto/edit-professional.dto'
 
-@Controller('profissional')
+@Controller('me')
 export class EditProfessionalController {
   constructor(
     private readonly editProfessional: EditProfessionalUseCase,
     private readonly professionalRepository: ProfessionalRepository
   ) {}
 
-  @Put()
+  @Put('/professional')
   @UsePipes()
   async handle(
     @Body(new ZodValidationPipe(editProfessionalBodySchema))
