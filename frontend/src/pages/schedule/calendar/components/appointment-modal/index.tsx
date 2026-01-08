@@ -50,7 +50,7 @@ const getMockPatientData = (appointmentId: string) => ({
   name: 'Maria Silva',
   phone: '(11) 99999-9999',
   email: 'maria.silva@email.com',
-  birthDate: '1985-03-15',
+  birth_date: '1985-03-15',
   age: 38,
   gender: 'Feminino',
   address: 'Rua das Flores, 123, São Paulo - SP, 01234-567',
@@ -379,7 +379,7 @@ export function AppointmentModal({
                   </span>
                   <span className="text-base">
                     {patientData.age} anos,{' '}
-                    {new Date(patientData.birthDate).toLocaleDateString(
+                    {new Date(patientData.birth_date).toLocaleDateString(
                       'pt-BR',
                       {
                         day: 'numeric',

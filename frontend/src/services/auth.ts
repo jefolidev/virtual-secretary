@@ -9,7 +9,7 @@ export interface RegisterUserData {
   password: string
   phone: string
   cpf: string
-  birthDate: string
+  birth_date: string
   gender: 'MALE' | 'FEMALE'
   role: 'CLIENT' | 'PROFESSIONAL'
 
@@ -128,8 +128,8 @@ export async function saveProfessionalNotifications(
 export function transformSignupDataToRegisterData(
   data: SignupData
 ): RegisterUserData {
-  // Validar e corrigir birthDate
-  if (!data.birthDate || data.birthDate.trim() === '') {
+  // Validar e corrigir birth_date
+  if (!data.birth_date || data.birth_date.trim() === '') {
     throw new Error('Data de nascimento é obrigatória')
   }
 
@@ -144,7 +144,7 @@ export function transformSignupDataToRegisterData(
     password: data.password,
     phone: data.phone,
     cpf: data.cpf,
-    birthDate: data.birthDate,
+    birth_date: data.birth_date,
     gender: data.gender,
     role: data.userType === 'professional' ? 'PROFESSIONAL' : 'CLIENT',
 

@@ -51,7 +51,7 @@ export const userAccountSchema = z
     confirmPassword: z.string(),
     role: RoleEnum,
     address: addressSchema,
-    birthDate: z.coerce.date(),
+    birth_date: z.coerce.date(),
     gender: GenderEnum,
     clientDataSchema: clientDataSchema.optional(),
     professionalDataSchema: professionalDataSchema.optional(),

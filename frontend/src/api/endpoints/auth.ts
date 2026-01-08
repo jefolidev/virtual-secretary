@@ -6,6 +6,9 @@ export interface UserLoginData {
   userId: string
   name: string
   email: string
+  cpf: string
+  birth_date: Date
+  gender: 'MALE' | 'FEMALE'
   phone: string
   role: string
   professional_id: string | null

@@ -55,8 +55,8 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
       passwordsMatch &&
       cleanPhone.length >= 10 &&
       cleanCPF.length === 11 &&
-      formData.birthDate !== '' &&
-      formData.birthDate.trim() !== '' &&
+      formData.birth_date !== '' &&
+      formData.birth_date.trim() !== '' &&
       formData.gender !== '' &&
       (formData.gender === 'MALE' || formData.gender === 'FEMALE')
     )
@@ -73,7 +73,7 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
     formData.confirmPassword,
     formData.phone,
     formData.cpf,
-    formData.birthDate,
+    formData.birth_date,
     formData.gender,
   ])
 
@@ -335,15 +335,15 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="birthdate">
+        <Label htmlFor="birth_date">
           Data de nascimento <span className="text-red-500">*</span>
         </Label>
         <Input
-          id="birthdate"
+          id="birth_date"
           type="date"
-          value={formData.birthDate}
+          value={formData.birth_date}
           onChange={(e) => {
-            updateFormData('birthDate', e.target.value)
+            updateFormData('birth_date', e.target.value)
           }}
           required
         />

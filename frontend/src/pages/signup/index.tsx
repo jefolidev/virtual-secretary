@@ -222,10 +222,10 @@ function SignUpPageContent() {
       }
 
       // Validação final antes de enviar
-      if (!formData.birthDate || formData.birthDate.trim() === '') {
+      if (!formData.birth_date || formData.birth_date.trim() === '') {
         setValidationErrors([
           {
-            field: 'birthDate',
+            field: 'birth_date',
             message: 'Data de nascimento é obrigatória',
             step: 1,
           },
@@ -256,7 +256,7 @@ function SignUpPageContent() {
         confirmPassword: formData.confirmPassword,
         phone: formData.phone,
         cpf: formData.cpf,
-        birthDate: formData.birthDate,
+        birth_date: formData.birth_date,
         gender: formData.gender as 'MALE' | 'FEMALE',
         userType: formData.userType || 'patient',
         periodPreference:

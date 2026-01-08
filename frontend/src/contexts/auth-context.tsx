@@ -19,7 +19,7 @@ export interface User {
   userType: 'professional' | 'patient'
   phone?: string
   cpf?: string
-  birthdate?: string
+  birth_date?: string
   address?: {
     cep: string
     street: string
@@ -38,7 +38,7 @@ export interface SignupData {
   confirmPassword: string
   phone: string
   cpf: string
-  birthDate: string
+  birth_date: string
   gender: 'MALE' | 'FEMALE'
   userType: 'professional' | 'patient'
 

@@ -22,6 +22,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/contexts/auth-context'
+import { UserProvider } from '@/hooks/use-user'
 import { ThemeProvider, useTheme } from '@/hooks/use-theme'
 import {
   Banknote,
@@ -392,7 +393,9 @@ function AppContent() {
 export function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="mindly-theme">
-      <AppContent />
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
     </ThemeProvider>
   )
 }

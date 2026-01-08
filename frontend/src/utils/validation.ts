@@ -144,28 +144,28 @@ export function validateSignupData(data: SignupData): ValidationResult {
     })
   }
 
-  if (!data.birthDate) {
+  if (!data.birth_date) {
     errors.push({
-      field: 'birthDate',
+      field: 'birth_date',
       message: 'Data de nascimento é obrigatória',
       step: 1,
     })
   } else {
-    const birthDate = new Date(data.birthDate)
+    const birth_date = new Date(data.birth_date)
     const today = new Date()
-    let age = today.getFullYear() - birthDate.getFullYear()
-    const monthDiff = today.getMonth() - birthDate.getMonth()
+    let age = today.getFullYear() - birth_date.getFullYear()
+    const monthDiff = today.getMonth() - birth_date.getMonth()
 
     if (
       monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+      (monthDiff === 0 && today.getDate() < birth_date.getDate())
     ) {
       age--
     }
 
     if (age < 16) {
       errors.push({
-        field: 'birthdate',
+        field: 'birth_date',
         message: 'Você deve ter pelo menos 16 anos',
         step: 1,
       })

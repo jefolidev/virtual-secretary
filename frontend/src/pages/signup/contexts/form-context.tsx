@@ -7,7 +7,7 @@ export interface FormData {
   confirmPassword: string
   phone: string
   cpf: string
-  birthDate: string
+  birth_date: string
   gender: 'MALE' | 'FEMALE' | ''
 
   userType: 'professional' | 'patient' | null
@@ -83,7 +83,7 @@ const initialFormData: FormData = {
   confirmPassword: '',
   phone: '',
   cpf: '',
-  birthDate: '',
+  birth_date: '',
   gender: '' as 'MALE' | 'FEMALE',
 
   userType: null,
