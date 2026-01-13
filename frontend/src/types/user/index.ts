@@ -11,18 +11,20 @@ export interface User {
   updatedAt: string
 }
 
+export type NotificationType =
+  | 'NEW_APPOINTMENT'
+  | 'CANCELLATION'
+  | 'CONFIRMATION'
+  | 'DAILY_SUMMARY'
+  | 'CONFIRMED_LIST'
+  | 'PAYMENT_STATUS'
+
+export type NotificationChannel = 'EMAIL' | 'WHATSAPP'
+
 export interface UserSettings {
-  notifications: {
-    newAppointments: boolean
-    cancellations: boolean
-    confirmations: boolean
-    dailySummary: boolean
-    confirmedList: boolean
-    payments: boolean
-  }
-  notificationChannels: {
-    email: boolean
-    whatsapp: boolean
+  notificationSettings: {
+    enabledTypes?: NotificationType[]
+    channels?: NotificationChannel[]
   }
   consultations?: {
     workDays: {
@@ -56,8 +58,11 @@ export interface UpdateUserAccountData {
 }
 
 export interface UpdateUserNotificationsData {
-  notifications: UserSettings['notifications']
-  notificationChannels: UserSettings['notificationChannels']
+  enabledTypes?: NotificationType[]
+  channels?: NotificationChannel[]
+  dailySummaryTime?: string
+  reminderBeforeMinutes?: number
+  sessionPrice?: number
 }
 
 export interface UpdateUserConsultationsData {

@@ -4,6 +4,7 @@ import {
   transformSignupDataToRegisterData,
   type RegisterResponse,
 } from '@/services/auth'
+import type { NotificationChannel, NotificationType } from '@/types/user'
 import {
   createContext,
   useCallback,
@@ -11,6 +12,20 @@ import {
   useEffect,
   useState,
 } from 'react'
+
+export interface ProfessionalSettings {
+  professional: {
+    id: string
+    notificationSettings: {
+      props: {
+        channels: NotificationChannel[]
+        enabledTypes: NotificationType[]
+      }
+    }
+    reminderBeforeMinutes: number
+    dailySummaryTime: string
+  }
+}
 
 export interface User {
   id: string

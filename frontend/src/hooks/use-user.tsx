@@ -6,17 +6,16 @@ import {
   type ReactNode,
 } from 'react'
 import { userServices } from '../api/endpoints/users'
-import { useAuth } from '../contexts/auth-context'
+import { useAuth, type ProfessionalSettings } from '../contexts/auth-context'
 import type {
   UpdateUserAccountData,
   UpdateUserConsultationsData,
   UpdateUserNotificationsData,
-  UserSettings,
 } from '../types/user'
 
 interface UserContextType {
   // State
-  settings: UserSettings | null
+  settings: ProfessionalSettings | null
   loading: boolean
   error: string | null
 
@@ -38,7 +37,8 @@ interface UserProviderProps {
 
 export function UserProvider({ children }: UserProviderProps) {
   const { user: authUser, checkAuth } = useAuth() // Reuse auth user data
-  const [settings, setSettings] = useState<UserSettings | null>(null)
+
+  const [settings, setSettings] = useState<ProfessionalSettings | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -47,7 +47,14 @@ export function UserProvider({ children }: UserProviderProps) {
   const fetchUserSettings = async () => {
     try {
       setError(null)
-      const settingsData = await userServices.getUserSettings()
+      if (!authUser?.professional_id) {
+        setError('Usuário não é um profissional válido')
+        throw new Error('Professional id not valid.')
+      }
+
+      const settingsData = await userServices.getUserSettings(
+        authUser?.professional_id
+      )
       setSettings(settingsData)
     } catch (err) {
       setError('Erro ao carregar configurações do usuário')

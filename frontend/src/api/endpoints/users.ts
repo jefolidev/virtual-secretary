@@ -1,9 +1,9 @@
+import type { ProfessionalSettings } from '@/contexts/auth-context'
 import type {
   UpdateUserAccountData,
   UpdateUserConsultationsData,
   UpdateUserNotificationsData,
   User,
-  UserSettings,
 } from '../../types/user'
 import { api } from '../axios'
 
@@ -33,9 +33,9 @@ export const userServices = {
   // Update user notifications settings
   updateUserNotifications: async (
     data: UpdateUserNotificationsData
-  ): Promise<UserSettings> => {
+  ): Promise<ProfessionalSettings> => {
     try {
-      const response = await api.patch('/me/notifications', data)
+      const response = await api.put('/me/professional', data)
       return response.data
     } catch (error) {
       console.error('Erro ao atualizar notificações do usuário:', error)
@@ -46,7 +46,7 @@ export const userServices = {
   // Update user consultations settings
   updateUserConsultations: async (
     data: UpdateUserConsultationsData
-  ): Promise<UserSettings> => {
+  ): Promise<ProfessionalSettings> => {
     try {
       const response = await api.patch('/me/consultations', data)
       return response.data
@@ -57,9 +57,13 @@ export const userServices = {
   },
 
   // Get user settings
-  getUserSettings: async (): Promise<UserSettings> => {
+  getUserSettings: async (
+    professionalId: string
+  ): Promise<ProfessionalSettings> => {
     try {
-      const response = await api.get('/me/settings')
+      const response = await api.get(
+        `professional/${professionalId}/notification-settings`
+      )
       return response.data
     } catch (error) {
       console.error('Erro ao buscar configurações do usuário:', error)

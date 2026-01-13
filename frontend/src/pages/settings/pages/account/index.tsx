@@ -29,7 +29,7 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
 export function AccountSettingsPage() {
-  const { updateAccount, loading, error, clearError } = useUser()
+  const { updateAccount, loading, clearError } = useUser()
   const { user } = useAuth()
   const [password, setPassword] = useState('')
 

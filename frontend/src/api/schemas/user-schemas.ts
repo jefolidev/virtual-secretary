@@ -68,9 +68,11 @@ export const updateUserConsultationsSchema = z.object({
 })
 
 export type UpdateUserAccountSchema = z.infer<typeof updateUserAccountSchema>
+
 export type UpdateUserNotificationsSchema = z.infer<
   typeof updateUserNotificationsSchema
 >
+
 export type UpdateUserConsultationsSchema = z.infer<
   typeof updateUserConsultationsSchema
 >
