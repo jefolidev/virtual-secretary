@@ -29,11 +29,6 @@ export class FetchProfessionalWithNotificationSettingsUseCase {
         professionalId
       )
 
-    console.log(
-      '[PROFESSIONAL WITH NOTIFICATION SETTINGS USE CASE] ',
-      professionalId
-    )
-
     if (!professional) return left(new NotFoundError('Professional not found'))
 
     return right({ professional })

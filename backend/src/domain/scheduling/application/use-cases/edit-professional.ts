@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common'
 import { Professional } from '../../enterprise/entities/professional'
 import {
   NotificationChannel,
+  NotificationSettings,
   NotificationType,
 } from '../../enterprise/entities/value-objects/notification-settings'
 import { ProfessionalRepository } from '../repositories/professional.repository'
@@ -50,20 +51,24 @@ export class EditProfessionalUseCase {
 
     professional.sessionPrice = sessionPrice ?? professional.sessionPrice
 
-    if (professional.notificationSettings) {
-      if (channels) {
-        professional.notificationSettings.channels = channels
-      }
-      if (enabledTypes) {
-        professional.notificationSettings.enabledTypes = enabledTypes
-      }
-      if (reminderBeforeMinutes) {
-        professional.notificationSettings.reminderBeforeMinutes =
-          reminderBeforeMinutes
-      }
-      if (dailySummaryTime) {
-        professional.notificationSettings.dailySummaryTime = dailySummaryTime
-      }
+    // Initialize notification settings if not present
+    if (!professional.notificationSettings) {
+      professional.notificationSettings = NotificationSettings.create({
+        channels: channels || ['EMAIL'],
+        enabledTypes: enabledTypes || ['NEW_APPOINTMENT'],
+        dailySummaryTime: dailySummaryTime || '08:00',
+      })
+    } else {
+      professional.notificationSettings.channels =
+        channels ?? professional.notificationSettings.channels
+      professional.notificationSettings.enabledTypes =
+        enabledTypes ?? professional.notificationSettings.enabledTypes
+
+      professional.notificationSettings.reminderBeforeMinutes =
+        reminderBeforeMinutes ??
+        professional.notificationSettings.reminderBeforeMinutes
+      professional.notificationSettings.dailySummaryTime =
+        dailySummaryTime ?? professional.notificationSettings.dailySummaryTime
     }
 
     await this.professionalRepository.save(professional)

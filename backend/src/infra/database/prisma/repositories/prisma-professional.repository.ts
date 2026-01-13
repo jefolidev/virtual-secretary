@@ -102,6 +102,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
         cancellationPolicy: true,
         scheduleConfiguration: true,
         organization: true,
+        notificationSettings: true,
       },
     })
 
@@ -165,11 +166,46 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
   async save(professional: Professional): Promise<void> {
     const data = PrismaProfessionalMapper.toPrisma(professional)
 
-    await Promise.all([
-      this.prisma.professional.update({
+    // Update professional basic data
+    await this.prisma.professional.update({
+      where: { id: professional.id.toString() },
+      data,
+    })
+
+    // Update notification settings if they exist
+    if (professional.notificationSettings) {
+      // First check if notification settings record exists
+      const existingProfessional = await this.prisma.professional.findUnique({
         where: { id: professional.id.toString() },
-        data,
-      }),
-    ])
+        select: { notificationSettingsId: true },
+      })
+
+      const notificationSettingsData = {
+        channels: professional.notificationSettings.channels,
+        enabledTypes: professional.notificationSettings.enabledTypes,
+        reminderBeforeMinutes:
+          professional.notificationSettings.reminderBeforeMinutes,
+        dailySummaryTime: professional.notificationSettings.dailySummaryTime,
+      }
+
+      if (existingProfessional?.notificationSettingsId) {
+        // Update existing notification settings
+        await this.prisma.notificationSettings.update({
+          where: { id: existingProfessional.notificationSettingsId },
+          data: notificationSettingsData,
+        })
+      } else {
+        // Create new notification settings and link to professional
+        const notificationSettings =
+          await this.prisma.notificationSettings.create({
+            data: notificationSettingsData,
+          })
+
+        await this.prisma.professional.update({
+          where: { id: professional.id.toString() },
+          data: { notificationSettingsId: notificationSettings.id },
+        })
+      }
+    }
   }
 }

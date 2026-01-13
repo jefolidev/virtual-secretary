@@ -68,6 +68,8 @@ export class EditProfessionalController {
       }
     }
 
+    console.log(JSON.stringify(result))
+
     return { professional: result.value.professional }
   }
 }

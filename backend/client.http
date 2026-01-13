@@ -6,8 +6,8 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "email": "jeferson@professional.com.br",
-  "password": "SenhaForte123"
+  "email": "profissional@email.com",
+  "password": "Abc12345"
 }
 
 ###
@@ -190,8 +190,8 @@ Authorization: Bearer {{authToken}}
 
 ### 
 
-# @name fetch_professionals_with_notification_settings
-GET {{baseUrl}}/professional/9cf0b36d-2952-4487-87b6-8117bf8755b2/notification-settings
+# @name fetch_professional_with_notification_settings
+GET {{baseUrl}}/professional/9c6f8231-e9f8-4a9c-89f1-573936da394c/notification-settings
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
