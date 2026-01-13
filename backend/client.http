@@ -197,6 +197,13 @@ Authorization: Bearer {{authToken}}
 
 ### 
 
+# @name fetch_professional_with_settings
+GET {{baseUrl}}/professional/settings
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### 
+
 POST {{baseUrl}}/appointments/schedule
 Content-Type: application/json
 Authorization: Bearer {{authToken}}

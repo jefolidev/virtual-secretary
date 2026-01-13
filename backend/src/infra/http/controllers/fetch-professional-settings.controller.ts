@@ -39,11 +39,13 @@ export class FetchProfessionalSettingsController {
       }
     }
 
-    const { scheduleConfiguration, cancellationPolicy } = result.value
+    const { scheduleConfiguration, cancellationPolicy, sessionPrice } =
+      result.value
 
     return {
       schedule_configuration: scheduleConfiguration,
       cancellation_policy: cancellationPolicy,
+      session_price: sessionPrice,
     }
   }
 }

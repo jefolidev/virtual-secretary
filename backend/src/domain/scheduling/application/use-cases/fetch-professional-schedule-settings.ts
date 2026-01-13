@@ -16,6 +16,7 @@ export type FetchProfessionalScheduleSettingsResponse = Either<
   {
     scheduleConfiguration: ScheduleConfiguration | null
     cancellationPolicy: CancellationPolicy | null
+    sessionPrice: number
   }
 >
 
@@ -38,6 +39,10 @@ export class FetchProfessionalScheduleSettingsUseCase {
     const cancellationPolicy =
       await this.cancellationPolicies.findByProfessionalId(professionalId)
 
-    return right({ scheduleConfiguration, cancellationPolicy })
+    return right({
+      scheduleConfiguration,
+      cancellationPolicy,
+      sessionPrice: professional.sessionPrice,
+    })
   }
 }
