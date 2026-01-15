@@ -31,14 +31,15 @@ const NOTIFICATION_CHANNELS: { key: NotificationChannel; label: string }[] = [
 ]
 
 export function NotificationsSettingsPage() {
-  const { settings, updateNotifications, clearError } = useUser()
+  const { notificationSettings, updateNotifications, clearError } = useUser()
 
   // Map backend structure: settings.professional.notificationSettings.props
   const userAvailableTypes =
-    settings?.professional?.notificationSettings?.props?.enabledTypes
+    notificationSettings?.professional?.notificationSettings?.props
+      ?.enabledTypes
 
   const userAvailableChannels =
-    settings?.professional?.notificationSettings?.props?.channels
+    notificationSettings?.professional?.notificationSettings?.props?.channels
 
   // Local state for immediate updates
   const [enabledTypes, setEnabledTypes] = useState<NotificationType[]>(

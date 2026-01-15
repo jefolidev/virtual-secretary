@@ -1,3 +1,4 @@
+import { SkeletonPage } from '@/components/skeleton'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -12,158 +13,152 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { useUser } from '@/hooks/use-user'
+import type {
+  DayOfWeek,
+  UpdateCancellationPolicyData,
+  UpdateScheduleConfigurationData,
+} from '@/types/user'
+import { useCurrencyMask } from '@/utils/format-currency'
 import { AlertCircle, Calendar, Clock, FileText } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+import { mappedWorkDays } from './utils/days-of-week'
+
+interface ConsultationFormData {
+  cancellationPolicy: UpdateCancellationPolicyData
+  preferences: UpdateScheduleConfigurationData
+  sessionPrice: number
+}
 
 export function ConsultationsSettingsPage() {
-  // Initial values
-  const initialValues = {
-    // Schedule settings
-    workDays: {
-      monday: true,
-      tuesday: true,
-      wednesday: true,
-      thursday: true,
-      friday: true,
-      saturday: false,
-      sunday: false,
+  const {
+    professionalSettings,
+    loading,
+    updateScheduleConfiguration,
+    updateCancellationPolicy,
+    fetchProfessionalSettings,
+  } = useUser()
+
+  useEffect(() => {
+    fetchProfessionalSettings()
+  }, [])
+
+  const { professional, settings } = professionalSettings || {}
+  const {
+    register,
+    handleSubmit,
+    watch,
+    control,
+    setValue,
+    formState: { errors, isDirty },
+    reset,
+  } = useForm<ConsultationFormData>({
+    mode: 'onChange',
+    defaultValues: {
+      sessionPrice: 0,
+      cancellationPolicy: {},
+      preferences: {
+        sessionDurationMinutes: 0,
+        bufferIntervalMinutes: 0,
+        enableGoogleMeet: false,
+        workingHours: {
+          start: '',
+          end: '',
+        },
+        workingDays: {
+          currentItems: [],
+          new: [],
+        },
+      },
     },
-    appointmentDuration: 45,
-    breakTime: 15,
-    startTime: '08:00',
-    endTime: '18:00',
+  })
 
-    // Cancellation settings
-    sessionPrice: 150,
-    minHoursBeforeCancellation: 24,
-    cancelationFeePercentage: 50,
-    minDaysBeforeNextAppointment: 1,
-    allowReschedule: true,
-    cancellationPolicy:
-      'Cancelamentos realizados com menos de 24 horas de antecedência serão cobrados em 50% do valor da consulta.',
+  // Update form when professionalSettings loads
+  useEffect(() => {
+    if (professionalSettings) {
+      const {
+        settings: { cancellationPolicy, preferences },
+      } = professionalSettings
+
+      reset(
+        {
+          sessionPrice: professional?.sessionPrice,
+          cancellationPolicy: cancellationPolicy?.props,
+          preferences: {
+            sessionDurationMinutes: preferences?.props?.sessionDurationMinutes,
+            bufferIntervalMinutes: preferences?.props?.bufferIntervalMinutes,
+            enableGoogleMeet: preferences?.props?.enableGoogleMeet,
+            workingHours: {
+              start: preferences?.props?.workingHours?.start || '',
+              end: preferences?.props?.workingHours?.end || '',
+            },
+            workingDays: {
+              currentItems: preferences?.props?.workingDays?.currentItems,
+              new: preferences?.props?.workingDays?.currentItems || [],
+            },
+          },
+        },
+        { keepDirtyValues: false }
+      )
+    }
+  }, [professionalSettings, reset, professional])
+
+  const workDays = watch('preferences.workingDays.currentItems')
+  const workingHours = watch('preferences.workingHours')
+
+  const timeError =
+    errors.preferences?.workingHours?.end?.message ||
+    errors.preferences?.workingHours?.start?.message
+
+  if (!professionalSettings) {
+    return <SkeletonPage />
   }
 
-  const [workDays, setWorkDays] = useState(initialValues.workDays)
-  const [appointmentDuration, setAppointmentDuration] = useState(
-    initialValues.appointmentDuration
-  )
-  const [breakTime, setBreakTime] = useState(initialValues.breakTime)
-  const [startTime, setStartTime] = useState(initialValues.startTime)
-  const [endTime, setEndTime] = useState(initialValues.endTime)
-  const [sessionPrice, setSessionPrice] = useState(initialValues.sessionPrice)
-  const [minHoursBeforeCancellation, setMinHoursBeforeCancellation] = useState(
-    initialValues.minHoursBeforeCancellation
-  )
-  const [cancelationFeePercentage, setCancelationFeePercentage] = useState(
-    initialValues.cancelationFeePercentage
-  )
-  const [minDaysBeforeNextAppointment, setMinDaysBeforeNextAppointment] =
-    useState(initialValues.minDaysBeforeNextAppointment)
-  const [allowReschedule, setAllowReschedule] = useState(
-    initialValues.allowReschedule
-  )
-  const [cancellationPolicy, setCancellationPolicy] = useState(
-    initialValues.cancellationPolicy
-  )
-  const [timeError, setTimeError] = useState('')
+  const onSubmit = async (data: ConsultationFormData) => {
+    try {
+      // Convert DayOfWeek enums to numbers for API
 
-  // Check if there are changes
-  const hasChanges =
-    JSON.stringify(workDays) !== JSON.stringify(initialValues.workDays) ||
-    appointmentDuration !== initialValues.appointmentDuration ||
-    breakTime !== initialValues.breakTime ||
-    startTime !== initialValues.startTime ||
-    endTime !== initialValues.endTime ||
-    sessionPrice !== initialValues.sessionPrice ||
-    minHoursBeforeCancellation !== initialValues.minHoursBeforeCancellation ||
-    cancelationFeePercentage !== initialValues.cancelationFeePercentage ||
-    minDaysBeforeNextAppointment !==
-      initialValues.minDaysBeforeNextAppointment ||
-    allowReschedule !== initialValues.allowReschedule ||
-    cancellationPolicy !== initialValues.cancellationPolicy
+      // Get selected days
+      const selectedDays = data.preferences.workingDays?.new || []
 
-  const toggleWorkDay = (day: keyof typeof workDays) => {
-    setWorkDays((prev) => ({
-      ...prev,
-      [day]: !prev[day],
-    }))
-  }
-
-  const validateTimes = (start: string, end: string) => {
-    if (start && end) {
-      const [startHour, startMin] = start.split(':').map(Number)
-      const [endHour, endMin] = end.split(':').map(Number)
-
-      const startMinutes = startHour * 60 + startMin
-      const endMinutes = endHour * 60 + endMin
-
-      if (endMinutes <= startMinutes) {
-        setTimeError('O horário de término deve ser maior que o de início')
-        return false
+      // Try sending schedule configuration without working days first
+      const scheduleConfigurationForAPI: any = {
+        sessionDurationMinutes: data.preferences.sessionDurationMinutes,
+        bufferIntervalMinutes: data.preferences.bufferIntervalMinutes,
+        enableGoogleMeet: data.preferences.enableGoogleMeet,
+        workingHours: data.preferences.workingHours,
+        // Don't send working days yet
       }
-    }
-    setTimeError('')
-    return true
-  }
 
-  const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newStartTime = e.target.value
-    setStartTime(newStartTime)
-    validateTimes(newStartTime, endTime)
-  }
+      console.log('[ScheduleConfigurationForAPI without workingDays]', scheduleConfigurationForAPI)
+      console.log('[Selected Days that need separate update]', selectedDays)
+      console.log('[Form Data]', data.preferences.workingDays)
 
-  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newEndTime = e.target.value
-    setEndTime(newEndTime)
-    validateTimes(startTime, newEndTime)
-  }
+      // Update schedule configuration (without working days)
+      const result = await updateScheduleConfiguration(scheduleConfigurationForAPI)
+      console.log('[Update Result]', result)
+      
+      // TODO: Add separate call for working days when backend provides endpoint
+      console.log('Working days update needs separate endpoint:', selectedDays)
 
-  const formatCurrency = (value: number): string => {
-    if (isNaN(value) || value === 0) return ''
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-    }).format(value)
-  }
+      // Update cancellation policy
+      await updateCancellationPolicy(data.cancellationPolicy)
 
-  const parseCurrency = (value: string): number => {
-    const numericValue = value.replace(/[^0-9,]/g, '').replace(',', '.')
-    return parseFloat(numericValue) || 0
-  }
+      // Refetch the professional settings to get updated data
+      await fetchProfessionalSettings()
 
-  const [displayPrice, setDisplayPrice] = useState(formatCurrency(sessionPrice))
-
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const inputValue = e.target.value
-    setDisplayPrice(inputValue)
-    const numericValue = parseCurrency(inputValue)
-    setSessionPrice(numericValue)
-  }
-
-  const handlePriceBlur = () => {
-    if (sessionPrice > 0) {
-      setDisplayPrice(formatCurrency(sessionPrice))
+      toast.success('Configurações de consultas atualizadas com sucesso!')
+    } catch (err) {
+      console.error('Erro ao salvar configurações:', err)
+      toast.error('Erro ao salvar configurações. Tente novamente.')
     }
   }
 
-  const handleSave = () => {
-    console.log('Salvando configurações de consultas:', {
-      workDays,
-      appointmentDuration,
-      breakTime,
-      startTime,
-      endTime,
-      sessionPrice,
-      minHoursBeforeCancellation,
-      cancelationFeePercentage,
-      minDaysBeforeNextAppointment,
-      allowReschedule,
-      cancellationPolicy,
-    })
-  }
-
-  return (
+  return loading ? (
+    <SkeletonPage />
+  ) : (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -181,15 +176,35 @@ export function ConsultationsSettingsPage() {
             <Label htmlFor="sessionPrice" className="text-base font-medium">
               Valor da sessão (em R$)
             </Label>
-            <Input
-              id="sessionPrice"
-              type="text"
-              placeholder="R$ 150,00"
-              value={displayPrice}
-              onChange={handlePriceChange}
-              onBlur={handlePriceBlur}
-              className="max-w-xs"
+            <Controller
+              name="sessionPrice"
+              control={control}
+              rules={{
+                required: 'Valor da sessão é obrigatório',
+                min: { value: 0.01, message: 'Valor deve ser maior que zero' },
+              }}
+              render={({ field: { onChange, value } }) => {
+                const { handleCurrencyChange, formatForDisplay } =
+                  useCurrencyMask()
+
+                return (
+                  <Input
+                    id="sessionPrice"
+                    placeholder="R$ 0,00"
+                    value={formatForDisplay(value || 0)}
+                    onChange={(e) =>
+                      handleCurrencyChange(e.target.value, onChange)
+                    }
+                    className="max-w-xs"
+                  />
+                )
+              }}
             />
+            {errors.sessionPrice && (
+              <span className="text-sm text-red-600">
+                {errors.sessionPrice.message}
+              </span>
+            )}
           </div>
 
           <Separator />
@@ -213,11 +228,20 @@ export function ConsultationsSettingsPage() {
                   type="number"
                   placeholder="30"
                   min="1"
-                  value={appointmentDuration}
-                  onChange={(e) =>
-                    setAppointmentDuration(Number(e.target.value))
-                  }
+                  {...register('preferences.sessionDurationMinutes', {
+                    required: 'Duração é obrigatória',
+                    min: {
+                      value: 1,
+                      message: 'Duração deve ser maior que zero',
+                    },
+                    valueAsNumber: true,
+                  })}
                 />
+                {errors.preferences?.sessionDurationMinutes && (
+                  <span className="text-sm text-red-600">
+                    {errors.preferences.sessionDurationMinutes.message}
+                  </span>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="breakTime">Tempo de intervalo (minutos)</Label>
@@ -225,32 +249,67 @@ export function ConsultationsSettingsPage() {
                   id="breakTime"
                   type="number"
                   placeholder="15"
-                  min="0"
-                  value={breakTime}
-                  onChange={(e) => setBreakTime(Number(e.target.value))}
+                  min="10"
+                  {...register('preferences.bufferIntervalMinutes', {
+                    required: 'Intervalo é obrigatório',
+                    min: {
+                      value: 10,
+                      message: 'Intervalo deve ser maior ou igual a dez',
+                    },
+                    valueAsNumber: true,
+                  })}
                 />
+                {errors.preferences?.bufferIntervalMinutes && (
+                  <span className="text-sm text-red-600">
+                    {errors.preferences.bufferIntervalMinutes.message}
+                  </span>
+                )}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="grid gap-2">
                 <Label htmlFor="startTime">Horário de início</Label>
-                <Input
-                  id="startTime"
-                  type="time"
-                  value={startTime}
-                  onChange={handleStartTimeChange}
+                <Controller
+                  name="preferences.workingHours.start"
+                  control={control}
+                  rules={{ required: 'Horário de início é obrigatório' }}
+                  render={({ field }) => (
+                    <Input
+                      id="startTime"
+                      type="time"
+                      {...field}
+                      value={field.value || ''}
+                    />
+                  )}
                 />
+                {errors.preferences?.workingHours?.start && (
+                  <span className="text-sm text-red-600">
+                    {errors.preferences.workingHours.start.message}
+                  </span>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="endTime">Horário de término</Label>
-                <Input
-                  id="endTime"
-                  type="time"
-                  value={endTime}
-                  onChange={handleEndTimeChange}
-                  className={timeError ? 'border-red-500' : ''}
+                <Controller
+                  name="preferences.workingHours.end"
+                  control={control}
+                  rules={{ required: 'Horário de término é obrigatório' }}
+                  render={({ field }) => (
+                    <Input
+                      id="endTime"
+                      type="time"
+                      {...field}
+                      value={field.value || ''}
+                      className={timeError ? 'border-red-500' : ''}
+                    />
+                  )}
                 />
+                {errors.preferences?.workingHours?.end && (
+                  <span className="text-sm text-red-600">
+                    {errors.preferences.workingHours.end.message}
+                  </span>
+                )}
               </div>
             </div>
             {timeError && (
@@ -263,76 +322,34 @@ export function ConsultationsSettingsPage() {
             <div className="space-y-3">
               <Label>Dias de atendimento</Label>
               <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="monday"
-                    checked={workDays.monday}
-                    onCheckedChange={() => toggleWorkDay('monday')}
-                  />
-                  <Label htmlFor="monday" className="font-normal">
-                    Segunda-feira
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="tuesday"
-                    checked={workDays.tuesday}
-                    onCheckedChange={() => toggleWorkDay('tuesday')}
-                  />
-                  <Label htmlFor="tuesday" className="font-normal">
-                    Terça-feira
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="wednesday"
-                    checked={workDays.wednesday}
-                    onCheckedChange={() => toggleWorkDay('wednesday')}
-                  />
-                  <Label htmlFor="wednesday" className="font-normal">
-                    Quarta-feira
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="thursday"
-                    checked={workDays.thursday}
-                    onCheckedChange={() => toggleWorkDay('thursday')}
-                  />
-                  <Label htmlFor="thursday" className="font-normal">
-                    Quinta-feira
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="friday"
-                    checked={workDays.friday}
-                    onCheckedChange={() => toggleWorkDay('friday')}
-                  />
-                  <Label htmlFor="friday" className="font-normal">
-                    Sexta-feira
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="saturday"
-                    checked={workDays.saturday}
-                    onCheckedChange={() => toggleWorkDay('saturday')}
-                  />
-                  <Label htmlFor="saturday" className="font-normal">
-                    Sábado
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="sunday"
-                    checked={workDays.sunday}
-                    onCheckedChange={() => toggleWorkDay('sunday')}
-                  />
-                  <Label htmlFor="sunday" className="font-normal">
-                    Domingo
-                  </Label>
-                </div>
+                {mappedWorkDays.map((day) => {
+                  if (!professionalSettings.settings.preferences.props)
+                    return <SkeletonPage />
+
+                  return (
+                    <div key={day.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={day.id.toString()}
+                        checked={(
+                          watch('preferences.workingDays.new') || []
+                        ).includes(day.id as DayOfWeek)}
+                        onCheckedChange={(checked) => {
+                          const currentNewDays =
+                            watch('preferences.workingDays.new') || []
+                          const newDays = checked
+                            ? [...currentNewDays, day.id as DayOfWeek]
+                            : currentNewDays.filter((d) => d !== day.id)
+
+                          setValue('preferences.workingDays.new', newDays, {
+                            shouldDirty: true,
+                            shouldValidate: true,
+                          })
+                        }}
+                      />
+                      <Label className="font-normal">{day.label}</Label>
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -359,11 +376,26 @@ export function ConsultationsSettingsPage() {
                     type="number"
                     placeholder="24"
                     min="0"
-                    value={minHoursBeforeCancellation}
-                    onChange={(e) =>
-                      setMinHoursBeforeCancellation(Number(e.target.value))
-                    }
+                    {...register(
+                      'cancellationPolicy.minHoursBeforeCancellation',
+                      {
+                        required: 'Prazo mínimo é obrigatório',
+                        min: {
+                          value: 0,
+                          message: 'Prazo deve ser maior ou igual a zero',
+                        },
+                        valueAsNumber: true,
+                      }
+                    )}
                   />
+                  {errors.cancellationPolicy?.minHoursBeforeCancellation && (
+                    <span className="text-sm text-red-600">
+                      {
+                        errors.cancellationPolicy.minHoursBeforeCancellation
+                          .message
+                      }
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid gap-2">
@@ -376,14 +408,30 @@ export function ConsultationsSettingsPage() {
                     placeholder="0-100"
                     min="0"
                     max="100"
-                    value={cancelationFeePercentage}
-                    onChange={(e) => {
-                      const value = Number(e.target.value)
-                      if (value <= 100) {
-                        setCancelationFeePercentage(value)
+                    {...register(
+                      'cancellationPolicy.cancelationFeePercentage',
+                      {
+                        required: 'Taxa de cancelamento é obrigatória',
+                        min: {
+                          value: 0,
+                          message: 'Taxa deve ser maior ou igual a zero',
+                        },
+                        max: {
+                          value: 100,
+                          message: 'Taxa deve ser menor ou igual a 100',
+                        },
+                        valueAsNumber: true,
                       }
-                    }}
+                    )}
                   />
+                  {errors.cancellationPolicy?.cancelationFeePercentage && (
+                    <span className="text-sm text-red-600">
+                      {
+                        errors.cancellationPolicy.cancelationFeePercentage
+                          .message
+                      }
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -396,11 +444,23 @@ export function ConsultationsSettingsPage() {
                   type="number"
                   placeholder="1"
                   min="1"
-                  value={minDaysBeforeNextAppointment}
-                  onChange={(e) =>
-                    setMinDaysBeforeNextAppointment(Number(e.target.value))
-                  }
+                  {...register(
+                    'cancellationPolicy.minDaysBeforeNextAppointment',
+                    {
+                      required: 'Mínimo de dias é obrigatório',
+                      min: { value: 1, message: 'Deve ser pelo menos 1 dia' },
+                      valueAsNumber: true,
+                    }
+                  )}
                 />
+                {errors.cancellationPolicy?.minDaysBeforeNextAppointment && (
+                  <span className="text-sm text-red-600">
+                    {
+                      errors.cancellationPolicy.minDaysBeforeNextAppointment
+                        .message
+                    }
+                  </span>
+                )}
               </div>
 
               <div className="flex items-center justify-between py-2">
@@ -415,8 +475,7 @@ export function ConsultationsSettingsPage() {
                 </div>
                 <Switch
                   id="allowReschedule"
-                  checked={allowReschedule}
-                  onCheckedChange={setAllowReschedule}
+                  {...register('cancellationPolicy.allowReschedule')}
                 />
               </div>
 
@@ -428,16 +487,19 @@ export function ConsultationsSettingsPage() {
                   id="cancellationPolicy"
                   placeholder="Descreva sua política de cancelamento..."
                   rows={4}
-                  value={cancellationPolicy}
-                  onChange={(e) => setCancellationPolicy(e.target.value)}
+                  {...register('cancellationPolicy.description')}
                 />
               </div>
             </div>
           </div>
 
           <div className="flex gap-2 pt-4">
-            <Button onClick={handleSave} disabled={!hasChanges}>
-              Salvar Alterações
+            <Button
+              onClick={handleSubmit(onSubmit)}
+              disabled={!isDirty || loading || !!timeError}
+              className="min-w-37.5"
+            >
+              {loading ? 'Salvando...' : 'Salvar Alterações'}
             </Button>
           </div>
         </div>
