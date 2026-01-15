@@ -10,7 +10,7 @@ export class UserProfessionalWithSettingsPresenter {
         phone: userProfessional.phone,
       },
       professional: {
-        session_price: userProfessional.sessionPrice,
+        sessionPrice: userProfessional.sessionPrice,
       },
       organization: userProfessional.organization
         ? {
@@ -20,10 +20,10 @@ export class UserProfessionalWithSettingsPresenter {
         : {},
       settings: {
         preferences: userProfessional.scheduleConfiguration,
-        cancellation_policy: userProfessional.cancellationPolicy,
+        cancellationPolicy: userProfessional.cancellationPolicy,
       },
-      created_at: userProfessional.createdAt,
-      updated_at: userProfessional.updatedAt,
+      createdAt: userProfessional.createdAt,
+      updatedAt: userProfessional.updatedAt,
     }
   }
 }

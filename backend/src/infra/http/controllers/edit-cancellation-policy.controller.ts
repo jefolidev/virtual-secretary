@@ -19,7 +19,7 @@ import {
   editCancellationPolicyBodySchema,
 } from './dto/edit-cancellation-policy.dto'
 
-@Controller('profissional/cancellation-policy')
+@Controller('me/cancellation-policy')
 export class EditCancellationPolicyController {
   constructor(
     private readonly editCancellationPolicy: EditCancellationPolicyUseCase,
