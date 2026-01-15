@@ -1,7 +1,11 @@
-import type { ProfessionalSettings } from '@/contexts/auth-context'
 import type {
+  ProfessionalNotificationSettings,
+  ProfessionalSettings,
+} from '@/contexts/auth-context'
+import type {
+  UpdateCancellationPolicyData,
+  UpdateScheduleConfigurationData,
   UpdateUserAccountData,
-  UpdateUserConsultationsData,
   UpdateUserNotificationsData,
   User,
 } from '../../types/user'
@@ -15,6 +19,16 @@ export const userServices = {
       return response.data
     } catch (error) {
       console.error('Erro ao buscar usuário por ID:', error)
+      throw error
+    }
+  },
+
+  getProfessionalSettings: async (): Promise<ProfessionalSettings> => {
+    try {
+      const response = await api.get('/professional/settings')
+      return response.data
+    } catch (error) {
+      console.error('Erro ao buscar configurações do profissional:', error)
       throw error
     }
   },
@@ -33,7 +47,7 @@ export const userServices = {
   // Update user notifications settings
   updateUserNotifications: async (
     data: UpdateUserNotificationsData
-  ): Promise<ProfessionalSettings> => {
+  ): Promise<ProfessionalNotificationSettings> => {
     try {
       const response = await api.put('/me/professional', data)
       return response.data
@@ -44,11 +58,26 @@ export const userServices = {
   },
 
   // Update user consultations settings
-  updateUserConsultations: async (
-    data: UpdateUserConsultationsData
-  ): Promise<ProfessionalSettings> => {
+  updateScheduleConfiguration: async (
+    data: UpdateScheduleConfigurationData
+  ): Promise<void> => {
     try {
-      const response = await api.patch('/me/consultations', data)
+      const response = await api.put('/me/schedule-configuration', data)
+
+      console.log('[Data sent to updateScheduleConfiguration]', data)
+      console.log('[Response from updateScheduleConfiguration]', response.data)
+      return response.data
+    } catch (error) {
+      console.error('Erro ao atualizar configurações de consultas:', error)
+      throw error
+    }
+  },
+
+  updateCancellationPolicy: async (
+    data: UpdateCancellationPolicyData
+  ): Promise<void> => {
+    try {
+      const response = await api.put('/me/cancellation-policy', data)
       return response.data
     } catch (error) {
       console.error('Erro ao atualizar configurações de consultas:', error)
@@ -57,9 +86,9 @@ export const userServices = {
   },
 
   // Get user settings
-  getUserSettings: async (
+  getProfessionalNotificationSettings: async (
     professionalId: string
-  ): Promise<ProfessionalSettings> => {
+  ): Promise<ProfessionalNotificationSettings> => {
     try {
       const response = await api.get(
         `professional/${professionalId}/notification-settings`
