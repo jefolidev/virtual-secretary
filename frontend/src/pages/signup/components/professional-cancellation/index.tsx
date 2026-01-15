@@ -2,21 +2,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { formatCurrency } from '@/utils/format-currency'
 import { useEffect, useState } from 'react'
 import { useSignupForm } from '../../contexts/form-context'
 
 export function ProfessionalCancellation() {
   const { formData, updateFormData } = useSignupForm()
   const [displayPrice, setDisplayPrice] = useState('')
-
-  const formatCurrency = (value: number): string => {
-    if (isNaN(value) || value === 0) return ''
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-    }).format(value)
-  }
 
   const parseCurrency = (value: string): number => {
     const numericValue = value.replace(/[^0-9,]/g, '').replace(',', '.')

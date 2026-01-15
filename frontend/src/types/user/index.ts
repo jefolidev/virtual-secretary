@@ -21,6 +21,15 @@ export type NotificationType =
 
 export type NotificationChannel = 'EMAIL' | 'WHATSAPP'
 
+export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
+export interface WorkingDaysList {
+  currentItems: DayOfWeek[] | null
+  initial: DayOfWeek[] | null
+  new: DayOfWeek[] | null
+  removed: DayOfWeek[] | null
+}
+
 export interface UserSettings {
   notificationSettings: {
     enabledTypes?: NotificationType[]
@@ -65,6 +74,20 @@ export interface UpdateUserNotificationsData {
   sessionPrice?: number
 }
 
-export interface UpdateUserConsultationsData {
-  consultations: UserSettings['consultations']
+export interface UpdateScheduleConfigurationData {
+  workingHours?: { start?: string; end?: string }
+  sessionDurationMinutes?: number
+  bufferIntervalMinutes?: number
+  enableGoogleMeet?: boolean
+  holidays?: Date[]
+  workingDays?: WorkingDaysList
+}
+
+export interface UpdateCancellationPolicyData {
+  bufferIntervalMinutes?: number
+  minHoursBeforeCancellation?: number
+  minDaysBeforeNextAppointment?: number
+  cancelationFeePercentage?: number
+  allowReschedule?: boolean
+  description?: string
 }
