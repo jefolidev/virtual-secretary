@@ -96,14 +96,10 @@ export async function saveCancellationPolicy(
 }
 
 export async function saveScheduleConfiguration(
-  professionalId: string,
   config: ScheduleConfiguration
 ): Promise<void> {
   try {
-    await api.post(`/profissional/schedule-configuration`, {
-      professionalId,
-      ...config,
-    })
+    await api.put(`/me/schedule-configuration`, config)
   } catch (error) {
     console.error('Erro ao salvar configuração de horários:', error)
     throw error

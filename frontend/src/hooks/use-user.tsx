@@ -6,26 +6,36 @@ import {
   type ReactNode,
 } from 'react'
 import { userServices } from '../api/endpoints/users'
-import { useAuth, type ProfessionalSettings } from '../contexts/auth-context'
+import {
+  useAuth,
+  type ProfessionalNotificationSettings,
+  type ProfessionalSettings,
+} from '../contexts/auth-context'
 import type {
+  UpdateCancellationPolicyData,
+  UpdateScheduleConfigurationData,
   UpdateUserAccountData,
-  UpdateUserConsultationsData,
   UpdateUserNotificationsData,
 } from '../types/user'
 
 interface UserContextType {
   // State
-  settings: ProfessionalSettings | null
+  notificationSettings: ProfessionalNotificationSettings | null
+  professionalSettings: ProfessionalSettings | null
   loading: boolean
   error: string | null
 
   // Actions
-  fetchUserSettings: () => Promise<void>
+  fetchProfessionalNotificationSettings: () => Promise<void>
+  fetchProfessionalSettings: () => Promise<void>
   updateAccount: (data: UpdateUserAccountData) => Promise<void>
   updateNotifications: (data: UpdateUserNotificationsData) => Promise<void>
-  updateConsultations: (data: UpdateUserConsultationsData) => Promise<void>
-  // uploadProfileImage: (file: File) => Promise<string>
-  // deleteProfileImage: () => Promise<void>
+  updateScheduleConfiguration: (
+    data: UpdateScheduleConfigurationData
+  ) => Promise<void>
+  updateCancellationPolicy: (
+    data: UpdateCancellationPolicyData
+  ) => Promise<void>
   clearError: () => void
 }
 
@@ -38,13 +48,17 @@ interface UserProviderProps {
 export function UserProvider({ children }: UserProviderProps) {
   const { user: authUser, checkAuth } = useAuth() // Reuse auth user data
 
-  const [settings, setSettings] = useState<ProfessionalSettings | null>(null)
+  const [professionalSettings, setProfessionalSettings] =
+    useState<ProfessionalSettings | null>(null)
+
+  const [notificationSettings, setNotificationSettings] =
+    useState<ProfessionalNotificationSettings | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const clearError = () => setError(null)
 
-  const fetchUserSettings = async () => {
+  const fetchProfessionalNotificationSettings = async () => {
     try {
       setError(null)
       if (!authUser?.professional_id) {
@@ -52,13 +66,30 @@ export function UserProvider({ children }: UserProviderProps) {
         throw new Error('Professional id not valid.')
       }
 
-      const settingsData = await userServices.getUserSettings(
-        authUser?.professional_id
-      )
-      setSettings(settingsData)
+      const settingsData =
+        await userServices.getProfessionalNotificationSettings(
+          authUser?.professional_id
+        )
+      setNotificationSettings(settingsData)
     } catch (err) {
       setError('Erro ao carregar configurações do usuário')
       console.error('Erro ao buscar configurações:', err)
+    }
+  }
+
+  const fetchProfessionalSettings = async () => {
+    try {
+      setError(null)
+      if (!authUser?.professional_id) {
+        setError('Usuário não é um profissional válido')
+        throw new Error('Professional id not valid.')
+      }
+
+      const settingsData = await userServices.getProfessionalSettings()
+      setProfessionalSettings(settingsData)
+    } catch (err) {
+      setError('Erro ao carregar configurações do profissional')
+      console.error('Erro ao buscar configurações do profissional:', err)
     }
   }
 
@@ -82,7 +113,7 @@ export function UserProvider({ children }: UserProviderProps) {
     try {
       setError(null)
       const updatedSettings = await userServices.updateUserNotifications(data)
-      setSettings((prev) =>
+      setNotificationSettings((prev) =>
         prev ? { ...prev, ...updatedSettings } : updatedSettings
       )
     } catch (err) {
@@ -92,16 +123,32 @@ export function UserProvider({ children }: UserProviderProps) {
     }
   }
 
-  const updateConsultations = async (data: UpdateUserConsultationsData) => {
+  const updateCancellationPolicy = async (
+    data: UpdateCancellationPolicyData
+  ) => {
     try {
       setError(null)
-      const updatedSettings = await userServices.updateUserConsultations(data)
-      setSettings((prev) =>
-        prev ? { ...prev, ...updatedSettings } : updatedSettings
-      )
+      await userServices.updateCancellationPolicy(data)
+      // Refetch settings to get updated data
+      await fetchProfessionalSettings()
     } catch (err) {
-      setError('Erro ao atualizar configurações de consulta')
-      console.error('Erro ao atualizar consultas:', err)
+      setError('Erro ao atualizar política de cancelamento')
+      console.error('Erro ao atualizar política de cancelamento:', err)
+      throw err
+    }
+  }
+
+  const updateScheduleConfiguration = async (
+    data: UpdateScheduleConfigurationData
+  ) => {
+    try {
+      setError(null)
+      await userServices.updateScheduleConfiguration(data)
+
+      await fetchProfessionalSettings()
+    } catch (err) {
+      setError('Erro ao atualizar configuração de agendamento')
+      console.error('Erro ao atualizar configuração de agendamento:', err)
       throw err
     }
   }
@@ -136,26 +183,38 @@ export function UserProvider({ children }: UserProviderProps) {
   //   }
   // }
 
-  // Auto-fetch settings when user is authenticated
+  // Auto-fetch notificationSettings when user is authenticated
   useEffect(() => {
     if (authUser) {
-      fetchUserSettings()
+      fetchProfessionalNotificationSettings()
     } else {
-      setSettings(null)
+      setNotificationSettings(null)
+    }
+  }, [authUser])
+
+  // Auto-fetch professionalSettings when user is authenticated
+  useEffect(() => {
+    if (authUser?.professional_id) {
+      fetchProfessionalSettings()
+    } else {
+      setProfessionalSettings(null)
     }
   }, [authUser])
 
   const contextValue: UserContextType = {
     // State
-    settings,
+    notificationSettings,
     loading,
     error,
+    professionalSettings,
 
     // Actions
-    fetchUserSettings,
+    fetchProfessionalNotificationSettings,
     updateAccount,
     updateNotifications,
-    updateConsultations,
+    updateCancellationPolicy,
+    updateScheduleConfiguration,
+    fetchProfessionalSettings,
     // uploadProfileImage,
     // deleteProfileImage,
     clearError,

@@ -4,7 +4,12 @@ import {
   transformSignupDataToRegisterData,
   type RegisterResponse,
 } from '@/services/auth'
-import type { NotificationChannel, NotificationType } from '@/types/user'
+import type {
+  DayOfWeek,
+  NotificationChannel,
+  NotificationType,
+  WorkingDaysList,
+} from '@/types/user'
 import {
   createContext,
   useCallback,
@@ -13,7 +18,43 @@ import {
   useState,
 } from 'react'
 
+export interface WorkingDaysResponse {
+  currentItems: DayOfWeek[]
+}
+
+export interface ScheduleConfigurationResponse {
+  props: {
+    workingHours: { start: string; end: string }
+    enableGoogleMeet: boolean
+    sessionDurationMinutes: number
+    bufferIntervalMinutes: number
+    daysOfWeek: DayOfWeek[]
+    holidays: string[]
+    workingDays: WorkingDaysList
+  }
+}
+
+export interface CancellationPolicyResponse {
+  props: {
+    allowReschedule: false
+    cancelationFeePercentage: number
+    minDaysBeforeNextAppointment: number
+    minHoursBeforeCancellation: number
+    description: string
+  }
+}
+
 export interface ProfessionalSettings {
+  id: string
+  professional: { sessionPrice: number }
+  settings: {
+    preferences: ScheduleConfigurationResponse
+    cancellationPolicy: CancellationPolicyResponse
+    sessionPrice: number
+  }
+}
+
+export interface ProfessionalNotificationSettings {
   professional: {
     id: string
     notificationSettings: {
