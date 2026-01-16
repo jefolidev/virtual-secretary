@@ -1,3 +1,7 @@
+import {
+  consultationSettingsSchema,
+  type UpdateConsultationSettingsSchema,
+} from '@/api/schemas/update-schedule-settings'
 import { SkeletonPage } from '@/components/skeleton'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,23 +18,13 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useUser } from '@/hooks/use-user'
-import type {
-  DayOfWeek,
-  UpdateCancellationPolicyData,
-  UpdateScheduleConfigurationData,
-} from '@/types/user'
 import { useCurrencyMask } from '@/utils/format-currency'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Calendar, Clock, FileText } from 'lucide-react'
 import { useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { mappedWorkDays } from './utils/days-of-week'
-
-interface ConsultationFormData {
-  cancellationPolicy: UpdateCancellationPolicyData
-  preferences: UpdateScheduleConfigurationData
-  sessionPrice: number
-}
 
 export function ConsultationsSettingsPage() {
   const {
@@ -39,114 +33,108 @@ export function ConsultationsSettingsPage() {
     updateScheduleConfiguration,
     updateCancellationPolicy,
     fetchProfessionalSettings,
+    updateProfessionalWorkHours,
+    updateProfessionalWorkDays,
+    updateProfessional,
   } = useUser()
 
   useEffect(() => {
     fetchProfessionalSettings()
   }, [])
 
-  const { professional, settings } = professionalSettings || {}
   const {
     register,
     handleSubmit,
-    watch,
     control,
-    setValue,
-    formState: { errors, isDirty },
     reset,
-  } = useForm<ConsultationFormData>({
-    mode: 'onChange',
-    defaultValues: {
-      sessionPrice: 0,
-      cancellationPolicy: {},
-      preferences: {
-        sessionDurationMinutes: 0,
-        bufferIntervalMinutes: 0,
-        enableGoogleMeet: false,
-        workingHours: {
-          start: '',
-          end: '',
-        },
-        workingDays: {
-          currentItems: [],
-          new: [],
-        },
-      },
-    },
+    setValue,
+    watch,
+    formState: { errors, isDirty },
+  } = useForm<UpdateConsultationSettingsSchema>({
+    resolver: zodResolver(consultationSettingsSchema),
   })
 
-  // Update form when professionalSettings loads
   useEffect(() => {
     if (professionalSettings) {
-      const {
-        settings: { cancellationPolicy, preferences },
-      } = professionalSettings
-
-      reset(
-        {
-          sessionPrice: professional?.sessionPrice,
-          cancellationPolicy: cancellationPolicy?.props,
-          preferences: {
-            sessionDurationMinutes: preferences?.props?.sessionDurationMinutes,
-            bufferIntervalMinutes: preferences?.props?.bufferIntervalMinutes,
-            enableGoogleMeet: preferences?.props?.enableGoogleMeet,
-            workingHours: {
-              start: preferences?.props?.workingHours?.start || '',
-              end: preferences?.props?.workingHours?.end || '',
-            },
-            workingDays: {
-              currentItems: preferences?.props?.workingDays?.currentItems,
-              new: preferences?.props?.workingDays?.currentItems || [],
-            },
+      const { professional, settings } = professionalSettings
+      reset({
+        sessionPrice: professional?.sessionPrice || 0,
+        cancellationPolicy: settings?.cancellationPolicy?.props || {},
+        preferences: {
+          sessionDurationMinutes:
+            settings?.preferences?.props?.sessionDurationMinutes || 0,
+          bufferIntervalMinutes:
+            settings?.preferences?.props?.bufferIntervalMinutes || 0,
+          enableGoogleMeet:
+            settings?.preferences?.props?.enableGoogleMeet || false,
+          workingHours: {
+            start: settings?.preferences?.props?.workingHours?.start || '',
+            end: settings?.preferences?.props?.workingHours?.end || '',
           },
+          daysOfWeek:
+            settings?.preferences?.props?.workingDays?.currentItems || [],
         },
-        { keepDirtyValues: false }
-      )
+      })
     }
-  }, [professionalSettings, reset, professional])
+  }, [professionalSettings, reset])
 
-  const workDays = watch('preferences.workingDays.currentItems')
-  const workingHours = watch('preferences.workingHours')
+  // Return loading state after hooks
+  if (loading || !professionalSettings) {
+    return <SkeletonPage />
+  }
 
   const timeError =
     errors.preferences?.workingHours?.end?.message ||
     errors.preferences?.workingHours?.start?.message
 
-  if (!professionalSettings) {
-    return <SkeletonPage />
-  }
-
-  const onSubmit = async (data: ConsultationFormData) => {
+  const onSubmit = async (data: UpdateConsultationSettingsSchema) => {
     try {
-      // Convert DayOfWeek enums to numbers for API
+      const newPrice = data.sessionPrice
+      const originalPrice = professionalSettings.professional.sessionPrice
 
-      // Get selected days
-      const selectedDays = data.preferences.workingDays?.new || []
-
-      // Try sending schedule configuration without working days first
-      const scheduleConfigurationForAPI: any = {
-        sessionDurationMinutes: data.preferences.sessionDurationMinutes,
-        bufferIntervalMinutes: data.preferences.bufferIntervalMinutes,
-        enableGoogleMeet: data.preferences.enableGoogleMeet,
-        workingHours: data.preferences.workingHours,
-        // Don't send working days yet
+      if (newPrice !== originalPrice) {
+        await updateProfessional({ sessionPrice: newPrice })
       }
 
-      console.log('[ScheduleConfigurationForAPI without workingDays]', scheduleConfigurationForAPI)
-      console.log('[Selected Days that need separate update]', selectedDays)
-      console.log('[Form Data]', data.preferences.workingDays)
+      const newDays = data.preferences?.daysOfWeek as number[]
+      const originalDays = professionalSettings.settings.preferences.props
+        ?.workingDays?.currentItems as number[]
 
-      // Update schedule configuration (without working days)
-      const result = await updateScheduleConfiguration(scheduleConfigurationForAPI)
-      console.log('[Update Result]', result)
-      
-      // TODO: Add separate call for working days when backend provides endpoint
-      console.log('Working days update needs separate endpoint:', selectedDays)
+      const daysChanged = !arraysEqual(newDays, originalDays)
 
-      // Update cancellation policy
-      await updateCancellationPolicy(data.cancellationPolicy)
+      const newStartHour = data.preferences?.workingHours?.start
+      const newEndHour = data.preferences?.workingHours?.end
 
-      // Refetch the professional settings to get updated data
+      const originalStartHour =
+        professionalSettings.settings.preferences.props?.workingHours?.start
+      const originalEndHour =
+        professionalSettings.settings.preferences.props?.workingHours?.end
+
+      const hoursChanged =
+        newStartHour !== originalStartHour || newEndHour !== originalEndHour
+
+      if (hoursChanged)
+        await updateProfessionalWorkHours({
+          newStartHour,
+          newEndHour,
+        })
+
+      if (daysChanged) await updateProfessionalWorkDays({ newDays })
+
+      const scheduleConfigurationForAPI = {
+        sessionDurationMinutes: data.preferences?.sessionDurationMinutes,
+        bufferIntervalMinutes: data.preferences?.bufferIntervalMinutes,
+        enableGoogleMeet: data.preferences?.enableGoogleMeet,
+        workingHours: data.preferences?.workingHours,
+      }
+
+      await updateScheduleConfiguration(scheduleConfigurationForAPI)
+
+      await updateCancellationPolicy(
+        data.cancellationPolicy ||
+          professionalSettings.settings.cancellationPolicy?.props
+      )
+
       await fetchProfessionalSettings()
 
       toast.success('Configurações de consultas atualizadas com sucesso!')
@@ -156,9 +144,14 @@ export function ConsultationsSettingsPage() {
     }
   }
 
-  return loading ? (
-    <SkeletonPage />
-  ) : (
+  const arraysEqual = (a: number[], b: number[]) => {
+    if (a.length !== b.length) return false
+    const sortedA = [...a].sort()
+    const sortedB = [...b].sort()
+    return sortedA.every((val, i) => val === sortedB[i])
+  }
+
+  return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
@@ -323,24 +316,35 @@ export function ConsultationsSettingsPage() {
               <Label>Dias de atendimento</Label>
               <div className="grid grid-cols-2 gap-3">
                 {mappedWorkDays.map((day) => {
-                  if (!professionalSettings.settings.preferences.props)
-                    return <SkeletonPage />
+                  // Pegar os dias atuais do usuário
+                  const currentUserDays =
+                    professionalSettings.settings.preferences.props?.workingDays
+                      ?.currentItems || []
+                  const watchedDays = watch('preferences.daysOfWeek') || []
+
+                  const activeDays =
+                    watchedDays.length > 0 ? watchedDays : currentUserDays
 
                   return (
                     <div key={day.id} className="flex items-center space-x-2">
                       <Checkbox
                         id={day.id.toString()}
-                        checked={(
-                          watch('preferences.workingDays.new') || []
-                        ).includes(day.id as DayOfWeek)}
+                        checked={activeDays.includes(day.id)}
                         onCheckedChange={(checked) => {
-                          const currentNewDays =
-                            watch('preferences.workingDays.new') || []
-                          const newDays = checked
-                            ? [...currentNewDays, day.id as DayOfWeek]
-                            : currentNewDays.filter((d) => d !== day.id)
+                          const currentDays = [...activeDays]
 
-                          setValue('preferences.workingDays.new', newDays, {
+                          if (checked) {
+                            if (!currentDays.includes(day.id)) {
+                              currentDays.push(day.id)
+                            }
+                          } else {
+                            const index = currentDays.indexOf(day.id)
+                            if (index > -1) {
+                              currentDays.splice(index, 1)
+                            }
+                          }
+
+                          setValue('preferences.daysOfWeek', currentDays, {
                             shouldDirty: true,
                             shouldValidate: true,
                           })
