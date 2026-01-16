@@ -200,7 +200,6 @@ function SignUpPageContent() {
         return
       }
 
-      console.log('🔍 Verificando se dados estão disponíveis...')
       toast.loading('Verificando dados...', { id: 'checking' })
 
       const availability = await checkDataAvailability({
@@ -210,11 +209,9 @@ function SignUpPageContent() {
       })
 
       toast.dismiss('checking')
-      console.log('📋 Resultado availability:', availability)
 
       if (!availability.available) {
         const conflictMsg = getConflictMessage(availability.conflicts)
-        console.log('❌ Dados NÃO disponíveis, retornando early...')
         toast.error('🚫 Dados já cadastrados!', {
           description: conflictMsg,
         })

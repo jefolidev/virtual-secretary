@@ -6,7 +6,6 @@ export async function checkDataAvailability(data: {
   phone: string
 }): Promise<{ available: boolean; conflicts: string[] }> {
   try {
-    console.log('🔍 Verificando disponibilidade dos dados...')
     const response = await api.post('/check-availability', data)
 
     return {

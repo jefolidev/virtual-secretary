@@ -31,7 +31,7 @@ const NOTIFICATION_CHANNELS: { key: NotificationChannel; label: string }[] = [
 ]
 
 export function NotificationsSettingsPage() {
-  const { notificationSettings, updateNotifications, clearError } = useUser()
+  const { notificationSettings, updateProfessional, clearError } = useUser()
 
   // Map backend structure: settings.professional.notificationSettings.props
   const userAvailableTypes =
@@ -79,7 +79,7 @@ export function NotificationsSettingsPage() {
 
       // Make the API request immediately
       clearError()
-      await updateNotifications({
+      await updateProfessional({
         enabledTypes: active,
         channels: channels || [],
       })
@@ -106,7 +106,7 @@ export function NotificationsSettingsPage() {
 
       // Make the API request immediately
       clearError()
-      await updateNotifications({
+      await updateProfessional({
         enabledTypes: enabledTypes || [],
         channels: updated,
       })
@@ -130,7 +130,7 @@ export function NotificationsSettingsPage() {
 
       // Make the API request immediately
       clearError()
-      await updateNotifications({
+      await updateProfessional({
         enabledTypes: enabledTypes || [],
         channels: updated,
       })
