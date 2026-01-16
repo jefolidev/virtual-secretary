@@ -2,7 +2,6 @@ import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { EditScheduleConfigurationUseCase } from '@/domain/scheduling/application/use-cases/edit-schedule-configuration'
 import { ValidationError } from '@/domain/scheduling/application/use-cases/errors/validation-error'
-import { WorkingDaysList } from '@/domain/scheduling/enterprise/entities/value-objects/working-days-list'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
 import {
@@ -39,9 +38,6 @@ export class EditScheduleConfigurationController {
       enableGoogleMeet,
       holidays,
       sessionDurationMinutes,
-      startTime,
-      endTime,
-      daysOfWeek,
     } = body
 
     const professional = await this.professionalRepository.findByUserId(userId)
@@ -57,8 +53,6 @@ export class EditScheduleConfigurationController {
       enableGoogleMeet,
       holidays,
       sessionDurationMinutes,
-      workingDays: new WorkingDaysList(daysOfWeek),
-      workingHours: { start: startTime, end: endTime },
       professionalId: professional.id.toString(),
     })
 

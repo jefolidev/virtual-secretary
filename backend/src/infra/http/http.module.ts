@@ -5,6 +5,8 @@ import { RemoveProfessionalFromOrganizationUseCase } from '@/domain/organization
 import { UpdateOrganizationUseCase } from '@/domain/organization/application/use-cases/update-organization'
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CancelAppointmentUseCase } from '@/domain/scheduling/application/use-cases/cancel-appointment'
+import { ChangeProfessionalWorkDaysUseCase } from '@/domain/scheduling/application/use-cases/change-professional-work-days'
+import { ChangeProfessionalWorkHoursUseCase } from '@/domain/scheduling/application/use-cases/change-professional-work-hours'
 import { CompleteAppointmentUseCase } from '@/domain/scheduling/application/use-cases/complete-appointment'
 import { ConfirmAppointmentUseCase } from '@/domain/scheduling/application/use-cases/confirm-appointment'
 import { CreateAddressUseCase } from '@/domain/scheduling/application/use-cases/create-address'
@@ -46,6 +48,8 @@ import { CreateScheduleConfigurationController } from './controllers/create-sche
 import { CreateScheduleController } from './controllers/create-schedule.controller'
 import { EditCancellationPolicyController } from './controllers/edit-cancellation-policy.controller'
 import { EditClientController } from './controllers/edit-client.controller'
+import { EditProfessionalWorkDaysController } from './controllers/edit-professional-work-days.controller'
+import { EditProfessionalWorkHoursController } from './controllers/edit-professional-work-hours.controller'
 import { EditProfessionalController } from './controllers/edit-professional.controller'
 import { EditScheduleConfigurationController } from './controllers/edit-schedule-configuration.controller'
 import { EditUserController } from './controllers/edit-user.controller'
@@ -83,6 +87,8 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     EditCancellationPolicyController,
     EditClientController,
     EditProfessionalController,
+    EditProfessionalWorkDaysController,
+    EditProfessionalWorkHoursController,
     EditUserController,
     EditScheduleConfigurationController,
     FetchAvailableProfessionalSlotsController,
@@ -107,6 +113,8 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     AddProfessionalToOrganizationUseCase,
     AuthenticateStudentUseCase,
     CancelAppointmentUseCase,
+    ChangeProfessionalWorkDaysUseCase,
+    ChangeProfessionalWorkHoursUseCase,
     CompleteAppointmentUseCase,
     ConfirmAppointmentUseCase,
     CreateAddressUseCase,

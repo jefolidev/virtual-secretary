@@ -4,18 +4,15 @@ import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { Injectable } from '@nestjs/common'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
-import { WorkingDaysList } from '../../enterprise/entities/value-objects/working-days-list'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 
 export interface EditScheduleConfigurationUseCaseRequest {
   professionalId: string
-  workingHours?: { start?: string; end?: string }
   sessionDurationMinutes?: number
   bufferIntervalMinutes?: number
   enableGoogleMeet?: boolean
   holidays?: Date[]
-  workingDays?: WorkingDaysList
 }
 
 export type EditScheduleConfigurationUseCaseResponse = Either<
@@ -38,8 +35,6 @@ export class EditScheduleConfigurationUseCase {
     enableGoogleMeet,
     holidays,
     sessionDurationMinutes,
-    workingDays,
-    workingHours,
   }: EditScheduleConfigurationUseCaseRequest): Promise<EditScheduleConfigurationUseCaseResponse> {
     const professional = await this.professionalRepository.findById(
       professionalId
@@ -56,10 +51,6 @@ export class EditScheduleConfigurationUseCase {
         professionalId
       )
 
-    const workingDaysList = workingDays
-      ? new WorkingDaysList(workingDays.getItems())
-      : scheduleConfiguration.workingDays
-
     if (!scheduleConfiguration.professionalId) {
       return left(new NotFoundError())
     }
@@ -74,11 +65,6 @@ export class EditScheduleConfigurationUseCase {
     scheduleConfiguration.holidays = holidays ?? scheduleConfiguration.holidays
     scheduleConfiguration.sessionDurationMinutes =
       sessionDurationMinutes ?? scheduleConfiguration.sessionDurationMinutes
-    scheduleConfiguration.workingDays = workingDaysList
-    scheduleConfiguration.workingHours =
-      workingHours?.start && workingHours?.end
-        ? { start: workingHours.start, end: workingHours.end }
-        : scheduleConfiguration.workingHours
 
     await this.scheduleConfigurationRepository.save(scheduleConfiguration)
 
