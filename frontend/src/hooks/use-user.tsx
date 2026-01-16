@@ -12,10 +12,13 @@ import {
   type ProfessionalSettings,
 } from '../contexts/auth-context'
 import type {
+  DayOfWeek,
   UpdateCancellationPolicyData,
+  UpdateProfessional,
+  UpdateProfessionalWorkDaysData,
+  UpdateProfessionalWorkHoursData,
   UpdateScheduleConfigurationData,
   UpdateUserAccountData,
-  UpdateUserNotificationsData,
 } from '../types/user'
 
 interface UserContextType {
@@ -29,13 +32,23 @@ interface UserContextType {
   fetchProfessionalNotificationSettings: () => Promise<void>
   fetchProfessionalSettings: () => Promise<void>
   updateAccount: (data: UpdateUserAccountData) => Promise<void>
-  updateNotifications: (data: UpdateUserNotificationsData) => Promise<void>
+  updateProfessional: (data: UpdateProfessional) => Promise<void>
   updateScheduleConfiguration: (
     data: UpdateScheduleConfigurationData
   ) => Promise<void>
   updateCancellationPolicy: (
     data: UpdateCancellationPolicyData
   ) => Promise<void>
+
+  updateProfessionalWorkHours: (
+    data: UpdateProfessionalWorkHoursData
+  ) => Promise<void>
+  updateProfessionalWorkDays: (
+    data: UpdateProfessionalWorkDaysData
+  ) => Promise<void>
+
+  // uploadProfileImage: (file: File) => Promise<string>
+  // deleteProfileImage: () => Promise<void>
   clearError: () => void
 }
 
@@ -109,10 +122,10 @@ export function UserProvider({ children }: UserProviderProps) {
     }
   }
 
-  const updateNotifications = async (data: UpdateUserNotificationsData) => {
+  const updateProfessional = async (data: UpdateProfessional) => {
     try {
       setError(null)
-      const updatedSettings = await userServices.updateUserNotifications(data)
+      const updatedSettings = await userServices.updateProfessional(data)
       setNotificationSettings((prev) =>
         prev ? { ...prev, ...updatedSettings } : updatedSettings
       )
@@ -149,6 +162,41 @@ export function UserProvider({ children }: UserProviderProps) {
     } catch (err) {
       setError('Erro ao atualizar configuração de agendamento')
       console.error('Erro ao atualizar configuração de agendamento:', err)
+      throw err
+    }
+  }
+
+  const updateProfessionalWorkHours = async ({
+    newStartHour,
+    newEndHour,
+  }: UpdateProfessionalWorkHoursData) => {
+    try {
+      setError(null)
+      await userServices.updateProfessionalWorkHours(newStartHour, newEndHour)
+
+      await fetchProfessionalSettings()
+    } catch (err) {
+      setError('Erro ao atualizar horários de trabalho')
+      console.error('Erro ao atualizar horários de trabalho:', err)
+      throw err
+    }
+  }
+
+  const updateProfessionalWorkDays = async (
+    data: UpdateProfessionalWorkDaysData
+  ) => {
+    try {
+      setError(null)
+      const result = await userServices.updateProfessionalWorkDays(
+        data.newDays as DayOfWeek[]
+      )
+
+      await fetchProfessionalSettings()
+
+      return result
+    } catch (err) {
+      setError('Erro ao atualizar horários de trabalho')
+      console.error('Erro ao atualizar horários de trabalho:', err)
       throw err
     }
   }
@@ -211,10 +259,12 @@ export function UserProvider({ children }: UserProviderProps) {
     // Actions
     fetchProfessionalNotificationSettings,
     updateAccount,
-    updateNotifications,
+    updateProfessional,
     updateCancellationPolicy,
     updateScheduleConfiguration,
     fetchProfessionalSettings,
+    updateProfessionalWorkHours,
+    updateProfessionalWorkDays,
     // uploadProfileImage,
     // deleteProfileImage,
     clearError,

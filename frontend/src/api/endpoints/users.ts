@@ -3,10 +3,11 @@ import type {
   ProfessionalSettings,
 } from '@/contexts/auth-context'
 import type {
+  DayOfWeek,
   UpdateCancellationPolicyData,
+  UpdateProfessional,
   UpdateScheduleConfigurationData,
   UpdateUserAccountData,
-  UpdateUserNotificationsData,
   User,
 } from '../../types/user'
 import { api } from '../axios'
@@ -45,8 +46,8 @@ export const userServices = {
   },
 
   // Update user notifications settings
-  updateUserNotifications: async (
-    data: UpdateUserNotificationsData
+  updateProfessional: async (
+    data: UpdateProfessional
   ): Promise<ProfessionalNotificationSettings> => {
     try {
       const response = await api.put('/me/professional', data)
@@ -64,11 +65,44 @@ export const userServices = {
     try {
       const response = await api.put('/me/schedule-configuration', data)
 
-      console.log('[Data sent to updateScheduleConfiguration]', data)
-      console.log('[Response from updateScheduleConfiguration]', response.data)
       return response.data
     } catch (error) {
       console.error('Erro ao atualizar configurações de consultas:', error)
+      throw error
+    }
+  },
+
+  updateProfessionalWorkDays: async (newDays: DayOfWeek[]): Promise<void> => {
+    try {
+      const response = await api.patch('/me/professional/work-days', {
+        newDays,
+      })
+
+      return response.data
+    } catch (error) {
+      console.error(
+        'Erro ao atualizar dias de trabalho do profissional:',
+        error
+      )
+      throw error
+    }
+  },
+
+  updateProfessionalWorkHours: async (
+    newStartHour?: string,
+    newEndHour?: string
+  ): Promise<void> => {
+    try {
+      const response = await api.patch('/me/professional/work-hours', {
+        newStartHour,
+        newEndHour,
+      })
+      return response.data
+    } catch (error) {
+      console.error(
+        'Erro ao atualizar horários de trabalho do profissional:',
+        error
+      )
       throw error
     }
   },

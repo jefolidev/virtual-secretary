@@ -66,7 +66,16 @@ export interface UpdateUserAccountData {
   password?: string
 }
 
-export interface UpdateUserNotificationsData {
+export interface UpdateProfessionalWorkDaysData {
+  newDays: number[]
+}
+
+export interface UpdateProfessionalWorkHoursData {
+  newStartHour?: string
+  newEndHour?: string
+}
+
+export interface UpdateProfessional {
   enabledTypes?: NotificationType[]
   channels?: NotificationChannel[]
   dailySummaryTime?: string
