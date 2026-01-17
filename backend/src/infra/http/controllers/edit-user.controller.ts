@@ -22,7 +22,7 @@ import { EditUserBodySchema, editUserBodySchema } from './dto/edit-user.dto'
 export class EditUserController {
   constructor(
     private readonly editUser: EditUserUseCase,
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {}
 
   @Patch('/profile')
@@ -30,9 +30,9 @@ export class EditUserController {
   async handle(
     @Body(new ZodValidationPipe(editUserBodySchema))
     body: EditUserBodySchema,
-    @CurrentUser() { sub: userId }: UserPayload
+    @CurrentUser() { sub: userId }: UserPayload,
   ) {
-    const { email, name, phone } = body
+    const { email, name, whatsappNumber } = body
 
     const user = await this.userRepository.findById(userId)
 
@@ -44,7 +44,7 @@ export class EditUserController {
       userId: user.id.toString(),
       email,
       name,
-      phone,
+      whatsappNumber,
     })
 
     if (result.isLeft()) {

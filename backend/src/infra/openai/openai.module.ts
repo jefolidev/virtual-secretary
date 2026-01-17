@@ -5,3 +5,4 @@ import { OpenAiService } from './openai.service';
   providers: [OpenAiService],
 })
 export class OpenAIModule {}
+c

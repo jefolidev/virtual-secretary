@@ -81,7 +81,7 @@ export const createUserAccountBodySchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.email('Invalid email format'),
   cpf: z.string().min(11, 'CPF must have at least 11 digits').max(14),
-  phone: z.string().min(10, 'Phone must have at least 10 digits'),
+  whatsappNumber: z.string().min(10, 'Phone must have at least 10 digits'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   gender: GenderEnum,
   birthDate: z.coerce.date(),

@@ -15,7 +15,7 @@ export class PrismaUserMapper {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       cpf: user.cpf,
-      phone: user.phone,
+      whatsappNumber: user.whatsappNumber,
       addressId: user.addressId ? user.addressId.toString() : undefined,
       clientId: user.clientId ? user.clientId.toString() : undefined,
       professionalId: user.professionalId
@@ -35,7 +35,7 @@ export class PrismaUserMapper {
         birthDate: raw.birthDate,
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt,
-        phone: raw.phone,
+        whatsappNumber: raw.whatsappNumber,
         cpf: raw.cpf,
         clientId: raw.clientId ? new UniqueEntityId(raw.clientId) : undefined,
         professionalId: raw.professionalId
@@ -46,7 +46,7 @@ export class PrismaUserMapper {
           ? new UniqueEntityId(raw.addressId)
           : undefined,
       },
-      new UniqueEntityId(raw.id)
+      new UniqueEntityId(raw.id),
     )
   }
 }

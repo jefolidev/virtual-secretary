@@ -7,7 +7,7 @@ export class UserProfessionalWithSettingsPresenter {
       user: {
         name: userProfessional.name,
         email: userProfessional.email,
-        phone: userProfessional.phone,
+        whatsappNumber: userProfessional.whatsappNumber,
       },
       professional: {
         sessionPrice: userProfessional.sessionPrice,

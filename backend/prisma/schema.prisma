@@ -27,17 +27,19 @@ model Organization {
 }
 
 model User {
-  id        String    @id @default(uuid())
-  name      String
-  email     String    @unique
-  cpf       String    @unique
-  phone     String    @unique
-  role      Role
-  password  String
-  gender    Genders
-  birthDate DateTime  @map("birth_date")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime? @updatedAt @map("updated_at")
+  id             String    @id @default(uuid())
+  name           String
+  email          String    @unique
+  cpf            String    @unique
+  whatsappNumber String    @unique @map("whatsapp_number")
+  role           Role
+  password       String
+  gender         Genders
+  birthDate      DateTime  @map("birth_date")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime? @updatedAt @map("updated_at")
+
+  threadId String? @unique @map("thread_id")
 
   addressId String?  @unique @map("address_id")
   address   Address? @relation(fields: [addressId], references: [id])

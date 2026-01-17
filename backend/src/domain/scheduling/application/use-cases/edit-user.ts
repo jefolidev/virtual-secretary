@@ -11,7 +11,7 @@ export interface EditUserUseCaseRequest {
   userId: string
   name?: string
   email?: string
-  phone?: string
+  whatsappNumber?: string
 }
 
 export type EditUserUseCaseResponse = Either<
@@ -29,7 +29,7 @@ export class EditUserUseCase {
     userId,
     email,
     name,
-    phone,
+    whatsappNumber,
   }: EditUserUseCaseRequest): Promise<EditUserUseCaseResponse> {
     const user = await this.userRepository.findById(userId)
 
@@ -47,8 +47,9 @@ export class EditUserUseCase {
       }
     }
 
-    if (phone) {
-      const phoneAlreadyExists = await this.userRepository.findByPhone(phone)
+    if (whatsappNumber) {
+      const phoneAlreadyExists =
+        await this.userRepository.findByPhone(whatsappNumber)
 
       if (phoneAlreadyExists && phoneAlreadyExists.id !== user.id) {
         return left(new ConflictError('Phone already in use.'))
@@ -57,7 +58,7 @@ export class EditUserUseCase {
 
     user.email = email ?? user.email
     user.name = name ?? user.name
-    user.phone = phone ?? user.phone
+    user.whatsappNumber = whatsappNumber ?? user.whatsappNumber
 
     await this.userRepository.save(user)
 

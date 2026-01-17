@@ -8,7 +8,7 @@ export interface UserProps {
   addressId?: UniqueEntityId
   name: string
   email: string
-  phone: string
+  whatsappNumber: string
   password: string
   role: 'PROFESSIONAL' | 'CLIENT'
   cpf: string
@@ -37,12 +37,12 @@ export class User extends Entity<UserProps> {
     this.touch()
   }
 
-  get phone() {
-    return this.props.phone
+  get whatsappNumber() {
+    return this.props.whatsappNumber
   }
 
-  set phone(phone: string) {
-    this.props.phone = phone
+  set whatsappNumber(whatsappNumber: string) {
+    this.props.whatsappNumber = whatsappNumber
     this.touch()
   }
 
@@ -137,13 +137,13 @@ export class User extends Entity<UserProps> {
       email,
       name,
       password,
-      phone,
+      whatsappNumber,
       role,
       gender,
       birthDate,
       createdAt,
     }: Optional<UserProps, 'createdAt' | 'updatedAt'>,
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const user = new User(
       {
@@ -154,13 +154,13 @@ export class User extends Entity<UserProps> {
         name,
         password,
         role,
-        phone,
+        whatsappNumber,
         addressId,
         gender,
         birthDate,
         createdAt: createdAt ?? new Date(),
       },
-      id
+      id,
     )
 
     return user

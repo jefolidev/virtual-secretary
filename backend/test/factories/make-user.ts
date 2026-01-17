@@ -10,7 +10,7 @@ export class UserFactory {
 
   static async makeClientUser(
     override: Partial<UserProps> = {},
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const password = faker.internet.password({ length: 12 })
     const address = makeAddress()
@@ -25,12 +25,12 @@ export class UserFactory {
         gender: faker.helpers.arrayElement(['MALE', 'FEMALE'] as const),
         birthDate: faker.date.past({ years: 50 }),
         role: 'CLIENT',
-        phone: faker.phone.number(),
+        whatsappNumber: faker.whatsappNumber.number(),
         clientId: new UniqueEntityId('client-id'),
         professionalId: undefined,
         ...override,
       },
-      id
+      id,
     )
 
     return user
@@ -38,7 +38,7 @@ export class UserFactory {
 
   static async makeClientProfessionalUser(
     override: Partial<UserProps> = {},
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const password = faker.internet.password({ length: 12 })
     const address = makeAddress()
@@ -53,12 +53,12 @@ export class UserFactory {
         gender: faker.helpers.arrayElement(['MALE', 'FEMALE'] as const),
         birthDate: faker.date.past({ years: 50 }),
         role: 'PROFESSIONAL',
-        phone: faker.phone.number(),
+        whatsappNumber: faker.whatsappNumber.number(),
         clientId: undefined,
         professionalId: new UniqueEntityId('professional-id'),
         ...override,
       },
-      id
+      id,
     )
 
     return user

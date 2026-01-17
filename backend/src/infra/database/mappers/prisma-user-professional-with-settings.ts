@@ -24,7 +24,7 @@ export class PrismaUserProfessionalWithSettingsMapper {
     return {
       name: professional.name,
       email: professional.email,
-      phone: professional.phone,
+      whatsappNumber: professional.whatsappNumber,
       organization: professional.organization,
       scheduleConfiguration: professional.scheduleConfiguration,
       cancellationPolicy: professional.cancellationPolicy,
@@ -35,7 +35,7 @@ export class PrismaUserProfessionalWithSettingsMapper {
   }
 
   static toDomain(
-    raw: PrismaUserProfessionalWithSettings
+    raw: PrismaUserProfessionalWithSettings,
   ): UserProfessionalWithSettings {
     if (!raw.user) {
       throw new Error('User entitie must be provided.')
@@ -48,7 +48,7 @@ export class PrismaUserProfessionalWithSettingsMapper {
         {
           allowReschedule: raw.cancellationPolicy.allowReschedule,
           cancelationFeePercentage: Number(
-            raw.cancellationPolicy.cancellationFeePercentage
+            raw.cancellationPolicy.cancellationFeePercentage,
           ),
           minDaysBeforeNextAppointment:
             raw.cancellationPolicy.minDaysBeforeNextAppointment,
@@ -59,7 +59,7 @@ export class PrismaUserProfessionalWithSettingsMapper {
           createdAt: raw.cancellationPolicy.createdAt,
           updatedAt: raw.cancellationPolicy.updatedAt || null,
         },
-        new UniqueEntityId(raw.cancellationPolicy.id)
+        new UniqueEntityId(raw.cancellationPolicy.id),
       )
     }
 
@@ -79,13 +79,13 @@ export class PrismaUserProfessionalWithSettingsMapper {
           sessionDurationMinutes:
             raw.scheduleConfiguration.sessionDurationMinutes,
           workingDays: new WorkingDaysList(
-            raw.scheduleConfiguration.workingDays
+            raw.scheduleConfiguration.workingDays,
           ),
           professionalId: new UniqueEntityId(raw.id),
           createdAt: raw.scheduleConfiguration.createdAt,
           updatedAt: raw.scheduleConfiguration.updatedAt || null,
         },
-        new UniqueEntityId(raw.scheduleConfiguration.id)
+        new UniqueEntityId(raw.scheduleConfiguration.id),
       )
     }
 
@@ -103,7 +103,7 @@ export class PrismaUserProfessionalWithSettingsMapper {
           createdAt: raw.organization.createdAt,
           updatedAt: raw.organization.updatedAt || null,
         },
-        new UniqueEntityId(raw.organization.id)
+        new UniqueEntityId(raw.organization.id),
       )
     }
 
@@ -111,7 +111,7 @@ export class PrismaUserProfessionalWithSettingsMapper {
       id: new UniqueEntityId(raw.id),
       name: raw.user.name,
       email: raw.user.email,
-      phone: raw.user.phone,
+      whatsappNumber: raw.user.whatsappNumber,
       cancellationPolicy,
       scheduleConfiguration,
       organization,

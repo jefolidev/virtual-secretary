@@ -8,7 +8,7 @@ export interface UserProfessionalWithSettingsProps {
   id: UniqueEntityId
   name: string
   email: string
-  phone: string
+  whatsappNumber: string
   sessionPrice: number
   organization: Organization | null
   scheduleConfiguration: ScheduleConfiguration | undefined
@@ -30,8 +30,8 @@ export class UserProfessionalWithSettings extends ValueObject<UserProfessionalWi
     return this.props.email
   }
 
-  get phone() {
-    return this.props.phone
+  get whatsappNumber() {
+    return this.props.whatsappNumber
   }
 
   get sessionPrice() {

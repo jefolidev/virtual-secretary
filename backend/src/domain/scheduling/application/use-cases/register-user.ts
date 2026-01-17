@@ -17,16 +17,16 @@ import { ProfessionalRepository } from '../repositories/professional.repository'
 import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { UserRepository } from '../repositories/user.repository'
 import { CpfAlreadyExists } from './errors/cpf-already-exists'
-import { PhoneAlreadyExistsError } from './errors/phone-already-exists'
 import { UserAlreadyExists } from './errors/user-already-exists'
 import { ValidationError } from './errors/validation-error'
 import { WeakPasswordError } from './errors/weak-password-error'
+import { PhoneAlreadyExistsError } from './errors/whatsappNumber-already-exists'
 
 interface RegisterUserUseCaseRequest {
   name: string
   email: string
   password: string
-  phone: string
+  whatsappNumber: string
   cpf: string
   gender: 'MALE' | 'FEMALE'
   birthDate: Date
@@ -74,14 +74,14 @@ export class RegisterUserUseCase {
     private readonly professionalRepository: ProfessionalRepository,
     private readonly addressRepository: AddressRepository,
     private readonly cancellationPolicyRepository: CancellationPolicyRepository,
-    private readonly scheduleConfigurationRepository: ScheduleConfigurationRepository
+    private readonly scheduleConfigurationRepository: ScheduleConfigurationRepository,
   ) {}
 
   async execute({
     name,
     email,
     password,
-    phone,
+    whatsappNumber,
     cpf,
     gender,
     birthDate,
@@ -97,7 +97,8 @@ export class RegisterUserUseCase {
       return left(new UserAlreadyExists())
     }
 
-    const userWithSamePhone = await this.userRepository.findByPhone(phone)
+    const userWithSamePhone =
+      await this.userRepository.findByPhone(whatsappNumber)
 
     if (userWithSamePhone) {
       return left(new PhoneAlreadyExistsError())
@@ -179,7 +180,7 @@ export class RegisterUserUseCase {
       gender,
       birthDate,
       role,
-      phone,
+      whatsappNumber,
       professionalId: professional?.id,
       clientId: client?.id,
     })
@@ -190,14 +191,16 @@ export class RegisterUserUseCase {
         const policy = professionalData.cancellationPolicy
         if (policy.minHoursBeforeCancellation < 6) {
           return left(
-            new ValidationError('Política: mínimo de 6 horas para cancelamento')
+            new ValidationError(
+              'Política: mínimo de 6 horas para cancelamento',
+            ),
           )
         }
         if (policy.minDaysBeforeNextAppointment < 1) {
           return left(
             new ValidationError(
-              'Política: mínimo de 1 dia para próximo agendamento'
-            )
+              'Política: mínimo de 1 dia para próximo agendamento',
+            ),
           )
         }
         if (
@@ -205,7 +208,7 @@ export class RegisterUserUseCase {
           policy.cancelationFeePercentage > 100
         ) {
           return left(
-            new ValidationError('Política: taxa deve estar entre 0 e 100%')
+            new ValidationError('Política: taxa deve estar entre 0 e 100%'),
           )
         }
       }
@@ -215,22 +218,22 @@ export class RegisterUserUseCase {
         if (!config.daysOfWeek || config.daysOfWeek.length === 0) {
           return left(
             new ValidationError(
-              'Configuração: pelo menos um dia da semana obrigatório'
-            )
+              'Configuração: pelo menos um dia da semana obrigatório',
+            ),
           )
         }
         if (!config.startTime || !config.endTime) {
           return left(
             new ValidationError(
-              'Configuração: horários de início e fim obrigatórios'
-            )
+              'Configuração: horários de início e fim obrigatórios',
+            ),
           )
         }
         if (config.sessionDurationMinutes < 1) {
           return left(
             new ValidationError(
-              'Configuração: duração da sessão deve ser maior que 0'
-            )
+              'Configuração: duração da sessão deve ser maior que 0',
+            ),
           )
         }
       }
@@ -262,7 +265,7 @@ export class RegisterUserUseCase {
     } catch (error: any) {
       // Tratamento para erro P2002 - Unique constraint violation
       if (error.code === 'P2002') {
-        if (error.meta?.constraint?.fields?.includes('phone')) {
+        if (error.meta?.constraint?.fields?.includes('whatsappNumber')) {
           return left(new PhoneAlreadyExistsError())
         }
         if (error.meta?.constraint?.fields?.includes('email')) {

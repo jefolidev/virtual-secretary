@@ -7,19 +7,19 @@ import { faker } from '@faker-js/faker'
 
 export function makeClient(
   override?: Partial<ClientProps>,
-  id?: UniqueEntityId
+  id?: UniqueEntityId,
 ) {
   const client: Client = Client.create(
     {
       userId: new UniqueEntityId(),
       name: faker.person.firstName(),
-      phone: faker.phone.number(),
+      whatsappNumber: faker.whatsappNumber.number(),
       appointmentHistory: [],
       extraPreferences: 'Nenhuma',
       periodPreference: [],
       ...override,
     },
-    id
+    id,
   )
 
   return client

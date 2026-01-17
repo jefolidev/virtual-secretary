@@ -18,7 +18,7 @@ describe('Edit User', () => {
       email: 'johndoe@email.com',
       password: 'Abc123456',
       cpf: '12345678900',
-      phone: '11999999999',
+      whatsappNumber: '11999999999',
       birthDate: new Date('1990-01-01'),
       gender: 'MALE',
       role: 'PROFESSIONAL',
@@ -30,14 +30,14 @@ describe('Edit User', () => {
     await inMemoryUserRepository.create(user)
 
     expect(user.email).toBe('johndoe@email.com')
-    expect(user.phone).toBe('11999999999')
+    expect(user.whatsappNumber).toBe('11999999999')
     expect(user.name).toBe('John Doe')
 
     const response = await sut.execute({
       userId: user.id.toString(),
       name: 'Jane Doe',
       email: 'janedoe@email.com',
-      phone: '11888888888',
+      whatsappNumber: '11888888888',
     })
 
     expect(response.isRight()).toBe(true)
@@ -46,7 +46,7 @@ describe('Edit User', () => {
       const updatedUser = response.value.user
 
       expect(updatedUser.email).toBe('janedoe@email.com')
-      expect(updatedUser.phone).toBe('11888888888')
+      expect(updatedUser.whatsappNumber).toBe('11888888888')
       expect(updatedUser.name).toBe('Jane Doe')
     }
   })

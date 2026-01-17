@@ -1,5 +1,5 @@
 export class PhoneAlreadyExistsError extends Error {
   constructor() {
-    super('This user phone number is already in use.')
+    super('This user whatsappNumber number is already in use.')
   }
 }

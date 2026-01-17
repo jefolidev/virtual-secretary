@@ -25,10 +25,10 @@ export class PrismaUserRepository implements UserRepository {
     return PrismaUserMapper.toDomain(user)
   }
 
-  async findByPhone(phone: string): Promise<User | null> {
+  async findByPhone(whatsappNumber: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: {
-        phone,
+        whatsappNumber,
       },
       include: {
         address: true,

@@ -8,7 +8,7 @@ export class InMemoryUserRepository implements UserRepository {
 
   async findById(id: string): Promise<User | null> {
     const user = await this.items.find((item) =>
-      item.id.equals(new UniqueEntityId(id))
+      item.id.equals(new UniqueEntityId(id)),
     )
 
     if (!user) {
@@ -28,8 +28,10 @@ export class InMemoryUserRepository implements UserRepository {
     return user
   }
 
-  async findByPhone(phone: string) {
-    const user = this.items.find((item) => item.phone === phone)
+  async findByPhone(whatsappNumber: string) {
+    const user = this.items.find(
+      (item) => item.whatsappNumber === whatsappNumber,
+    )
 
     if (!user) {
       return null
@@ -56,7 +58,7 @@ export class InMemoryUserRepository implements UserRepository {
 
   async resetPassword(userId: string, password: string): Promise<void> {
     const userIndex = await this.items.findIndex(
-      (user) => user.id.toString() === userId
+      (user) => user.id.toString() === userId,
     )
 
     if (userIndex === -1) {

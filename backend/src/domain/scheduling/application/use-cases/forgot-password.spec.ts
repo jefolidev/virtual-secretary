@@ -29,7 +29,7 @@ describe('Reset password ', () => {
       professionalId: undefined,
       clientId: undefined,
       cpf: '07609254371',
-      phone: '85987146194',
+      whatsappNumber: '85987146194',
       gender: 'MALE',
       birthDate: new Date('1990-01-01'),
       role: 'CLIENT',
@@ -47,8 +47,8 @@ describe('Reset password ', () => {
     expect(
       await fakeHasher.compare(
         'newPassword123',
-        inMemoryUserRepository.items[0].password
-      )
+        inMemoryUserRepository.items[0].password,
+      ),
     ).toBe(true)
   })
 
@@ -74,7 +74,7 @@ describe('Reset password ', () => {
       professionalId: undefined,
       clientId: undefined,
       cpf: '07609254371',
-      phone: '85987146194',
+      whatsappNumber: '85987146194',
       gender: 'MALE',
       birthDate: new Date('1990-01-01'),
       role: 'CLIENT',
@@ -103,7 +103,7 @@ describe('Reset password ', () => {
       professionalId: undefined,
       clientId: undefined,
       cpf: '07609254371',
-      phone: '85987146194',
+      whatsappNumber: '85987146194',
       gender: 'FEMALE',
       birthDate: new Date('1985-05-15'),
       role: 'CLIENT',
@@ -121,8 +121,8 @@ describe('Reset password ', () => {
     expect(
       await fakeHasher.compare(
         'newpass123',
-        inMemoryUserRepository.items[0].password
-      )
+        inMemoryUserRepository.items[0].password,
+      ),
     ).toBe(true)
   })
 })

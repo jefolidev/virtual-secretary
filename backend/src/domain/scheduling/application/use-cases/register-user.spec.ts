@@ -37,7 +37,7 @@ describe('Register User', () => {
       inMemoryProfessionalRepository,
       inMemoryAddressRepository,
       inMemoryCancellationPolicyRepository,
-      inMemoryScheduleConfigurationRepository
+      inMemoryScheduleConfigurationRepository,
     )
   })
 
@@ -49,7 +49,7 @@ describe('Register User', () => {
       password: 'JohnDoe123',
       address,
       cpf: '07609254371',
-      phone: '85987146194',
+      whatsappNumber: '85987146194',
       gender: 'MALE',
       birthDate: new Date('1990-01-01'),
       role: 'CLIENT',
@@ -76,7 +76,7 @@ describe('Register User', () => {
       password: 'JohnDoe123',
       address,
       cpf: '07609254371',
-      phone: '85987146194',
+      whatsappNumber: '85987146194',
       gender: 'MALE',
       birthDate: new Date('1990-01-01'),
       role: 'PROFESSIONAL',
@@ -99,7 +99,7 @@ describe('Register User', () => {
       email: 'johndoe@example.com',
       password: 'JohnDoe123',
       cpf: '07609254371',
-      phone: '85987146194',
+      whatsappNumber: '85987146194',
       gender: 'MALE',
       birthDate: new Date('1990-01-01'),
       role: 'PROFESSIONAL',

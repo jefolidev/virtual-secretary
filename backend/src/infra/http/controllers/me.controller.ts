@@ -20,7 +20,7 @@ export class MeController {
       name: user.name,
       email: user.email,
       cpf: user.cpf,
-      phone: user.phone,
+      whatsappNumber: user.whatsappNumber,
       gender: user.gender,
       birth_date: user.birthDate,
       role: user.role,
