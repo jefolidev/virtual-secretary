@@ -6,6 +6,8 @@ export const envSchema = z.object({
   NODE_ENV: z.string().default('development'),
   JWT_PUBLIC_KEY: z.string(),
   JWT_PRIVATE_KEY: z.string(),
+  OPENAI_API_KEY: z.string(),
+  ASSISTANT_ID: z.string(),
   CORS_ORIGIN: z.string().optional().default('http://localhost:5173'),
 })
 

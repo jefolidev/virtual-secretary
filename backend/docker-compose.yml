@@ -1,4 +1,3 @@
-version: '3'
 services:
   db:
     image: postgres
@@ -11,6 +10,30 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - ./data/pg:/data/postgres
-
     ports:
       - '5432:5432'
+
+  redis:
+    image: redis:alpine
+    container_name: evolution_redis
+    ports:
+      - '6379:6379'
+
+  evolution-api:
+    container_name: evolution_api
+    image: atendai/evolution-api
+    restart: always
+    ports:
+      - '8080:8080'
+    env_file:
+      - .env.evolution
+    volumes:
+      - evolution_store:/evolution/store
+      - evolution_instances:/evolution/instances
+    depends_on:
+      - db
+      - redis
+
+volumes:
+  evolution_store:
+  evolution_instances:
