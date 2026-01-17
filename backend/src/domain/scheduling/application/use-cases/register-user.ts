@@ -20,7 +20,7 @@ import { CpfAlreadyExists } from './errors/cpf-already-exists'
 import { UserAlreadyExists } from './errors/user-already-exists'
 import { ValidationError } from './errors/validation-error'
 import { WeakPasswordError } from './errors/weak-password-error'
-import { PhoneAlreadyExistsError } from './errors/whatsappNumber-already-exists'
+import { PhoneAlreadyExistsError } from './errors/phone-already-exists'
 
 interface RegisterUserUseCaseRequest {
   name: string
