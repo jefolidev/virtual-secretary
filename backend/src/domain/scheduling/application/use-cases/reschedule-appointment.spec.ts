@@ -21,6 +21,76 @@ let inMemoryCancellationPolicyRepository: InMemoryCancellationPolicyRepository
 let inMemoryScheduleConfigurationRepository: InMemoryScheduleConfigurationRepository
 let sut: RescheduleAppointmentUseCase
 
+// Datas reutilizáveis - sempre futuras
+const getTestDates = () => {
+  const now = new Date()
+  const tomorrow = new Date(now)
+  tomorrow.setDate(now.getDate() + 1)
+
+  const dayAfterTomorrow = new Date(now)
+  dayAfterTomorrow.setDate(now.getDate() + 2)
+
+  const nextWeek = new Date(now)
+  nextWeek.setDate(now.getDate() + 7)
+
+  return {
+    // Amanhã às 10h
+    futureDate1: new Date(
+      tomorrow.getFullYear(),
+      tomorrow.getMonth(),
+      tomorrow.getDate(),
+      10,
+      0,
+      0,
+    ),
+    // Amanhã às 8h
+    futureDate2: new Date(
+      tomorrow.getFullYear(),
+      tomorrow.getMonth(),
+      tomorrow.getDate(),
+      8,
+      0,
+      0,
+    ),
+    // Amanhã às 9h
+    futureDate3: new Date(
+      tomorrow.getFullYear(),
+      tomorrow.getMonth(),
+      tomorrow.getDate(),
+      9,
+      0,
+      0,
+    ),
+    // Amanhã às 11h
+    futureDate4: new Date(
+      tomorrow.getFullYear(),
+      tomorrow.getMonth(),
+      tomorrow.getDate(),
+      11,
+      0,
+      0,
+    ),
+    // Amanhã às 11h30
+    futureDate5: new Date(
+      tomorrow.getFullYear(),
+      tomorrow.getMonth(),
+      tomorrow.getDate(),
+      11,
+      30,
+      0,
+    ),
+    // Data passada (ontem)
+    pastDate: new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1,
+      10,
+      0,
+      0,
+    ),
+  }
+}
+
 describe('Reschedule Appointment', () => {
   beforeEach(() => {
     inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
@@ -35,11 +105,12 @@ describe('Reschedule Appointment', () => {
       inMemoryProfessionalRepository,
       inMemoryCancellationPolicyRepository,
       inMemoryScheduleConfigurationRepository,
-      inMemoryClientRepository
+      inMemoryClientRepository,
     )
   })
 
   it('should be able to reschedule an appointment', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
 
     await inMemoryClientRepository.create(client)
@@ -49,7 +120,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
@@ -59,7 +130,7 @@ describe('Reschedule Appointment', () => {
         professionalId: professional.id,
         sessionDurationMinutes: 60,
       },
-      new UniqueEntityId('schedule-config-id')
+      new UniqueEntityId('schedule-config-id'),
     )
 
     await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
@@ -68,13 +139,13 @@ describe('Reschedule Appointment', () => {
       {
         professionalId: new UniqueEntityId('professional-id'),
       },
-      new UniqueEntityId('reschedule-policy-id')
+      new UniqueEntityId('reschedule-policy-id'),
     )
 
     await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
 
     professional.cancellationPolicyId = new UniqueEntityId(
-      'reschedule-policy-id'
+      'reschedule-policy-id',
     )
 
     await inMemoryProfessionalRepository.save(professional)
@@ -84,14 +155,14 @@ describe('Reschedule Appointment', () => {
         clientId: client.id,
         professionalId: professional.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
 
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isRight()).toBe(true)
@@ -103,6 +174,7 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule an appointment if professional not allow', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
 
     await inMemoryClientRepository.create(client)
@@ -112,7 +184,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
@@ -122,7 +194,7 @@ describe('Reschedule Appointment', () => {
         professionalId: professional.id,
         sessionDurationMinutes: 60,
       },
-      new UniqueEntityId('schedule-config-id')
+      new UniqueEntityId('schedule-config-id'),
     )
 
     await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
@@ -132,13 +204,13 @@ describe('Reschedule Appointment', () => {
         professionalId: new UniqueEntityId('professional-id'),
         allowReschedule: false,
       },
-      new UniqueEntityId('reschedule-policy-id')
+      new UniqueEntityId('reschedule-policy-id'),
     )
 
     await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
 
     professional.cancellationPolicyId = new UniqueEntityId(
-      'reschedule-policy-id'
+      'reschedule-policy-id',
     )
 
     await inMemoryProfessionalRepository.save(professional)
@@ -148,14 +220,14 @@ describe('Reschedule Appointment', () => {
         clientId: client.id,
         professionalId: professional.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
 
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -166,6 +238,7 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule an appointment if exist overlapping', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
 
     await inMemoryClientRepository.create(client)
@@ -175,7 +248,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
@@ -185,7 +258,7 @@ describe('Reschedule Appointment', () => {
         professionalId: professional.id,
         sessionDurationMinutes: 60,
       },
-      new UniqueEntityId('schedule-config-id')
+      new UniqueEntityId('schedule-config-id'),
     )
 
     await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
@@ -194,13 +267,13 @@ describe('Reschedule Appointment', () => {
       {
         professionalId: new UniqueEntityId('professional-id'),
       },
-      new UniqueEntityId('reschedule-policy-id')
+      new UniqueEntityId('reschedule-policy-id'),
     )
 
     await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
 
     professional.cancellationPolicyId = new UniqueEntityId(
-      'reschedule-policy-id'
+      'reschedule-policy-id',
     )
 
     await inMemoryProfessionalRepository.save(professional)
@@ -209,11 +282,11 @@ describe('Reschedule Appointment', () => {
       {
         clientId: client.id,
         professionalId: professional.id,
-        startDateTime: new Date('2026-01-05T08:00:00.000Z'),
-        endDateTime: new Date('2026-01-05T09:00:00.000Z'),
+        startDateTime: dates.futureDate2,
+        endDateTime: dates.futureDate3,
         status: 'SCHEDULED',
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
 
     await inMemoryAppointmentRepository.create(appointment)
@@ -222,18 +295,18 @@ describe('Reschedule Appointment', () => {
       {
         clientId: client.id,
         professionalId: professional.id,
-        startDateTime: new Date('2026-01-05T10:00:00.000Z'),
-        endDateTime: new Date('2026-01-05T11:00:00.000Z'),
+        startDateTime: dates.futureDate1,
+        endDateTime: dates.futureDate4,
         status: 'SCHEDULED',
       },
-      new UniqueEntityId('overlap-appointment-id')
+      new UniqueEntityId('overlap-appointment-id'),
     )
 
     await inMemoryAppointmentRepository.create(overlapAppointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -244,6 +317,7 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule to a past date', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
     await inMemoryClientRepository.create(client)
 
@@ -252,7 +326,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
     await inMemoryProfessionalRepository.create(professional)
 
@@ -261,7 +335,7 @@ describe('Reschedule Appointment', () => {
         professionalId: professional.id,
         sessionDurationMinutes: 60,
       },
-      new UniqueEntityId('schedule-config-id')
+      new UniqueEntityId('schedule-config-id'),
     )
 
     await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
@@ -270,12 +344,12 @@ describe('Reschedule Appointment', () => {
       {
         professionalId: new UniqueEntityId('professional-id'),
       },
-      new UniqueEntityId('reschedule-policy-id')
+      new UniqueEntityId('reschedule-policy-id'),
     )
     await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
 
     professional.cancellationPolicyId = new UniqueEntityId(
-      'reschedule-policy-id'
+      'reschedule-policy-id',
     )
     await inMemoryProfessionalRepository.save(professional)
 
@@ -284,13 +358,13 @@ describe('Reschedule Appointment', () => {
         clientId: client.id,
         professionalId: professional.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2020-01-05T10:00:00.000Z'),
+      startDateTime: dates.pastDate,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -300,9 +374,10 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule a non-existent appointment', async () => {
+    const dates = getTestDates()
     const response = await sut.execute({
       id: 'non-existent-id',
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -313,6 +388,7 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule a cancelled appointment', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
     await inMemoryClientRepository.create(client)
 
@@ -321,7 +397,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
     await inMemoryProfessionalRepository.create(professional)
 
@@ -331,13 +407,13 @@ describe('Reschedule Appointment', () => {
         professionalId: professional.id,
         status: 'CANCELLED',
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -347,12 +423,13 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule if client not found', async () => {
+    const dates = getTestDates()
     const professional = makeProfessional(
       {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
     await inMemoryProfessionalRepository.create(professional)
 
@@ -361,13 +438,13 @@ describe('Reschedule Appointment', () => {
         clientId: new UniqueEntityId('non-existent-client'),
         professionalId: professional.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -378,6 +455,7 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule if professional not found', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
     await inMemoryClientRepository.create(client)
 
@@ -386,13 +464,13 @@ describe('Reschedule Appointment', () => {
         clientId: client.id,
         professionalId: new UniqueEntityId('non-existent-professional'),
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
@@ -403,6 +481,7 @@ describe('Reschedule Appointment', () => {
   })
 
   it('should not be able to reschedule if schedule configuration not found', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
     await inMemoryClientRepository.create(client)
 
@@ -411,7 +490,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
     await inMemoryProfessionalRepository.create(professional)
 
@@ -420,25 +499,26 @@ describe('Reschedule Appointment', () => {
         clientId: client.id,
         professionalId: professional.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
     if (response.isLeft()) {
       expect(response.value).toBeInstanceOf(NotFoundError)
       expect(response.value.message).toBe(
-        'Professional schedule configuration not found'
+        'Professional schedule configuration not found',
       )
     }
   })
 
   it('should not be able to reschedule if cancellation policy not found', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
     await inMemoryClientRepository.create(client)
 
@@ -447,7 +527,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
     await inMemoryProfessionalRepository.create(professional)
 
@@ -456,7 +536,7 @@ describe('Reschedule Appointment', () => {
         professionalId: professional.id,
         sessionDurationMinutes: 60,
       },
-      new UniqueEntityId('schedule-config-id')
+      new UniqueEntityId('schedule-config-id'),
     )
     await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
 
@@ -465,25 +545,26 @@ describe('Reschedule Appointment', () => {
         clientId: client.id,
         professionalId: professional.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
     await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       id: appointment.id.toString(),
-      startDateTime: new Date('2026-01-05T10:00:00.000Z'),
+      startDateTime: dates.futureDate1,
     })
 
     expect(response.isLeft()).toBe(true)
     if (response.isLeft()) {
       expect(response.value).toBeInstanceOf(NotAllowedError)
       expect(response.value.message).toBe(
-        'Professional does not allow reschedule'
+        'Professional does not allow reschedule',
       )
     }
   })
 
   it('should correctly calculate end time based on session duration', async () => {
+    const dates = getTestDates()
     const client = makeClient(undefined, new UniqueEntityId('client-id'))
     await inMemoryClientRepository.create(client)
 
@@ -492,7 +573,7 @@ describe('Reschedule Appointment', () => {
         cancellationPolicyId: new UniqueEntityId('reschedule-policy-id'),
         scheduleConfigurationId: new UniqueEntityId('schedule-config-id'),
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
     await inMemoryProfessionalRepository.create(professional)
 
@@ -501,7 +582,7 @@ describe('Reschedule Appointment', () => {
         professionalId: professional.id,
         sessionDurationMinutes: 90,
       },
-      new UniqueEntityId('schedule-config-id')
+      new UniqueEntityId('schedule-config-id'),
     )
     await inMemoryScheduleConfigurationRepository.create(scheduleConfiguration)
 
@@ -509,7 +590,7 @@ describe('Reschedule Appointment', () => {
       {
         professionalId: professional.id,
       },
-      new UniqueEntityId('reschedule-policy-id')
+      new UniqueEntityId('reschedule-policy-id'),
     )
     await inMemoryCancellationPolicyRepository.create(reschedulelationPolicy)
 
@@ -518,11 +599,13 @@ describe('Reschedule Appointment', () => {
         clientId: client.id,
         professionalId: professional.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
     await inMemoryAppointmentRepository.create(appointment)
 
-    const startDateTime = new Date('2026-01-05T10:00:00.000Z')
+    const startDateTime = dates.futureDate1
+    const expectedEndTime = new Date(startDateTime.getTime() + 90 * 60 * 1000) // +90 minutos
+
     const response = await sut.execute({
       id: appointment.id.toString(),
       startDateTime,
@@ -530,10 +613,16 @@ describe('Reschedule Appointment', () => {
 
     expect(response.isRight()).toBe(true)
     if (response.isRight()) {
-      expect(response.value.appointment.startDateTime).toEqual(startDateTime)
-      expect(response.value.appointment.endDateTime).toEqual(
-        new Date('2026-01-05T11:30:00.000Z')
-      )
+      // A data de início deve ser a data que foi passada para o reschedule
+      expect(
+        response.value.appointment.effectiveStartDateTime.toISOString(),
+      ).toBe(startDateTime.toISOString())
+      // A data de fim deve ser calculada baseada na duração da sessão (90 min)
+      expect(
+        response.value.appointment.effectiveEndDateTime.toISOString(),
+      ).toBe(expectedEndTime.toISOString())
+      // O status deve ser RESCHEDULED
+      expect(response.value.appointment.status).toBe('RESCHEDULED')
     }
   })
 })
