@@ -25,7 +25,7 @@ export class UserFactory {
         gender: faker.helpers.arrayElement(['MALE', 'FEMALE'] as const),
         birthDate: faker.date.past({ years: 50 }),
         role: 'CLIENT',
-        whatsappNumber: faker.whatsappNumber.number(),
+        whatsappNumber: faker.phone.number(),
         clientId: new UniqueEntityId('client-id'),
         professionalId: undefined,
         ...override,
@@ -36,7 +36,7 @@ export class UserFactory {
     return user
   }
 
-  static async makeClientProfessionalUser(
+  static async makeProfessionalUser(
     override: Partial<UserProps> = {},
     id?: UniqueEntityId,
   ) {
@@ -53,7 +53,7 @@ export class UserFactory {
         gender: faker.helpers.arrayElement(['MALE', 'FEMALE'] as const),
         birthDate: faker.date.past({ years: 50 }),
         role: 'PROFESSIONAL',
-        whatsappNumber: faker.whatsappNumber.number(),
+        whatsappNumber: faker.phone.number(),
         clientId: undefined,
         professionalId: new UniqueEntityId('professional-id'),
         ...override,
