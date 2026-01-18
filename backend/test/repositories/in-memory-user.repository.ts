@@ -6,6 +6,20 @@ import { User } from '@/domain/scheduling/enterprise/entities/user'
 export class InMemoryUserRepository implements UserRepository {
   public items: User[] = []
 
+  async getThreadId(
+    whatsappNumber: string,
+  ): Promise<string | null | undefined> {
+    const user = this.items.find(
+      (item) => item.whatsappNumber === whatsappNumber,
+    )
+
+    if (!user) return null
+
+    if (!user.threadId) return undefined
+
+    return user.threadId.toString()
+  }
+
   async findById(id: string): Promise<User | null> {
     const user = await this.items.find((item) =>
       item.id.equals(new UniqueEntityId(id)),

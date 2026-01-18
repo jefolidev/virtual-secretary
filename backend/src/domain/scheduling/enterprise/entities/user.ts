@@ -2,10 +2,13 @@ import { Entity } from '@/core/entities/entity'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Optional } from '@prisma/client/runtime/client'
 
+// TODO: Must have be two options to create an User: by whatsapp and by website
+
 export interface UserProps {
   clientId?: UniqueEntityId
   professionalId?: UniqueEntityId
   addressId?: UniqueEntityId
+  threadId?: UniqueEntityId
   name: string
   email: string
   whatsappNumber: string
@@ -34,6 +37,15 @@ export class User extends Entity<UserProps> {
 
   set addressId(addressId: UniqueEntityId | undefined) {
     this.props.addressId = addressId
+    this.touch()
+  }
+
+  get threadId() {
+    return this.props.threadId ?? undefined
+  }
+
+  set threadId(threadId: UniqueEntityId | undefined) {
+    this.props.threadId = threadId
     this.touch()
   }
 
@@ -133,6 +145,7 @@ export class User extends Entity<UserProps> {
       clientId,
       professionalId,
       addressId,
+      threadId,
       cpf,
       email,
       name,
@@ -142,13 +155,14 @@ export class User extends Entity<UserProps> {
       gender,
       birthDate,
       createdAt,
-    }: Optional<UserProps, 'createdAt' | 'updatedAt'>,
+    }: Optional<UserProps, 'createdAt' | 'updatedAt' | 'threadId'>,
     id?: UniqueEntityId,
   ) {
     const user = new User(
       {
         clientId,
         professionalId,
+        threadId,
         cpf,
         email,
         name,

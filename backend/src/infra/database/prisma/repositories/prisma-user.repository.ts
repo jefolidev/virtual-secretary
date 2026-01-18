@@ -25,6 +25,25 @@ export class PrismaUserRepository implements UserRepository {
     return PrismaUserMapper.toDomain(user)
   }
 
+  async getThreadId(
+    whatsappNumber: string,
+  ): Promise<string | null | undefined> {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        whatsappNumber,
+      },
+      select: {
+        threadId: true,
+      },
+    })
+
+    if (!user) {
+      return null
+    }
+
+    return user.threadId ?? undefined
+  }
+
   async findByPhone(whatsappNumber: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: {
