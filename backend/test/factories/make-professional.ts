@@ -6,14 +6,14 @@ import {
 
 export function makeProfessional(
   override?: Partial<ProfessionalProps>,
-  id?: UniqueEntityId
+  id?: UniqueEntityId,
 ) {
   const professional: Professional = Professional.create(
     {
       sessionPrice: 2000,
       ...override,
     },
-    id
+    id,
   )
 
   return professional

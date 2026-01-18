@@ -7,7 +7,7 @@ import type { ProfessionalRepository } from '../../src/domain/scheduling/applica
 
 export class InMemoryProfessionalRepository implements ProfessionalRepository {
   async findByProfessionalIdWithSettings(
-    professionalId: string
+    professionalId: string,
   ): Promise<UserProfessionalWithSettings | null> {
     // This method should return a mock UserProfessionalWithSettings
     // In a real implementation, this would combine professional, user, and settings data
@@ -16,7 +16,7 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
   }
 
   async findManyProfessionalsAndSettings(
-    params?: PaginationParams
+    params?: PaginationParams,
   ): Promise<UserProfessionalWithSettings[] | null> {
     // This method should return an array of UserProfessionalWithSettings
     // For testing purposes, we'll return an empty array
@@ -25,7 +25,7 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
   public items: Professional[] = []
 
   async create(professional: Professional): Promise<void> {
-    await this.items.push(professional)
+    this.items.push(professional)
   }
 
   async findMany(params?: PaginationParams): Promise<Professional[]> {
@@ -42,7 +42,7 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
 
   async findById(id: string): Promise<Professional | null> {
     const professional = this.items.find(
-      (professional) => professional.id.toString() === id
+      (professional) => professional.id.toString() === id,
     )
 
     return professional ?? null
@@ -52,7 +52,7 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
     const professional = this.items.find(
       (professional) =>
         professional.userId !== undefined &&
-        professional.userId.equals(new UniqueEntityId(id))
+        professional.userId.equals(new UniqueEntityId(id)),
     )
 
     return professional ?? null
@@ -60,10 +60,10 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
 
   async assignCancellationPolicy(
     professionalId: string,
-    cancellationPolicyId: string
+    cancellationPolicyId: string,
   ) {
     const item = await this.items.find(
-      (item) => item.id?.toString() === professionalId
+      (item) => item.id?.toString() === professionalId,
     )
 
     if (!item) {
@@ -76,10 +76,10 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
   }
 
   async findByProfessionalIdWithNotificationSettings(
-    professionalId: string
+    professionalId: string,
   ): Promise<ProfessionalWithNotificationSettings> {
     const professional = this.items.find(
-      (item) => item.id.toString() === professionalId
+      (item) => item.id.toString() === professionalId,
     )
 
     if (!professional) {
@@ -94,7 +94,7 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
 
   async save(professional: Professional): Promise<void> {
     const itemIndex = await this.items.findIndex(
-      (item) => item.id === professional.id
+      (item) => item.id === professional.id,
     )
 
     this.items[itemIndex] = professional

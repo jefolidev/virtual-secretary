@@ -1,5 +1,6 @@
 import { Either, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import { Notification } from '../../enterprise/entities/notification'
 import type { NotificationsRepository } from '../repositories/notification-repository'
@@ -13,12 +14,15 @@ export interface SendNotificationUseCaseRequest {
 export type SendNotificationUseCaseResponse = Either<
   null,
   {
-    notification: Notification
+    notification?: Notification
   }
 >
 
 export class SendNotificationUseCase {
-  constructor(private notificationRepository: NotificationsRepository) {}
+  constructor(
+    private notificationRepository: NotificationsRepository,
+    private readonly professionalRepository: ProfessionalRepository,
+  ) {}
 
   async execute({
     recipientId,
@@ -32,6 +36,16 @@ export class SendNotificationUseCase {
       content,
       reminderType,
     })
+
+    const professional = await this.professionalRepository.findById(recipientId)
+
+    if (professional) {
+      if (
+        !professional.notificationSettings!.enabledTypes.includes(reminderType)
+      ) {
+        return right({})
+      }
+    }
 
     await this.notificationRepository.create(notification)
 
