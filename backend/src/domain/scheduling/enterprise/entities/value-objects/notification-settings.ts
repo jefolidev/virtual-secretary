@@ -1,8 +1,6 @@
 import type { Optional } from '@/core/entities/types/optional'
 import { ValueObject } from '@/core/entities/value-object'
 
-export type NotificationChannel = 'EMAIL' | 'WHATSAPP'
-
 export type NotificationType =
   | 'NEW_APPOINTMENT'
   | 'CANCELLATION'
@@ -14,21 +12,12 @@ export type NotificationType =
   | 'REMOVAL'
 
 interface NotificationSettingsProps {
-  channels: NotificationChannel[]
   enabledTypes: NotificationType[]
   reminderBeforeMinutes: number
   dailySummaryTime: string
 }
 
 export class NotificationSettings extends ValueObject<NotificationSettingsProps> {
-  get channels() {
-    return this.props.channels
-  }
-
-  set channels(channels: NotificationChannel[]) {
-    this.props.channels = channels
-  }
-
   get enabledTypes() {
     return this.props.enabledTypes
   }
@@ -56,10 +45,6 @@ export class NotificationSettings extends ValueObject<NotificationSettingsProps>
   static create(
     props: Optional<NotificationSettingsProps, 'reminderBeforeMinutes'>,
   ): NotificationSettings {
-    if (props.channels.length === 0) {
-      throw new Error('Notification settings must have at least one channel')
-    }
-
     if (props.reminderBeforeMinutes && props.reminderBeforeMinutes < 10) {
       throw new Error('Reminder before minutes must be at least 10 minutes')
     }

@@ -17,21 +17,19 @@ describe('Edit Professional', () => {
     const professional = makeProfessional(
       {
         notificationSettings: NotificationSettings.create({
-          channels: ['EMAIL'],
           dailySummaryTime: '09:00',
           enabledTypes: ['CONFIRMATION'],
           reminderBeforeMinutes: 30,
         }),
         sessionPrice: 100,
       },
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
 
     // Verificar estado inicial
     expect(professional.sessionPrice).toBe(100)
-    expect(professional.notificationSettings?.channels).toStrictEqual(['EMAIL'])
     expect(professional.notificationSettings?.dailySummaryTime).toBe('09:00')
     expect(professional.notificationSettings?.enabledTypes).toStrictEqual([
       'CONFIRMATION',
@@ -40,7 +38,6 @@ describe('Edit Professional', () => {
 
     const response = await sut.execute({
       professionalId: professional.id.toString(),
-      channels: ['WHATSAPP', 'EMAIL'],
       dailySummaryTime: '18:00',
       enabledTypes: ['CANCELLATION', 'DAILY_SUMMARY'],
       reminderBeforeMinutes: 60,
@@ -54,38 +51,30 @@ describe('Edit Professional', () => {
 
       // Verificar se o professional retornado foi atualizado
       expect(updatedProfessional.sessionPrice).toBe(150)
-      expect(updatedProfessional.notificationSettings?.channels).toStrictEqual([
-        'WHATSAPP',
-        'EMAIL',
-      ])
       expect(updatedProfessional.notificationSettings?.dailySummaryTime).toBe(
-        '18:00'
+        '18:00',
       )
       expect(
-        updatedProfessional.notificationSettings?.enabledTypes
+        updatedProfessional.notificationSettings?.enabledTypes,
       ).toStrictEqual(['CANCELLATION', 'DAILY_SUMMARY'])
       expect(
-        updatedProfessional.notificationSettings?.reminderBeforeMinutes
+        updatedProfessional.notificationSettings?.reminderBeforeMinutes,
       ).toBe(60)
 
       // Verificar se foi salvo corretamente no repositório
       const savedProfessional = await inMemoryProfessionalRepository.findById(
-        professional.id.toString()
+        professional.id.toString(),
       )
       expect(savedProfessional).toBeTruthy()
       expect(savedProfessional?.sessionPrice).toBe(150)
-      expect(savedProfessional?.notificationSettings?.channels).toStrictEqual([
-        'WHATSAPP',
-        'EMAIL',
-      ])
       expect(savedProfessional?.notificationSettings?.dailySummaryTime).toBe(
-        '18:00'
+        '18:00',
       )
       expect(
-        savedProfessional?.notificationSettings?.enabledTypes
+        savedProfessional?.notificationSettings?.enabledTypes,
       ).toStrictEqual(['CANCELLATION', 'DAILY_SUMMARY'])
       expect(
-        savedProfessional?.notificationSettings?.reminderBeforeMinutes
+        savedProfessional?.notificationSettings?.reminderBeforeMinutes,
       ).toBe(60)
     }
   })
@@ -94,14 +83,13 @@ describe('Edit Professional', () => {
     const professional = makeProfessional(
       {
         notificationSettings: NotificationSettings.create({
-          channels: ['EMAIL'],
           dailySummaryTime: '09:00',
           enabledTypes: ['CONFIRMATION'],
           reminderBeforeMinutes: 30,
         }),
         sessionPrice: 100,
       },
-      new UniqueEntityId('professional-id-2')
+      new UniqueEntityId('professional-id-2'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
@@ -120,17 +108,14 @@ describe('Edit Professional', () => {
       // Verificar que apenas sessionPrice foi alterado
       expect(updatedProfessional.sessionPrice).toBe(200)
       // Verificar que notification settings permaneceram inalteradas
-      expect(updatedProfessional.notificationSettings?.channels).toStrictEqual([
-        'EMAIL',
-      ])
       expect(updatedProfessional.notificationSettings?.dailySummaryTime).toBe(
-        '09:00'
+        '09:00',
       )
       expect(
-        updatedProfessional.notificationSettings?.enabledTypes
+        updatedProfessional.notificationSettings?.enabledTypes,
       ).toStrictEqual(['CONFIRMATION'])
       expect(
-        updatedProfessional.notificationSettings?.reminderBeforeMinutes
+        updatedProfessional.notificationSettings?.reminderBeforeMinutes,
       ).toBe(30)
     }
   })

@@ -1,7 +1,7 @@
 import { CpfAlreadyExists as CpfAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/cpf-already-exists'
+import { PhoneAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/phone-already-exists'
 import { UserAlreadyExists as UserAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/user-already-exists'
 import { ValidationError as ValidationErrorException } from '@/domain/scheduling/application/use-cases/errors/validation-error'
-import { PhoneAlreadyExistsError } from '@/domain/scheduling/application/use-cases/errors/phone-already-exists'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { NotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import { Public } from '@/infra/auth/public'
@@ -63,7 +63,6 @@ export class CreateAccountController {
         ? {
             sessionPrice: professionalData.sessionPrice,
             notificationSettings: NotificationSettings.create({
-              channels: professionalData.notificationSettings.channels,
               enabledTypes: professionalData.notificationSettings.enabledTypes,
               reminderBeforeMinutes:
                 professionalData.notificationSettings.reminderBeforeMinutes,

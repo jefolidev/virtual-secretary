@@ -5,8 +5,6 @@ const RoleEnum = z.enum(['CLIENT', 'PROFESSIONAL'])
 const GenderEnum = z.enum(['MALE', 'FEMALE'])
 const PeriodPreferenceEnum = z.enum(['MORNING', 'AFTERNOON', 'EVENING'])
 
-const NotificationChannelEnum = z.enum(['EMAIL', 'WHATSAPP'])
-
 const NotificationType = z.enum([
   'NEW_APPOINTMENT',
   'CANCELLATION',
@@ -32,9 +30,6 @@ const clientDataSchema = z.object({
 })
 
 const notificationSettings = z.object({
-  channels: z
-    .array(NotificationChannelEnum)
-    .min(1, 'Selecione ao menos um canal'),
   enabledTypes: z
     .array(NotificationType)
     .min(1, 'Selecione ao menos um tipo de notificação'),

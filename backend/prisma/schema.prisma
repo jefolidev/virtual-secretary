@@ -109,11 +109,10 @@ model Professional {
 }
 
 model NotificationSettings {
-  id                    String                @id @default(uuid())
-  channels              NotificationChannel[] @default([EMAIL, WHATSAPP])
-  enabledTypes          NotificationType[]    @default([CONFIRMATION, CANCELLATION]) @map("enabled_types")
-  reminderBeforeMinutes Int                   @default(10) @map("reminder_before_minutes")
-  dailySummaryTime      String                @default("12:00") @map("daily_summary_time")
+  id                    String             @id @default(uuid())
+  enabledTypes          NotificationType[] @default([CONFIRMATION, CANCELLATION]) @map("enabled_types")
+  reminderBeforeMinutes Int                @default(10) @map("reminder_before_minutes")
+  dailySummaryTime      String             @default("12:00") @map("daily_summary_time")
 
   professional Professional?
 
@@ -208,11 +207,11 @@ model Transaction {
 }
 
 model Notification {
-  id               String              @id @default(uuid())
-  recipientId      String              @map("recipient_id")
-  channel          NotificationChannel
-  type             NotificationType
-  notificationData Json                @map("notification_data")
+  id          String           @id @default(uuid())
+  recipientId String           @map("recipient_id")
+  type        NotificationType
+  title       String
+  content     String
 
   readAt DateTime? @map("read_at")
   sentAt DateTime  @map("sent_at")

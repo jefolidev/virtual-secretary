@@ -13,14 +13,13 @@ type PrismaProfessionalWithNotificationSettings = Professional & {
 
 export class PrismaProfessionalWithNotificationSettingsMapper {
   static toDomain(
-    raw: PrismaProfessionalWithNotificationSettings
+    raw: PrismaProfessionalWithNotificationSettings,
   ): ProfessionalWithNotificationSettings {
     if (!raw.notificationSettings) {
       throw new BadRequestException('Notification settings not provided.')
     }
 
     const notificationSettings = NotificationSettings.create({
-      channels: raw.notificationSettings.channels,
       enabledTypes: raw.notificationSettings.enabledTypes,
       reminderBeforeMinutes: raw.notificationSettings.reminderBeforeMinutes,
       dailySummaryTime: raw.notificationSettings.dailySummaryTime,

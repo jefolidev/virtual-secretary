@@ -23,7 +23,7 @@ import {
 export class EditProfessionalController {
   constructor(
     private readonly editProfessional: EditProfessionalUseCase,
-    private readonly professionalRepository: ProfessionalRepository
+    private readonly professionalRepository: ProfessionalRepository,
   ) {}
 
   @Put('/professional')
@@ -31,10 +31,9 @@ export class EditProfessionalController {
   async handle(
     @Body(new ZodValidationPipe(editProfessionalBodySchema))
     body: EditProfessionalBodySchema,
-    @CurrentUser() { sub: userId }: UserPayload
+    @CurrentUser() { sub: userId }: UserPayload,
   ) {
     const {
-      channels,
       dailySummaryTime,
       enabledTypes,
       reminderBeforeMinutes,
@@ -49,7 +48,6 @@ export class EditProfessionalController {
 
     const result = await this.editProfessional.execute({
       professionalId: professional.id.toString(),
-      channels,
       dailySummaryTime,
       enabledTypes,
       reminderBeforeMinutes,

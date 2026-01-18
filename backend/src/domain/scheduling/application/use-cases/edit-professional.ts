@@ -5,7 +5,6 @@ import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { Injectable } from '@nestjs/common'
 import { Professional } from '../../enterprise/entities/professional'
 import {
-  NotificationChannel,
   NotificationSettings,
   NotificationType,
 } from '../../enterprise/entities/value-objects/notification-settings'
@@ -14,7 +13,6 @@ import { ProfessionalRepository } from '../repositories/professional.repository'
 export interface EditProfessionalUseCaseRequest {
   professionalId: string
   sessionPrice?: number
-  channels?: NotificationChannel[]
   enabledTypes?: NotificationType[]
   reminderBeforeMinutes?: number
   dailySummaryTime?: string
@@ -34,14 +32,12 @@ export class EditProfessionalUseCase {
   async execute({
     professionalId,
     sessionPrice,
-    channels,
     enabledTypes,
     reminderBeforeMinutes,
     dailySummaryTime,
   }: EditProfessionalUseCaseRequest): Promise<EditProfessionalUseCaseResponse> {
-    const professional = await this.professionalRepository.findById(
-      professionalId
-    )
+    const professional =
+      await this.professionalRepository.findById(professionalId)
 
     if (!professional) return left(new NotFoundError('Professional not found.'))
 
@@ -54,13 +50,10 @@ export class EditProfessionalUseCase {
     // Initialize notification settings if not present
     if (!professional.notificationSettings) {
       professional.notificationSettings = NotificationSettings.create({
-        channels: channels || ['EMAIL'],
         enabledTypes: enabledTypes || ['NEW_APPOINTMENT'],
         dailySummaryTime: dailySummaryTime || '08:00',
       })
     } else {
-      professional.notificationSettings.channels =
-        channels ?? professional.notificationSettings.channels
       professional.notificationSettings.enabledTypes =
         enabledTypes ?? professional.notificationSettings.enabledTypes
 

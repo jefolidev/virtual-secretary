@@ -37,7 +37,6 @@ describe('Create Notification', () => {
 
   it('should not send notification if professional has disabled the type', async () => {
     const notificationSettings = NotificationSettings.create({
-      channels: ['EMAIL'],
       enabledTypes: ['WELCOME', 'PAYMENT_STATUS'],
       reminderBeforeMinutes: 30,
       dailySummaryTime: '18:00',

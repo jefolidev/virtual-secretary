@@ -14,7 +14,7 @@ export interface NotificationProps {
   content: string
   reminderType: NotificationType
   createdAt: Date
-  readAt?: Date
+  readAt?: Date | null
 }
 
 export class Notification extends Entity<NotificationProps> {

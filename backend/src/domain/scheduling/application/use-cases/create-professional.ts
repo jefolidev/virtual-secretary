@@ -6,7 +6,6 @@ import { CancellationPolicy } from '../../enterprise/entities/cancellation-polic
 import { Professional } from '../../enterprise/entities/professional'
 import { ScheduleConfiguration } from '../../enterprise/entities/schedule-configuration'
 import {
-  NotificationChannel,
   NotificationSettings,
   NotificationType,
 } from '../../enterprise/entities/value-objects/notification-settings'
@@ -15,7 +14,6 @@ import { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface CreateProfessionalUseCaseProps {
   sessionPrice: number
-  channels: NotificationChannel[]
   dailySummaryTime: string
   enabledTypes: NotificationType[]
   reminderBeforeMinutes?: number
@@ -31,13 +29,11 @@ export class CreateProfessionalUseCase {
 
   async execute({
     sessionPrice,
-    channels,
     dailySummaryTime,
     enabledTypes,
     reminderBeforeMinutes,
   }: CreateProfessionalUseCaseProps): Promise<CreateProfessionalUseCaseResponse> {
     const notificationSettings = NotificationSettings.create({
-      channels,
       dailySummaryTime,
       enabledTypes,
       reminderBeforeMinutes,
@@ -57,7 +53,7 @@ export class CreateProfessionalUseCase {
         minHoursBeforeCancellation: 7,
         professionalId: professional.id,
       },
-      new UniqueEntityId()
+      new UniqueEntityId(),
     )
 
     const scheduleConfiguration = await ScheduleConfiguration.create(
@@ -74,7 +70,7 @@ export class CreateProfessionalUseCase {
         bufferIntervalMinutes: 60,
         sessionDurationMinutes: 50,
       },
-      new UniqueEntityId()
+      new UniqueEntityId(),
     )
 
     const workingDaysList = new WorkingDaysList([0, 1, 2, 3, 4, 5, 6])

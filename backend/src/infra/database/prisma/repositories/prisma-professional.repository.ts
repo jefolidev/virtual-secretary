@@ -14,7 +14,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async findByProfessionalIdWithNotificationSettings(
-    professionalId: string
+    professionalId: string,
   ): Promise<ProfessionalWithNotificationSettings | null> {
     const professional = await this.prisma.professional.findUnique({
       where: { id: professionalId },
@@ -28,7 +28,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
     }
 
     return PrismaProfessionalWithNotificationSettingsMapper.toDomain(
-      professional
+      professional,
     )
   }
 
@@ -38,7 +38,6 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
 
     if (professional.notificationSettings) {
       const notificationSettingsData = {
-        channels: professional.notificationSettings.channels,
         enabledTypes: professional.notificationSettings.enabledTypes,
         reminderBeforeMinutes:
           professional.notificationSettings.reminderBeforeMinutes,
@@ -132,7 +131,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
   }
 
   async findByProfessionalIdWithSettings(
-    id: string
+    id: string,
   ): Promise<UserProfessionalWithSettings | null> {
     const professional = await this.prisma.professional.findFirst({
       where: {
@@ -155,7 +154,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
 
   async assignCancellationPolicy(
     professionalId: string,
-    cancellationPolicyId: string
+    cancellationPolicyId: string,
   ): Promise<void> {
     await this.prisma.professional.update({
       where: { id: professionalId },
@@ -181,7 +180,6 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
       })
 
       const notificationSettingsData = {
-        channels: professional.notificationSettings.channels,
         enabledTypes: professional.notificationSettings.enabledTypes,
         reminderBeforeMinutes:
           professional.notificationSettings.reminderBeforeMinutes,

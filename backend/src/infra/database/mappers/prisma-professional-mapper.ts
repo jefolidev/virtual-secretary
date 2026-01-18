@@ -35,7 +35,6 @@ export class PrismaProfessionalMapper {
   static toDomain(raw: ProfessionalWithNotificationSettings): Professional {
     const notificationSettings = raw.notificationSettings
       ? NotificationSettings.create({
-          channels: raw.notificationSettings.channels as any[],
           enabledTypes: raw.notificationSettings.enabledTypes as any[],
           reminderBeforeMinutes: raw.notificationSettings.reminderBeforeMinutes,
           dailySummaryTime: raw.notificationSettings.dailySummaryTime,
@@ -52,7 +51,7 @@ export class PrismaProfessionalMapper {
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt || null,
       },
-      new UniqueEntityId(raw.id)
+      new UniqueEntityId(raw.id),
     )
   }
 }
