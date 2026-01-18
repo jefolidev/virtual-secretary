@@ -6,7 +6,7 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "email": "profissional@email.com",
+  "email": "client@email.com",
   "password": "Abc12345"
 }
 
@@ -31,11 +31,13 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson@professional.com.br",
-  "password": "SenhaForte123",
-  "cpf": "82000843026",
+  "email": "professional2@email.com",
+  "password": "Abc12345",
+  "cpf": "71264124368",
   "role": "PROFESSIONAL",
-  "phone": "2988773355",
+  "whatsappNumber": "+551122334466",
+  "gender": "MALE",
+  "birthDate": "2006-07-13",
   "address": {
     "addressLine1": "Rua Exemplo, 123",
     "addressLine2": "Apto 101",
@@ -44,6 +46,11 @@ Content-Type: application/json
     "state": "CE",
     "postalCode": "60000000",
     "country": "Brasil"
+  },
+  "notificationSettings": {
+    "enabledTypes": ["NEW_APPOINTMENT", "CANCELLATION", "CONFIRMATION", "DAILY_SUMMARY", "CONFIRMED_LIST", "PAYMENT_STATUS", "WELCOME", "REMOVAL", "FIRST_REMINDER", "USER_CONFIRMATION", "FINAL_REMINDER"],
+    "reminderBeforeMinutes": 30,
+    "dailySummaryHour": "20:00"
   },
   "session_price": 20
 }
@@ -72,6 +79,7 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
+    "professionalId": "3d2fdb35-3b2f-424f-b06c-60da6bc65270",
     "allowReschedule": true,
     "cancelationFeePercentage": 0.5,
     "description": "Cancellation Policy",
@@ -87,11 +95,13 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "jeferson@client.com.br",
-  "password": "SenhaForte123",
+  "email": "client@email.com",
+  "password": "Abc12345",
   "cpf": "07609254371",
   "role": "CLIENT",
-  "phone": "9988776622",
+  "whatsappNumber": "+559988776622",
+  "gender": "MALE",
+  "birthDate": "2006-07-13",
    "clientData": {
     "periodPreference": ["MORNING", "AFTERNOON"],
     "extraPreferences": "Preferências adicionais do cliente"
@@ -191,7 +201,7 @@ Authorization: Bearer {{authToken}}
 ### 
 
 # @name fetch_professional_with_notification_settings
-GET {{baseUrl}}/professional/9c6f8231-e9f8-4a9c-89f1-573936da394c/notification-settings
+GET {{baseUrl}}/professional/3d2fdb35-3b2f-424f-b06c-60da6bc65270/notification-settings
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -221,8 +231,8 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "professionalId": "1d82b379-e7e7-4b68-936c-8dea94af5d4f",
-  "startDateTime": "2025-12-22T09:00:00.000Z",
+  "professionalId": "81abe423-304e-49ec-92d6-a5e7de4de242",
+  "startDateTime": "2026-01-22T09:00:00.000Z",
   "modality": "IN_PERSON"
 }
 

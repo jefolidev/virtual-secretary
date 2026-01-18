@@ -43,8 +43,6 @@ export class CreateAccountController {
       professionalData,
     } = body
 
-    console.log(body)
-
     const result = await this.registerUserUseCase.execute({
       address: {
         ...address,

@@ -70,6 +70,7 @@ import { RemoveProfessionalFromOrganizationController } from './controllers/remo
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { StartAppointmentController } from './controllers/start-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
+import { ReadNotificationUseCase } from '@/domain/notifications/application/use-cases/read-notification'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],

@@ -34,7 +34,8 @@ describe('On Appointment Confirmed', () => {
     inMemorySendNotificationRepository =
       new InMemorySendNotificationRepository()
     sendNotificationUseCase = new SendNotificationUseCase(
-      inMemorySendNotificationRepository
+      inMemorySendNotificationRepository,
+      inMemoryProfessionalRepository, 
     )
 
     sendNotificationExecuteSpy = vi.spyOn(sendNotificationUseCase, 'execute')

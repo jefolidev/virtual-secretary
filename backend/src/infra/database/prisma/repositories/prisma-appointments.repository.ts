@@ -1,3 +1,4 @@
+import { DomainEvents } from '@/core/events/domain-events'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import {
   Appointment,
@@ -17,6 +18,8 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     await this.prisma.appointment.create({
       data,
     })
+
+    DomainEvents.dispatchEventsForAggregate(appointment.id)
   }
   async findMany(params: { page: number }): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
@@ -48,7 +51,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
   async findOverlapping(
     professionalId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
@@ -61,7 +64,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     }
 
     const domainAppointments = appointments.map(
-      PrismaAppointmentMapper.toDomain
+      PrismaAppointmentMapper.toDomain,
     )
 
     const blockingStatuses = [
@@ -87,7 +90,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
   async findManyByProfessionalId(
     professionalId: string,
-    params: { page: number }
+    params: { page: number },
   ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
@@ -106,7 +109,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
   async findManyByClientId(
     clientId: string,
-    params: { page: number }
+    params: { page: number },
   ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
@@ -142,7 +145,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
   async findManyByStatus(
     status: AppointmentStatusType,
-    params: { page: number }
+    params: { page: number },
   ): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       where: {
@@ -170,5 +173,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
         data,
       }),
     ])
+
+    DomainEvents.dispatchEventsForAggregate(appointment.id)
   }
 }

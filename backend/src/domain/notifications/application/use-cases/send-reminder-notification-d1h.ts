@@ -1,16 +1,14 @@
 import { Either, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import {
-  Notification,
-  type NotificationReminderType,
-} from '../../enterprise/entities/notification'
+import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
+import { Notification } from '../../enterprise/entities/notification'
 import type { NotificationsRepository } from '../repositories/notification-repository'
 
 export interface SendReminderNotificationUseCaseRequest {
   userId: string
   title: string
   content: string
-  reminderType: NotificationReminderType
+  reminderType: NotificationType
 }
 
 export type SendReminderNotificationUseCaseResponse = Either<
@@ -31,7 +29,7 @@ export class SendReminderNotificationUseCase {
       recipientId: new UniqueEntityId(userId),
       title,
       content,
-      reminderType,
+      reminderType: reminderType,
     })
 
     await this.notificationRepository.create(reminder)

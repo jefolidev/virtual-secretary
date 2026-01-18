@@ -26,7 +26,7 @@ export type EditScheduleConfigurationUseCaseResponse = Either<
 export class EditScheduleConfigurationUseCase {
   constructor(
     private professionalRepository: ProfessionalRepository,
-    private scheduleConfigurationRepository: ScheduleConfigurationRepository
+    private scheduleConfigurationRepository: ScheduleConfigurationRepository,
   ) {}
 
   async execute({
@@ -36,9 +36,8 @@ export class EditScheduleConfigurationUseCase {
     holidays,
     sessionDurationMinutes,
   }: EditScheduleConfigurationUseCaseRequest): Promise<EditScheduleConfigurationUseCaseResponse> {
-    const professional = await this.professionalRepository.findById(
-      professionalId
-    )
+    const professional =
+      await this.professionalRepository.findById(professionalId)
 
     if (!professional) return left(new NotFoundError('Professional not found.'))
 
@@ -48,8 +47,12 @@ export class EditScheduleConfigurationUseCase {
 
     const scheduleConfiguration =
       await this.scheduleConfigurationRepository.findByProfessionalId(
-        professionalId
+        professionalId,
       )
+
+    if (!scheduleConfiguration) {
+      return left(new NotFoundError('Schedule Configuration not found.'))
+    }
 
     if (!scheduleConfiguration.professionalId) {
       return left(new NotFoundError())

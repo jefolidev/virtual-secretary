@@ -274,6 +274,9 @@ enum NotificationType {
   PAYMENT_STATUS
   WELCOME
   REMOVAL
+  FIRST_REMINDER
+  FINAL_REMINDER
+  USER_CONFIRMATION
 }
 
 enum WeekDays {

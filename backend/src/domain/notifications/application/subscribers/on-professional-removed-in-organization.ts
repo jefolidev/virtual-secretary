@@ -1,9 +1,11 @@
 import { DomainEvents } from '@/core/events/domain-events'
-import type { EventHandler } from '@/core/events/event-handler'
+import { EventHandler } from '@/core/events/event-handler'
 import { RemovedProfessionalFromOrganizationEvent } from '@/domain/organization/enterprise/events/remove-professional-organization'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
-import type { SendNotificationUseCase } from '../use-cases/send-notification'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { Injectable } from '@nestjs/common'
+import { SendNotificationUseCase } from '../use-cases/send-notification'
 
+@Injectable()
 export class OnProfessionalRemovedFromOrganization implements EventHandler {
   constructor(
     private sendNotification: SendNotificationUseCase,

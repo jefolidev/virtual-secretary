@@ -5,6 +5,7 @@ import { envSchema } from './env/env'
 import { EnvModule } from './env/env.module'
 import { envEvolutionSchema } from './env/evolution/env-evolution'
 import { EnvEvolutionModule } from './env/evolution/env-evolution.module'
+import { EventsModule } from './events/events.module'
 import { HttpModule } from './http/http.module'
 import { WebhooksModule } from './webhooks/webhooks.module'
 
@@ -26,6 +27,7 @@ import { WebhooksModule } from './webhooks/webhooks.module'
     AuthModule,
     EnvModule,
     EnvEvolutionModule,
+    EventsModule,
     HttpModule,
     WebhooksModule,
   ],

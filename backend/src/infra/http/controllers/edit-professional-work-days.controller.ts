@@ -23,7 +23,7 @@ import {
 export class EditProfessionalWorkDaysController {
   constructor(
     private readonly editProfessionalWorkDays: ChangeProfessionalWorkDaysUseCase,
-    private readonly professionalRepository: ProfessionalRepository
+    private readonly professionalRepository: ProfessionalRepository,
   ) {}
 
   @Patch('/professional/work-days')
@@ -31,11 +31,9 @@ export class EditProfessionalWorkDaysController {
   async handle(
     @Body(new ZodValidationPipe(editProfessionalWorkDaysBodySchema))
     body: EditProfessionalWorkDaysBodySchema,
-    @CurrentUser() { sub: userId }: UserPayload
+    @CurrentUser() { sub: userId }: UserPayload,
   ) {
     const { newDays } = body
-
-    console.log('Received newDays:', newDays)
 
     const professional = await this.professionalRepository.findByUserId(userId)
 
@@ -48,8 +46,6 @@ export class EditProfessionalWorkDaysController {
       newDays,
     })
 
-    console.log('Result:', result)
-
     if (result.isLeft()) {
       const error = result.value
       switch (error.constructor) {
@@ -61,8 +57,6 @@ export class EditProfessionalWorkDaysController {
           throw new BadRequestException(error?.message ?? 'Bad Request')
       }
     }
-
-    console.log(JSON.stringify(result))
 
     return { professional: result.value.scheduleConfiguration }
   }

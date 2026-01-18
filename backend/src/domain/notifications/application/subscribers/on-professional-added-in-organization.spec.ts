@@ -19,7 +19,7 @@ let sendNotificationUseCase: SendNotificationUseCase
 
 let sendNotificationExecuteSpy: MockInstance<
   (
-    request: SendNotificationUseCaseRequest
+    request: SendNotificationUseCaseRequest,
   ) => Promise<SendNotificationUseCaseResponse>
 >
 
@@ -30,14 +30,15 @@ describe('On Professional Added In Organization', () => {
     inMemorySendNotificationRepository =
       new InMemorySendNotificationRepository()
     sendNotificationUseCase = new SendNotificationUseCase(
-      inMemorySendNotificationRepository
+      inMemorySendNotificationRepository,
+      inMemoryProfessionalRepository,
     )
 
     sendNotificationExecuteSpy = vi.spyOn(sendNotificationUseCase, 'execute')
 
     new OnProfessionalAddedToOrganization(
       sendNotificationUseCase,
-      inMemoryProfessionalRepository
+      inMemoryProfessionalRepository,
     )
   })
 
@@ -45,9 +46,7 @@ describe('On Professional Added In Organization', () => {
     const organization = makeOrganization({
       name: 'Clinica Saúde Total',
     })
-    const professional = makeProfessional({
-      name: 'Dr. João Silva',
-    })
+    const professional = makeProfessional({})
 
     await inMemoryOrganizationRepository.create(organization)
     await inMemoryProfessionalRepository.create(professional)
@@ -64,6 +63,7 @@ describe('On Professional Added In Organization', () => {
       recipientId: professional.id.toString(),
       title: `Bem-vindo à ${organization.name}!`,
       content: `Você foi adicionado à organização ${organization.name}. Agora você pode receber agendamentos.`,
+      reminderType: 'WELCOME',
     })
   })
 })

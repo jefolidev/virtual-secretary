@@ -1,11 +1,13 @@
 import { DomainEvents } from '@/core/events/domain-events'
 import type { EventHandler } from '@/core/events/event-handler'
-import type { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { CanceledAppointmentEvent } from '@/domain/scheduling/enterprise/events/canceled-appointment'
+import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
-import type { SendNotificationUseCase } from '../use-cases/send-notification'
+import { SendNotificationUseCase } from '../use-cases/send-notification'
 
+@Injectable()
 export class OnAppointmentCanceled implements EventHandler {
   constructor(
     private professionalRepository: ProfessionalRepository,

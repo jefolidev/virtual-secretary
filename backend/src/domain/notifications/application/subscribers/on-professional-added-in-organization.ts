@@ -1,13 +1,15 @@
 import { DomainEvents } from '@/core/events/domain-events'
-import type { EventHandler } from '@/core/events/event-handler'
-import type { SendNotificationUseCase } from '@/domain/notifications/application/use-cases/send-notification'
+import { EventHandler } from '@/core/events/event-handler'
+import { SendNotificationUseCase } from '@/domain/notifications/application/use-cases/send-notification'
 import { AddedProfessionalToOrganizationEvent } from '@/domain/organization/enterprise/events/added-professional-organization'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { Injectable } from '@nestjs/common'
 
+@Injectable()
 export class OnProfessionalAddedToOrganization implements EventHandler {
   constructor(
     private sendNotification: SendNotificationUseCase,
-    private professionalRepo: ProfessionalRepository
+    private professionalRepo: ProfessionalRepository,
   ) {
     this.setupSubscriptions()
   }
@@ -15,15 +17,15 @@ export class OnProfessionalAddedToOrganization implements EventHandler {
   setupSubscriptions(): void {
     DomainEvents.register(
       this.sendWelcomeNotification.bind(this),
-      AddedProfessionalToOrganizationEvent.name
+      AddedProfessionalToOrganizationEvent.name,
     )
   }
 
   private async sendWelcomeNotification(
-    event: AddedProfessionalToOrganizationEvent
+    event: AddedProfessionalToOrganizationEvent,
   ) {
     const professional = await this.professionalRepo.findById(
-      event.professionalId.toString()
+      event.professionalId.toString(),
     )
 
     if (professional) {
@@ -33,7 +35,6 @@ export class OnProfessionalAddedToOrganization implements EventHandler {
         content: `Você foi adicionado à organização ${event.organizationName}. Agora você pode receber agendamentos.`,
         reminderType: 'WELCOME',
       })
-
     }
   }
 }

@@ -10,6 +10,9 @@ export type NotificationType =
   | 'PAYMENT_STATUS'
   | 'WELCOME'
   | 'REMOVAL'
+  | 'FIRST_REMINDER'
+  | 'USER_CONFIRMATION'
+  | 'FINAL_REMINDER'
 
 interface NotificationSettingsProps {
   enabledTypes: NotificationType[]

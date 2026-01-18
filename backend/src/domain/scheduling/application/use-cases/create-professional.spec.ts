@@ -14,12 +14,7 @@ describe('Create Professional', () => {
     const response = await sut.execute({
       sessionPrice: 0,
       dailySummaryTime: '18:00',
-      enabledTypes: [
-        'CANCELLATION',
-        'CONFIRMED_LIST',
-        'CONFIRMATION',
-        'DAILY_SUMMARY',
-      ],
+      enabledTypes: ['CANCELLATION','CONFIRMED_LIST','CONFIRMATION','DAILY_SUMMARY'],
       reminderBeforeMinutes: 50,
     })
 

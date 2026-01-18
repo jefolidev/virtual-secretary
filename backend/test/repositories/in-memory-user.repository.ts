@@ -20,6 +20,20 @@ export class InMemoryUserRepository implements UserRepository {
     return user.threadId.toString()
   }
 
+  async findByProfessionalId(professionalId: string): Promise<User | null> {
+    const user = this.items.find(
+      (item) =>
+        item.professionalId !== undefined &&
+        item.professionalId.equals(new UniqueEntityId(professionalId)),
+    )
+
+    if (!user) {
+      return null
+    }
+
+    return user
+  }
+
   async findById(id: string): Promise<User | null> {
     const user = await this.items.find((item) =>
       item.id.equals(new UniqueEntityId(id)),

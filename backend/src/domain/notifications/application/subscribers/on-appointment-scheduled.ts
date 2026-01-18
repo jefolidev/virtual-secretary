@@ -1,15 +1,20 @@
+import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { DomainEvents } from '@/core/events/domain-events'
 import type { EventHandler } from '@/core/events/event-handler'
-import type { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
-import type { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { ScheduledAppointmentEvent } from '@/domain/scheduling/enterprise/events/scheduled-appointment-event'
+import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
-import type { SendNotificationUseCase } from '../use-cases/send-notification'
+import { SendNotificationUseCase } from '../use-cases/send-notification'
 
+@Injectable()
 export class OnAppointmentScheduled implements EventHandler {
   constructor(
     private professionalRepository: ProfessionalRepository,
     private clientRepository: ClientRepository,
+    private userRepository: UserRepository,
     private sendNotification: SendNotificationUseCase,
   ) {
     this.setupSubscriptions()
@@ -29,13 +34,23 @@ export class OnAppointmentScheduled implements EventHandler {
       appointment.professionalId.toString(),
     )
 
+    const user = await this.userRepository.findByProfessionalId(
+      appointment.professionalId.toString(),
+    )
+
+    if (!user) {
+      throw new NotFoundError(
+        `User not found for professionalId: ${appointment.professionalId.toString()}`,
+      )
+    }
+
     const client = await this.clientRepository.findById(
       appointment.clientId.toString(),
     )
 
     if (professional && client) {
-      await this.sendNotification.execute({
-        recipientId: professional.id.toString(),
+      const result = await this.sendNotification.execute({
+        recipientId: user.id?.toString(),
         title: `Nova consulta agendada`,
         content: `O paciente agendou uma consulta para ${dayjs(
           appointment.startDateTime,
@@ -44,6 +59,10 @@ export class OnAppointmentScheduled implements EventHandler {
         )}.`,
         reminderType: 'NEW_APPOINTMENT',
       })
+    } else {
+      throw new NotFoundError(
+        `Professional or client not found for appointmentId: ${appointment.id.toString()}`,
+      )
     }
   }
 }

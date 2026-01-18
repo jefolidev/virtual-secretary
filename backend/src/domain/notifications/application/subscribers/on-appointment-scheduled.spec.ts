@@ -22,7 +22,7 @@ let sendNotificationUseCase: SendNotificationUseCase
 
 let sendNotificationExecuteSpy: MockInstance<
   (
-    request: SendNotificationUseCaseRequest
+    request: SendNotificationUseCaseRequest,
   ) => Promise<SendNotificationUseCaseResponse>
 >
 
@@ -34,7 +34,8 @@ describe('On Appointment Scheduled', () => {
     inMemorySendNotificationRepository =
       new InMemorySendNotificationRepository()
     sendNotificationUseCase = new SendNotificationUseCase(
-      inMemorySendNotificationRepository
+      inMemorySendNotificationRepository,
+      inMemoryProfessionalRepository,
     )
 
     sendNotificationExecuteSpy = vi.spyOn(sendNotificationUseCase, 'execute')
@@ -42,7 +43,7 @@ describe('On Appointment Scheduled', () => {
     new OnAppointmentScheduled(
       inMemoryProfessionalRepository,
       inMemoryClientRepository,
-      sendNotificationUseCase
+      sendNotificationUseCase,
     )
   })
 

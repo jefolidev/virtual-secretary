@@ -59,7 +59,6 @@ export class EditProfessionalWorkHoursController {
       }
     }
 
-    console.log(JSON.stringify(result))
 
     return { professional: result.value.scheduleConfiguration }
   }

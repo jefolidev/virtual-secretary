@@ -3,11 +3,6 @@ import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 
-export type NotificationReminderType =
-  | 'first_reminder'
-  | 'confirmation'
-  | 'final_reminder'
-
 export interface NotificationProps {
   recipientId: UniqueEntityId
   title: string
