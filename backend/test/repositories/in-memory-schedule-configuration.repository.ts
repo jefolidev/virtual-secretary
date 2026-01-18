@@ -2,9 +2,7 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import type { ScheduleConfigurationRepository } from '@/domain/scheduling/application/repositories/schedule-configuration.repository'
 import type { ScheduleConfiguration } from '@/domain/scheduling/enterprise/entities/schedule-configuration'
 
-export class InMemoryScheduleConfigurationRepository
-  implements ScheduleConfigurationRepository
-{
+export class InMemoryScheduleConfigurationRepository implements ScheduleConfigurationRepository {
   public items: ScheduleConfiguration[] = []
 
   async create(scheduleconfiguration: ScheduleConfiguration): Promise<void> {
@@ -16,17 +14,17 @@ export class InMemoryScheduleConfigurationRepository
   }
 
   async findByProfessionalId(
-    professionalId: string
-  ): Promise<ScheduleConfiguration> {
+    professionalId: string,
+  ): Promise<ScheduleConfiguration | null> {
     const scheduleConfigurations = await this.items.find(
       (scheduleconfiguration) =>
         scheduleconfiguration.professionalId.equals(
-          new UniqueEntityId(professionalId)
-        )
+          new UniqueEntityId(professionalId),
+        ),
     )
 
     if (!scheduleConfigurations) {
-      throw new Error('schedule configuration not found')
+      return null
     }
 
     return scheduleConfigurations
@@ -34,7 +32,7 @@ export class InMemoryScheduleConfigurationRepository
 
   async save(scheduleconfiguration: ScheduleConfiguration): Promise<void> {
     const itemIndex = this.items.findIndex(
-      (item) => item.id === scheduleconfiguration.id
+      (item) => item.id === scheduleconfiguration.id,
     )
 
     this.items[itemIndex] = scheduleconfiguration
