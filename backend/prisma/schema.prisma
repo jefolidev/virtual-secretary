@@ -47,8 +47,9 @@ model User {
   professional   Professional? @relation(fields: [professionalId], references: [id])
   professionalId String?       @unique @map("professional_id")
 
-  client   Client? @relation(fields: [clientId], references: [id])
-  clientId String? @unique @map("client_id")
+  client        Client?        @relation(fields: [clientId], references: [id])
+  clientId      String?        @unique @map("client_id")
+  notifications Notification[]
 
   @@map("users")
 }
@@ -206,6 +207,21 @@ model Transaction {
   @@map("transactions")
 }
 
+model Notification {
+  id               String              @id @default(uuid())
+  recipientId      String              @map("recipient_id")
+  channel          NotificationChannel
+  type             NotificationType
+  notificationData Json                @map("notification_data")
+
+  readAt DateTime? @map("read_at")
+  sentAt DateTime  @map("sent_at")
+
+  recipient User @relation(fields: [recipientId], references: [id])
+
+  @@map("notifications")
+}
+
 enum Role {
   CLIENT
   PROFESSIONAL
@@ -257,6 +273,8 @@ enum NotificationType {
   DAILY_SUMMARY
   CONFIRMED_LIST
   PAYMENT_STATUS
+  WELCOME
+  REMOVAL
 }
 
 enum WeekDays {
