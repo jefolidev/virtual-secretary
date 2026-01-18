@@ -11,7 +11,7 @@ export class OnAppointmentConfirmed implements EventHandler {
   constructor(
     private professionalRepository: ProfessionalRepository,
     private clientRepository: ClientRepository,
-    private sendNotification: SendNotificationUseCase
+    private sendNotification: SendNotificationUseCase,
   ) {
     this.setupSubscriptions()
   }
@@ -19,7 +19,7 @@ export class OnAppointmentConfirmed implements EventHandler {
   setupSubscriptions(): void {
     DomainEvents.register(
       this.sendConfirmedAppointmentNotification.bind(this),
-      ConfirmedAppointmentEvent.name
+      ConfirmedAppointmentEvent.name,
     )
   }
 
@@ -27,11 +27,11 @@ export class OnAppointmentConfirmed implements EventHandler {
     appointment,
   }: ScheduledAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
-      appointment.professionalId.toString()
+      appointment.professionalId.toString(),
     )
 
     const client = await this.clientRepository.findById(
-      appointment.clientId.toString()
+      appointment.clientId.toString(),
     )
 
     if (professional && client) {
@@ -39,8 +39,9 @@ export class OnAppointmentConfirmed implements EventHandler {
         recipientId: professional.id.toString(),
         title: `Consulta confirmada`,
         content: `O paciente confirmou a consulta do dia ${dayjs(
-          appointment.startDateTime
+          appointment.startDateTime,
         ).format('DD/MM/YYYY')}.`,
+        reminderType: 'CONFIRMATION',
       })
     }
   }

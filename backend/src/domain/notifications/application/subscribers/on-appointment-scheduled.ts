@@ -10,7 +10,7 @@ export class OnAppointmentScheduled implements EventHandler {
   constructor(
     private professionalRepository: ProfessionalRepository,
     private clientRepository: ClientRepository,
-    private sendNotification: SendNotificationUseCase
+    private sendNotification: SendNotificationUseCase,
   ) {
     this.setupSubscriptions()
   }
@@ -18,7 +18,7 @@ export class OnAppointmentScheduled implements EventHandler {
   setupSubscriptions(): void {
     DomainEvents.register(
       this.sendNewAppointmentNotification.bind(this),
-      ScheduledAppointmentEvent.name
+      ScheduledAppointmentEvent.name,
     )
   }
 
@@ -26,11 +26,11 @@ export class OnAppointmentScheduled implements EventHandler {
     appointment,
   }: ScheduledAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
-      appointment.professionalId.toString()
+      appointment.professionalId.toString(),
     )
 
     const client = await this.clientRepository.findById(
-      appointment.clientId.toString()
+      appointment.clientId.toString(),
     )
 
     if (professional && client) {
@@ -38,10 +38,11 @@ export class OnAppointmentScheduled implements EventHandler {
         recipientId: professional.id.toString(),
         title: `Nova consulta agendada`,
         content: `O paciente agendou uma consulta para ${dayjs(
-          appointment.startDateTime
+          appointment.startDateTime,
         ).format('DD/MM/YYYY')} às ${dayjs(appointment.startDateTime).format(
-          'hh:mm'
+          'hh:mm',
         )}.`,
+        reminderType: 'NEW_APPOINTMENT',
       })
     }
   }

@@ -31,7 +31,9 @@ export class OnProfessionalAddedToOrganization implements EventHandler {
         recipientId: professional.id.toString(),
         title: `Bem-vindo à ${event.organizationName}!`,
         content: `Você foi adicionado à organização ${event.organizationName}. Agora você pode receber agendamentos.`,
+        reminderType: 'WELCOME',
       })
+
     }
   }
 }

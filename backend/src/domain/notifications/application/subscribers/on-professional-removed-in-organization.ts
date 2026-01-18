@@ -7,7 +7,7 @@ import type { SendNotificationUseCase } from '../use-cases/send-notification'
 export class OnProfessionalRemovedFromOrganization implements EventHandler {
   constructor(
     private sendNotification: SendNotificationUseCase,
-    private professionalRepository: ProfessionalRepository
+    private professionalRepository: ProfessionalRepository,
   ) {
     this.setupSubscriptions()
   }
@@ -15,15 +15,15 @@ export class OnProfessionalRemovedFromOrganization implements EventHandler {
   setupSubscriptions(): void {
     DomainEvents.register(
       this.sendRemovalNotification.bind(this),
-      RemovedProfessionalFromOrganizationEvent.name
+      RemovedProfessionalFromOrganizationEvent.name,
     )
   }
 
   private async sendRemovalNotification(
-    event: RemovedProfessionalFromOrganizationEvent
+    event: RemovedProfessionalFromOrganizationEvent,
   ) {
     const professional = await this.professionalRepository.findById(
-      event.professionalId.toString()
+      event.professionalId.toString(),
     )
 
     if (professional) {
@@ -31,6 +31,7 @@ export class OnProfessionalRemovedFromOrganization implements EventHandler {
         recipientId: professional.id.toString(),
         title: `Você foi removido da ${event.organizationName}`,
         content: `Você não faz mais parte da organização ${event.organizationName}.`,
+        reminderType: 'REMOVAL',
       })
     }
   }

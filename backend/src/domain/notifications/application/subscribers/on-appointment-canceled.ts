@@ -10,7 +10,7 @@ export class OnAppointmentCanceled implements EventHandler {
   constructor(
     private professionalRepository: ProfessionalRepository,
     private clientRepository: ClientRepository,
-    private sendNotification: SendNotificationUseCase
+    private sendNotification: SendNotificationUseCase,
   ) {
     this.setupSubscriptions()
   }
@@ -18,7 +18,7 @@ export class OnAppointmentCanceled implements EventHandler {
   setupSubscriptions(): void {
     DomainEvents.register(
       this.sendCanceledAppointmentNotification.bind(this),
-      CanceledAppointmentEvent.name
+      CanceledAppointmentEvent.name,
     )
   }
 
@@ -26,11 +26,11 @@ export class OnAppointmentCanceled implements EventHandler {
     appointment,
   }: CanceledAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
-      appointment.professionalId.toString().toString()
+      appointment.professionalId.toString().toString(),
     )
 
     const client = await this.clientRepository.findById(
-      appointment.clientId.toString()
+      appointment.clientId.toString(),
     )
 
     if (professional && client) {
@@ -38,8 +38,9 @@ export class OnAppointmentCanceled implements EventHandler {
         recipientId: professional.id.toString(),
         title: `Consulta cancelada`,
         content: `O paciente cancelou a consulta do dia ${dayjs(
-          appointment.startDateTime
+          appointment.startDateTime,
         ).format('DD/MM/YYYY')}.`,
+        reminderType: 'CANCELLATION',
       })
     }
   }

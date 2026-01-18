@@ -10,6 +10,8 @@ export type NotificationType =
   | 'DAILY_SUMMARY'
   | 'CONFIRMED_LIST'
   | 'PAYMENT_STATUS'
+  | 'WELCOME'
+  | 'REMOVAL'
 
 interface NotificationSettingsProps {
   channels: NotificationChannel[]
@@ -52,7 +54,7 @@ export class NotificationSettings extends ValueObject<NotificationSettingsProps>
   }
 
   static create(
-    props: Optional<NotificationSettingsProps, 'reminderBeforeMinutes'>
+    props: Optional<NotificationSettingsProps, 'reminderBeforeMinutes'>,
   ): NotificationSettings {
     if (props.channels.length === 0) {
       throw new Error('Notification settings must have at least one channel')

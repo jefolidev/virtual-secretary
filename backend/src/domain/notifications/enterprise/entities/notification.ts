@@ -1,6 +1,7 @@
 import { Entity } from '@/core/entities/entity'
 import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 
 export type NotificationReminderType =
   | 'first_reminder'
@@ -11,7 +12,7 @@ export interface NotificationProps {
   recipientId: UniqueEntityId
   title: string
   content: string
-  reminderType?: NotificationReminderType
+  reminderType: NotificationType
   createdAt: Date
   readAt?: Date
 }
@@ -41,7 +42,7 @@ export class Notification extends Entity<NotificationProps> {
     return this.props.reminderType
   }
 
-  set reminderType(reminderType: NotificationReminderType | undefined) {
+  set reminderType(reminderType: NotificationType) {
     this.props.reminderType = reminderType
   }
 
@@ -51,14 +52,14 @@ export class Notification extends Entity<NotificationProps> {
 
   static create(
     props: Optional<NotificationProps, 'createdAt'>,
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const notification = new Notification(
       {
         ...props,
         createdAt: props.createdAt ?? new Date(),
       },
-      id
+      id,
     )
 
     return notification
