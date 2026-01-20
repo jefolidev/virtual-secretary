@@ -23,7 +23,7 @@ interface ProfessionalNotificationsProps {
       | 'confirmations'
       | 'dailySummary'
       | 'confirmedList'
-      | 'payments'
+      | 'payments',
   ) => void
   onToggleNotificationChannel: (key: 'email' | 'whatsapp') => void
   onValidationChange?: (isValid: boolean) => void
@@ -116,40 +116,6 @@ export function ProfessionalNotifications({
             />
             <Label htmlFor="payments" className="font-normal">
               Notificações de pagamento
-            </Label>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        <Label>
-          Canais de notificação <span className="text-red-500">*</span>
-        </Label>
-        {!notificationChannels.email && !notificationChannels.whatsapp && (
-          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded-md">
-            <AlertCircle className="h-4 w-4" />
-            <span>Selecione pelo menos um canal de notificação</span>
-          </div>
-        )}
-        <div className="space-y-2">
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="email"
-              checked={notificationChannels.email}
-              onCheckedChange={() => onToggleNotificationChannel('email')}
-            />
-            <Label htmlFor="email" className="font-normal">
-              Email
-            </Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="whatsapp"
-              checked={notificationChannels.whatsapp}
-              onCheckedChange={() => onToggleNotificationChannel('whatsapp')}
-            />
-            <Label htmlFor="whatsapp" className="font-normal">
-              WhatsApp
             </Label>
           </div>
         </div>
