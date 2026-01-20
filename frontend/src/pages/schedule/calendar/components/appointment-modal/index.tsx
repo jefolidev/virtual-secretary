@@ -48,9 +48,9 @@ interface SessionTimer {
 const getMockPatientData = (appointmentId: string) => ({
   id: appointmentId,
   name: 'Maria Silva',
-  phone: '(11) 99999-9999',
+  whatsappNumber: '(11) 99999-9999',
   email: 'maria.silva@email.com',
-  birth_date: '1985-03-15',
+  birthDate: '1985-03-15',
   age: 38,
   gender: 'Feminino',
   address: 'Rua das Flores, 123, São Paulo - SP, 01234-567',
@@ -76,7 +76,7 @@ export function AppointmentModal({
   onOpenChange,
 }: AppointmentModalProps) {
   const [currentStatus, setCurrentStatus] = useState(
-    appointment?.status || 'agendado'
+    appointment?.status || 'agendado',
   )
   const [timer, setTimer] = useState<SessionTimer>({
     isRunning: false,
@@ -322,7 +322,7 @@ export function AppointmentModal({
                         <span className="text-xs text-muted-foreground">
                           Último lembrete:{' '}
                           {new Date(
-                            patientData.lastNotification
+                            patientData.lastNotification,
                           ).toLocaleDateString('pt-BR')}
                         </span>
                       )}
@@ -363,7 +363,9 @@ export function AppointmentModal({
                   <span className="text-xs font-medium text-zinc-500">
                     Telefone:
                   </span>
-                  <span className="text-base">{patientData.phone}</span>
+                  <span className="text-base">
+                    {patientData.whatsappNumber}
+                  </span>
                 </div>
 
                 <div className="flex flex-col gap-1">
@@ -379,13 +381,13 @@ export function AppointmentModal({
                   </span>
                   <span className="text-base">
                     {patientData.age} anos,{' '}
-                    {new Date(patientData.birth_date).toLocaleDateString(
+                    {new Date(patientData.birthDate).toLocaleDateString(
                       'pt-BR',
                       {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric',
-                      }
+                      },
                     )}
                   </span>
                 </div>
