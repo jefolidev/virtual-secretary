@@ -5,9 +5,9 @@ export interface FormData {
   email: string
   password: string
   confirmPassword: string
-  phone: string
+  whatsappNumber: string
   cpf: string
-  birth_date: string
+  birthDate: string
   gender: 'MALE' | 'FEMALE' | ''
 
   userType: 'professional' | 'patient' | null
@@ -67,13 +67,13 @@ interface SignupFormContextType {
   updateNestedFormData: (
     field: keyof FormData,
     nestedField: string,
-    value: any
+    value: any,
   ) => void
   clearFormData: () => void
 }
 
 const SignupFormContext = createContext<SignupFormContextType | undefined>(
-  undefined
+  undefined,
 )
 
 const initialFormData: FormData = {
@@ -81,9 +81,9 @@ const initialFormData: FormData = {
   email: '',
   password: '',
   confirmPassword: '',
-  phone: '',
+  whatsappNumber: '',
   cpf: '',
-  birth_date: '',
+  birthDate: '',
   gender: '' as 'MALE' | 'FEMALE',
 
   userType: null,
@@ -151,7 +151,7 @@ export function SignupFormProvider({
   const updateNestedFormData = (
     field: keyof FormData,
     nestedField: string,
-    value: any
+    value: any,
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -179,7 +179,7 @@ export function useSignupForm() {
   const context = useContext(SignupFormContext)
   if (context === undefined) {
     throw new Error(
-      'useSignupForm deve ser usado dentro de um SignupFormProvider'
+      'useSignupForm deve ser usado dentro de um SignupFormProvider',
     )
   }
   return context
