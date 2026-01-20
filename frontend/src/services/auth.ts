@@ -7,9 +7,9 @@ export interface RegisterUserData {
   name: string
   email: string
   password: string
-  phone: string
+  whatsappNumber: string
   cpf: string
-  birth_date: string
+  birthDate: string
   gender: 'MALE' | 'FEMALE'
   role: 'CLIENT' | 'PROFESSIONAL'
 
@@ -82,7 +82,7 @@ export interface ProfessionalNotifications {
 
 export async function saveCancellationPolicy(
   professionalId: string,
-  policy: CancellationPolicy
+  policy: CancellationPolicy,
 ): Promise<void> {
   try {
     await api.post(`/profissional/cancellation-policy`, {
@@ -96,7 +96,7 @@ export async function saveCancellationPolicy(
 }
 
 export async function saveScheduleConfiguration(
-  config: ScheduleConfiguration
+  config: ScheduleConfiguration,
 ): Promise<void> {
   try {
     await api.put(`/me/schedule-configuration`, config)
@@ -108,7 +108,7 @@ export async function saveScheduleConfiguration(
 
 export async function saveProfessionalNotifications(
   professionalId: string,
-  notifications: ProfessionalNotifications
+  notifications: ProfessionalNotifications,
 ): Promise<void> {
   try {
     await api.post(`/profissional/notifications`, {
@@ -122,10 +122,10 @@ export async function saveProfessionalNotifications(
 }
 
 export function transformSignupDataToRegisterData(
-  data: SignupData
+  data: SignupData,
 ): RegisterUserData {
-  // Validar e corrigir birth_date
-  if (!data.birth_date || data.birth_date.trim() === '') {
+  // Validar e corrigir birthDate
+  if (!data.birthDate || data.birthDate.trim() === '') {
     throw new Error('Data de nascimento é obrigatória')
   }
 
@@ -138,9 +138,9 @@ export function transformSignupDataToRegisterData(
     name: data.name,
     email: data.email,
     password: data.password,
-    phone: data.phone,
+    whatsappNumber: data.whatsappNumber,
     cpf: data.cpf,
-    birth_date: data.birth_date,
+    birthDate: data.birthDate,
     gender: data.gender,
     role: data.userType === 'professional' ? 'PROFESSIONAL' : 'CLIENT',
 
@@ -148,7 +148,7 @@ export function transformSignupDataToRegisterData(
       data.userType === 'patient'
         ? {
             periodPreference: data.periodPreference.map((p) =>
-              p.toUpperCase()
+              p.toUpperCase(),
             ) as Array<'MORNING' | 'AFTERNOON' | 'EVENING'>,
             extraPreferences: data.extraPreferences,
           }
@@ -233,7 +233,7 @@ export function transformSignupDataToRegisterData(
 }
 
 export function transformSignupDataToScheduleConfig(
-  data: SignupData
+  data: SignupData,
 ): ScheduleConfiguration | null {
   if (data.userType !== 'professional' || !data.workDays) {
     return null
@@ -260,7 +260,7 @@ export function transformSignupDataToScheduleConfig(
 }
 
 export function transformSignupDataToCancellationPolicy(
-  data: SignupData
+  data: SignupData,
 ): CancellationPolicy | null {
   if (data.userType !== 'professional') {
     return null
@@ -277,7 +277,7 @@ export function transformSignupDataToCancellationPolicy(
 }
 
 export function transformSignupDataToNotifications(
-  data: SignupData
+  data: SignupData,
 ): ProfessionalNotifications | null {
   if (
     data.userType !== 'professional' ||
