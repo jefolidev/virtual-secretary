@@ -7,9 +7,9 @@ export interface UserLoginData {
   name: string
   email: string
   cpf: string
-  birth_date: Date
+  birthDate: Date
   gender: 'MALE' | 'FEMALE'
-  phone: string
+  whatsappNumber: string
   role: string
   professional_id: string | null
   client_id: string | null
