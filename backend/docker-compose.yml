@@ -21,7 +21,7 @@ services:
 
   evolution-api:
     container_name: evolution_api
-    image: atendai/evolution-api
+    image: evoapicloud/evolution-api:v2.3.7
     restart: always
     ports:
       - '8080:8080'
@@ -37,3 +37,7 @@ services:
 volumes:
   evolution_store:
   evolution_instances:
+
+networks:
+  evolution_network:
+    driver: bridge
