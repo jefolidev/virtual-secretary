@@ -7,14 +7,14 @@ export const updateUserAccountSchema = z.object({
     .string()
     .regex(
       /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
-      'CPF deve estar no formato XXX.XXX.XXX-XX'
+      'CPF deve estar no formato XXX.XXX.XXX-XX',
     )
     .optional(),
-  phone: z
+  whatsappNumber: z
     .string()
     .regex(
       /^\(\d{2}\)\s\d{4,5}-\d{4}$/,
-      'Telefone deve estar no formato (XX) XXXXX-XXXX'
+      'Telefone deve estar no formato (XX) XXXXX-XXXX',
     )
     .optional(),
 })
