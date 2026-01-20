@@ -22,7 +22,7 @@ export const signUpFormSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.email('Formato de email inválido'),
   cpf: z.string().min(11, 'CPF deve ter pelo menos 11 dígitos').max(14),
-  phone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
+  whatsappNumber: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
   role: RoleEnum,
   address: addressSchema,
