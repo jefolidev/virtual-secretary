@@ -42,8 +42,8 @@ function validateEmail(email: string): boolean {
   return emailRegex.test(email)
 }
 
-function validatePhone(phone: string): boolean {
-  const cleanPhone = phone.replace(/\D/g, '')
+function validatePhone(whatsappNumber: string): boolean {
+  const cleanPhone = whatsappNumber.replace(/\D/g, '')
 
   return cleanPhone.length === 11 || cleanPhone.length === 10
 }
@@ -128,9 +128,9 @@ export function validateSignupData(data: SignupData): ValidationResult {
     })
   }
 
-  if (!data.phone || !validatePhone(data.phone)) {
+  if (!data.whatsappNumber || !validatePhone(data.whatsappNumber)) {
     errors.push({
-      field: 'phone',
+      field: 'whatsappNumber',
       message: 'Telefone inválido',
       step: 1,
     })
@@ -144,28 +144,28 @@ export function validateSignupData(data: SignupData): ValidationResult {
     })
   }
 
-  if (!data.birth_date) {
+  if (!data.birthDate) {
     errors.push({
-      field: 'birth_date',
+      field: 'birthDate',
       message: 'Data de nascimento é obrigatória',
       step: 1,
     })
   } else {
-    const birth_date = new Date(data.birth_date)
+    const birthDate = new Date(data.birthDate)
     const today = new Date()
-    let age = today.getFullYear() - birth_date.getFullYear()
-    const monthDiff = today.getMonth() - birth_date.getMonth()
+    let age = today.getFullYear() - birthDate.getFullYear()
+    const monthDiff = today.getMonth() - birthDate.getMonth()
 
     if (
       monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth_date.getDate())
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
     ) {
       age--
     }
 
     if (age < 16) {
       errors.push({
-        field: 'birth_date',
+        field: 'birthDate',
         message: 'Você deve ter pelo menos 16 anos',
         step: 1,
       })
