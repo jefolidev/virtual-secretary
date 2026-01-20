@@ -45,7 +45,7 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
     formData.confirmPassword !== ''
 
   const isFormValid = () => {
-    const cleanPhone = formData.phone.replace(/\D/g, '')
+    const cleanPhone = formData.whatsappNumber.replace(/\D/g, '')
     const cleanCPF = formData.cpf.replace(/\D/g, '')
 
     return (
@@ -55,8 +55,8 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
       passwordsMatch &&
       cleanPhone.length >= 10 &&
       cleanCPF.length === 11 &&
-      formData.birth_date !== '' &&
-      formData.birth_date.trim() !== '' &&
+      formData.birthDate !== '' &&
+      formData.birthDate.trim() !== '' &&
       formData.gender !== '' &&
       (formData.gender === 'MALE' || formData.gender === 'FEMALE')
     )
@@ -71,9 +71,9 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
     formData.email,
     formData.password,
     formData.confirmPassword,
-    formData.phone,
+    formData.whatsappNumber,
     formData.cpf,
-    formData.birth_date,
+    formData.birthDate,
     formData.gender,
   ])
 
@@ -100,7 +100,7 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
   }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    updateFormData('phone', formatPhone(e.target.value))
+    updateFormData('whatsappNumber', formatPhone(e.target.value))
   }
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -272,8 +272,8 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
                 formData.confirmPassword && !passwordsMatch
                   ? 'border-red-500 focus-visible:ring-red-500 pr-20'
                   : formData.confirmPassword && passwordsMatch
-                  ? 'border-green-500 focus-visible:ring-green-500 pr-20'
-                  : 'pr-20'
+                    ? 'border-green-500 focus-visible:ring-green-500 pr-20'
+                    : 'pr-20'
               }
               required
             />
@@ -307,13 +307,13 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="phone">
+        <Label htmlFor="whatsappNumber">
           Telefone <span className="text-red-500">*</span>
         </Label>
         <Input
-          id="phone"
+          id="whatsappNumber"
           placeholder="(00) 00000-0000"
-          value={formData.phone}
+          value={formData.whatsappNumber}
           onChange={handlePhoneChange}
           maxLength={15}
           required
@@ -335,15 +335,15 @@ export function AccountDetails({ onValidationChange }: AccountDetailsProps) {
       </div>
 
       <div className="grid gap-2">
-        <Label htmlFor="birth_date">
+        <Label htmlFor="birthDate">
           Data de nascimento <span className="text-red-500">*</span>
         </Label>
         <Input
-          id="birth_date"
+          id="birthDate"
           type="date"
-          value={formData.birth_date}
+          value={formData.birthDate}
           onChange={(e) => {
-            updateFormData('birth_date', e.target.value)
+            updateFormData('birthDate', e.target.value)
           }}
           required
         />
