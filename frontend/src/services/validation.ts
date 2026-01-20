@@ -3,7 +3,7 @@ import { api } from '@/api/axios'
 export async function checkDataAvailability(data: {
   email: string
   cpf: string
-  phone: string
+  whatsappNumber: string
 }): Promise<{ available: boolean; conflicts: string[] }> {
   try {
     const response = await api.post('/check-availability', data)
@@ -28,7 +28,7 @@ export function getConflictMessage(conflicts: string[]): string {
   const conflictMap: Record<string, string> = {
     email: 'E-mail já está em uso',
     cpf: 'CPF já está cadastrado',
-    phone: 'Telefone já está em uso',
+    whatsappNumber: 'Telefone já está em uso',
   }
 
   const messages = conflicts
