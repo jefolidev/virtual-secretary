@@ -73,9 +73,9 @@ export interface User {
   name: string
   email: string
   userType: 'professional' | 'patient'
-  phone?: string
+  whatsappNumber?: string
   cpf?: string
-  birth_date?: string
+  birthDate?: string
   address?: {
     cep: string
     street: string
@@ -92,9 +92,9 @@ export interface SignupData {
   email: string
   password: string
   confirmPassword: string
-  phone: string
+  whatsappNumber: string
   cpf: string
-  birth_date: string
+  birthDate: string
   gender: 'MALE' | 'FEMALE'
   userType: 'professional' | 'patient'
 
@@ -210,15 +210,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const missingFields = Object.entries(requiredFields)
           .filter(
-            ([_, value]) => !value || (typeof value === 'number' && value <= 0)
+            ([_, value]) => !value || (typeof value === 'number' && value <= 0),
           )
           .map(([key]) => key)
 
         if (missingFields.length > 0) {
           throw new Error(
             `Dados obrigatórios do profissional estão faltando: ${missingFields.join(
-              ', '
-            )}`
+              ', ',
+            )}`,
           )
         }
       }
