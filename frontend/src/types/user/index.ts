@@ -3,7 +3,7 @@ export interface User {
   email: string
   name: string
   cpf?: string
-  phone?: string
+  whatsappNumber?: string
   address?: string
   profileImage?: string
   role: 'professional' | 'patient'
@@ -62,7 +62,7 @@ export interface UpdateUserAccountData {
   name?: string
   email?: string
   cpf?: string
-  phone?: string
+  whatsappNumber?: string
   password?: string
 }
 
