@@ -205,7 +205,7 @@ function SignUpPageContent() {
       const availability = await checkDataAvailability({
         email: formData.email,
         cpf: formData.cpf,
-        phone: formData.phone,
+        whatsappNumber: formData.whatsappNumber,
       })
 
       toast.dismiss('checking')
@@ -219,10 +219,10 @@ function SignUpPageContent() {
       }
 
       // Validação final antes de enviar
-      if (!formData.birth_date || formData.birth_date.trim() === '') {
+      if (!formData.birthDate || formData.birthDate.trim() === '') {
         setValidationErrors([
           {
-            field: 'birth_date',
+            field: 'birthDate',
             message: 'Data de nascimento é obrigatória',
             step: 1,
           },
@@ -251,9 +251,9 @@ function SignUpPageContent() {
         email: formData.email,
         password: formData.password,
         confirmPassword: formData.confirmPassword,
-        phone: formData.phone,
+        whatsappNumber: formData.whatsappNumber,
         cpf: formData.cpf,
-        birth_date: formData.birth_date,
+        birthDate: formData.birthDate,
         gender: formData.gender as 'MALE' | 'FEMALE',
         userType: formData.userType || 'patient',
         periodPreference:
@@ -339,7 +339,7 @@ function SignUpPageContent() {
         if (
           errorDetails.includes('duplicate') ||
           errorDetails.includes('unique') ||
-          errorDetails.includes('phone') ||
+          errorDetails.includes('whatsappNumber') ||
           errorDetails.includes('email') ||
           errorDetails.includes('cpf') ||
           errorMessage.includes('already exists') ||
@@ -524,7 +524,7 @@ function SignUpPageContent() {
                     updateNestedFormData(
                       'workDays',
                       day,
-                      !formData.workDays[day]
+                      !formData.workDays[day],
                     )
                   }}
                   onFieldChange={(field, value) => {
@@ -543,14 +543,14 @@ function SignUpPageContent() {
                     updateNestedFormData(
                       'notifications',
                       key,
-                      !formData.notifications[key]
+                      !formData.notifications[key],
                     )
                   }}
                   onToggleNotificationChannel={(channel) => {
                     updateNestedFormData(
                       'notificationChannels',
                       channel,
-                      !formData.notificationChannels[channel]
+                      !formData.notificationChannels[channel],
                     )
                   }}
                   onValidationChange={setIsProfessionalNotificationsValid}
