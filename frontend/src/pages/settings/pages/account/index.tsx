@@ -38,7 +38,7 @@ export function AccountSettingsPage() {
     defaultValues: {
       name: user?.name,
       email: user?.email,
-      phone: user?.phone,
+      whatsappNumber: user?.whatsappNumber,
     },
   })
 
@@ -46,7 +46,7 @@ export function AccountSettingsPage() {
   const hasChanges =
     watchedValues.name !== (user?.name || '') ||
     watchedValues.email !== (user?.email || '') ||
-    watchedValues.phone !== (user?.phone || '') ||
+    watchedValues.whatsappNumber !== (user?.whatsappNumber || '') ||
     (password && password.trim() !== '')
 
   const handleSave = async (data: UpdateUserAccountSchema) => {
@@ -58,8 +58,8 @@ export function AccountSettingsPage() {
       if (data.name && data.name !== user?.name) updatedData.name = data.name
       if (data.email && data.email !== user?.email)
         updatedData.email = data.email
-      if (data.phone && data.phone !== user?.phone)
-        updatedData.phone = data.phone
+      if (data.whatsappNumber && data.whatsappNumber !== user?.whatsappNumber)
+        updatedData.whatsappNumber = data.whatsappNumber
 
       await updateAccount(updatedData)
 
@@ -185,8 +185,8 @@ export function AccountSettingsPage() {
                       user?.gender === 'MALE'
                         ? 'Homem'
                         : user?.gender === 'FEMALE'
-                        ? 'Mulher'
-                        : ''
+                          ? 'Mulher'
+                          : ''
                     }
                     disabled
                   />
@@ -197,8 +197,8 @@ export function AccountSettingsPage() {
                   <Input
                     placeholder="Não informado"
                     value={
-                      user?.birth_date
-                        ? new Date(user.birth_date).toLocaleDateString('pt-BR')
+                      user?.birthDate
+                        ? new Date(user.birthDate).toLocaleDateString('pt-BR')
                         : ''
                     }
                     disabled
@@ -238,7 +238,7 @@ export function AccountSettingsPage() {
 
                   <FormField
                     control={form.control}
-                    name="phone"
+                    name="whatsappNumber"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Telefone</FormLabel>
