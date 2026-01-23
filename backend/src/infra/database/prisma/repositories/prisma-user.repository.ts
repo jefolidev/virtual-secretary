@@ -17,6 +17,29 @@ export class PrismaUserRepository implements UserRepository {
     private readonly hashGenerator: HashGenerator,
   ) {}
 
+  async findManyProfessionalUsers(): Promise<User[]> {
+    const users = await this.prisma.user.findMany({
+      where: {
+        professionalId: {
+          not: null,
+        },
+      },
+      include: {
+        address: true,
+
+        professional: {
+          include: {
+            cancellationPolicy: true,
+            scheduleConfiguration: true,
+            organization: true,
+          },
+        },
+      },
+    })
+
+    return users.map(PrismaUserMapper.toDomain)
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
       where: {

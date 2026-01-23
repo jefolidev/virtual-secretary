@@ -8,18 +8,19 @@ export abstract class ProfessionalRepository {
   abstract findMany(params?: PaginationParams): Promise<Professional[]>
   abstract findById(id: string): Promise<Professional | null>
   abstract findByUserId(id: string): Promise<Professional | null>
+  
   abstract findByProfessionalIdWithNotificationSettings(
-    professionalId: string
+    professionalId: string,
   ): Promise<ProfessionalWithNotificationSettings | null>
   abstract findByProfessionalIdWithSettings(
-    professionalId: string
+    professionalId: string,
   ): Promise<UserProfessionalWithSettings | null>
   abstract findManyProfessionalsAndSettings(
-    params?: PaginationParams
+    params?: PaginationParams,
   ): Promise<UserProfessionalWithSettings[] | null>
   abstract assignCancellationPolicy(
     professionalId: string,
-    cancellationPolicyId: string
+    cancellationPolicyId: string,
   ): Promise<void>
   abstract save(professional: Professional): Promise<void>
 }

@@ -6,6 +6,7 @@ export abstract class UserRepository {
   abstract findByCpf(cpf: string): Promise<User | null>
   abstract findById(id: string): Promise<User | null>
   abstract findByProfessionalId(professionalId: string): Promise<User | null>
+  abstract findManyProfessionalUsers(): Promise<User[] | null>
   abstract getThreadId(
     whatsappNumber: string,
   ): Promise<string | null | undefined>
