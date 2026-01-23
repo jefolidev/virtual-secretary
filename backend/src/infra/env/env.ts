@@ -9,6 +9,8 @@ export const envSchema = z.object({
   OPENAI_API_KEY: z.string(),
   ASSISTANT_ID: z.string(),
   CORS_ORIGIN: z.string().optional().default('http://localhost:5173'),
+  REDIS_HOST: z.string().optional().default('localhost'),
+  REDIS_PORT: z.coerce.number().optional().default(6379),
 })
 
 export type Env = z.infer<typeof envSchema>
