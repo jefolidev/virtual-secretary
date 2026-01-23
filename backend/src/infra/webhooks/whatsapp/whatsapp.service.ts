@@ -91,104 +91,6 @@ export class WhatsappService {
     await this.cacheManager.del(`whatsapp-conversation-${phone}`)
   }
 
-  private async handleGeneralChat(message: string, user: User) {
-    const response = await this.openAiService.chat([
-      {
-        role: 'system',
-        content: `Você é a MindAI, uma assistente virtual de uma clínica de terapia. Você está conversando com ${user.name}, que já é um cliente cadastrado.
-
-**SUAS DIRETRIZES E LIMITAÇÕES SÃO ESTRITAS:**
-
-1.  **FOCO TOTAL:** Seu único propósito é discutir assuntos diretamente relacionados aos serviços da clínica:
-    *   Agendamentos de consultas.
-    *   Informações sobre os profissionais da clínica.
-    *   Dúvidas sobre os tipos de terapia oferecidos (TCC, Psicanálise, etc.).
-    *   Informações sobre saúde mental em um contexto clínico e informativo.
-
-2.  **RECUSA EDUCADA:** Se o usuário perguntar sobre tópicos fora do seu escopo (como pornografia, política, religião, sua vida pessoal como IA, ou qualquer assunto casual não relacionado à terapia), você DEVE recusar educadamente e redirecionar a conversa.
-    *   **Exemplo de recusa:** "Como assistente da MindAI, meu foco é auxiliar com nossos serviços de terapia e saúde mental. Não consigo discutir outros tópicos, mas estou à disposição para ajudar com agendamentos ou responder a perguntas sobre nossas especialidades. Como posso te ajudar com isso?"
-
-3.  **NÃO DÊ OPINIÕES:** Você não tem opiniões pessoais. Mantenha todas as respostas neutras, profissionais e baseadas em informações clínicas.
-
-Sua tarefa é responder à pergunta do usuário, seguindo RIGOROSAMENTE estas diretrizes.`,
-      },
-      {
-        role: 'user',
-        content: message,
-      },
-    ])
-    return (
-      response.choices[0].message.content ||
-      'Não consegui processar sua resposta, mas estou aqui se precisar.'
-    )
-  }
-
-  private async handleRegisteredUserFlow(message: string, user: User) {
-    const intent = await this.openAiService.determineUserIntent(message)
-
-    console.log(intent)
-
-    switch (intent) {
-      case 'schedule_appointment':
-        return `Ok, ${user.name}, vamos agendar uma consulta para você. (Lógica a ser implementada)`
-      case 'list_client_appointments':
-        return `Claro, ${user.name}, vou buscar seus agendamentos. (Lógica a ser implementada)`
-      case 'list_professionals':
-        return `Aqui estão os profissionais disponíveis na MindAI: (Lógica a ser implementada)`
-      case 'general_chat':
-      default:
-        return this.handleGeneralChat(message, user)
-    }
-  }
-
-  
-  private async handleUnregisteredUserFlow(
-    message: string,
-    cleanNumber: string,
-    sender: string,
-  ) {
-    let context = await this.getConversationContext(cleanNumber)
-
-    if (context && context.lastInteraction) {
-      const timeSinceLastInteraction =
-        new Date().getTime() - new Date(context.lastInteraction).getTime()
-      const thirtyMinutes = 1000 * 60 * 30
-
-      if (
-        timeSinceLastInteraction > thirtyMinutes &&
-        context.status === 'awaiting_registration_confirmation'
-      ) {
-        const isGreeting = await this.openAiService.isGreeting(message)
-        if (isGreeting) {
-          await this.deleteConversationContext(cleanNumber)
-          context = null
-        }
-      }
-    }
-
-    if (!context) {
-      context = {
-        flow: 'create_client_account',
-        status: 'awaiting_registration_confirmation',
-        lastInteraction: new Date(),
-        data: {},
-      }
-      await this.saveConversationContext(cleanNumber, context)
-    }
-
-    if (context.flow !== 'create_client_account') {
-      context.flow = 'create_client_account'
-      context.status = 'awaiting_registration_confirmation'
-    }
-
-    return this.handleCreateClientAccountFlow(
-      message,
-      cleanNumber,
-      sender,
-      context,
-    )
-  }
-
   private async createClient(
     rawArgs: Omit<CreateClientBodyDTO, 'whatsappNumber'>,
     whatsappNumber: string,
@@ -231,6 +133,170 @@ Sua tarefa é responder à pergunta do usuário, seguindo RIGOROSAMENTE estas di
     await this.userRepository.createClientByWhatsapp(clientData)
   }
 
+  private async listProfessionals() {
+    return await this.userRepository.findManyProfessionalUsers()
+  }
+
+  private async handleGeneralChat(message: string, user: User) {
+    const response = await this.openAiService.chat([
+      {
+        role: 'system',
+        content: `Você é a MindAI, uma assistente virtual de uma clínica de terapia. Você está conversando com ${user.name}, que já é um cliente cadastrado.
+
+**SUAS DIRETRIZES E LIMITAÇÕES SÃO ESTRITAS:**
+
+1.  **FOCO TOTAL:** Seu único propósito é discutir assuntos diretamente relacionados aos serviços da clínica:
+    *   Agendamentos de consultas.
+    *   Informações sobre os profissionais da clínica.
+    *   Dúvidas sobre os tipos de terapia oferecidos (TCC, Psicanálise, etc.).
+    *   Informações sobre saúde mental em um contexto clínico e informativo.
+
+2.  **RECUSA EDUCADA:** Se o usuário perguntar sobre tópicos fora do seu escopo (como pornografia, política, religião, sua vida pessoal como IA, ou qualquer assunto casual não relacionado à terapia), você DEVE recusar educadamente e redirecionar a conversa.
+    *   **Exemplo de recusa:** "Como assistente da MindAI, meu foco é auxiliar com nossos serviços de terapia e saúde mental. Não consigo discutir outros tópicos, mas estou à disposição para ajudar com agendamentos ou responder a perguntas sobre nossas especialidades. Como posso te ajudar com isso?"
+
+3.  **NÃO DÊ OPINIÕES:** Você não tem opiniões pessoais. Mantenha todas as respostas neutras, profissionais e baseadas em informações clínicas.
+
+Sua tarefa é responder à pergunta do usuário, seguindo RIGOROSAMENTE estas diretrizes.`,
+      },
+      {
+        role: 'user',
+        content: message,
+      },
+    ])
+    return (
+      response.choices[0].message.content ||
+      'Não consegui processar sua resposta, mas estou aqui se precisar.'
+    )
+  }
+
+  private async handleListProfessionalsFlow(
+    message: string,
+    cleanNumber: string,
+    sender: string,
+    context: ConversationContext,
+  ) {
+    context.lastInteraction = new Date()
+    await this.saveConversationContext(cleanNumber, context)
+
+    const professionals = (await this.listProfessionals()) || [] // Garante que temos um array
+    const professionalsListText =
+      professionals.length > 0
+        ? professionals
+            .map((prof) => `- ${prof.name} - Disponível para consultas.`)
+            .join('\n')
+        : 'No momento, não encontramos profissionais disponíveis. Por favor, tente novamente mais tarde.'
+
+    const response = this.openAiService.chat([
+      {
+        role: 'system',
+        content: `Você é a MindAI, uma assistente virtual de uma clínica de terapia. Você está conversando com ${sender}, que já é um cliente cadastrado.
+
+Seu objetivo é fornecer uma lista de profissionais disponíveis na clínica quando solicitado.
+
+Aqui estão os profissionais disponíveis:
+${professionalsListText}
+
+Quando o usuário solicitar a lista de profissionais, forneça as informações acima de forma clara e amigável.`,
+      },
+      {
+        role: 'user',
+        content: message,
+      },
+    ])
+
+    return (
+      (await response).choices[0].message.content ||
+      'Não consegui processar sua resposta, mas estou aqui se precisar.'
+    )
+  }
+
+  private async handleRegisteredUserFlow(message: string, user: User) {
+    if (await this.openAiService.isCancellationIntent(message)) {
+      return 'Tudo bem, cancelando a operação atual. Se precisar de outra coisa, é só pedir!'
+    }
+
+    const intent = await this.openAiService.determineUserIntent(message)
+
+    let context = await this.getConversationContext(user.whatsappNumber)
+
+    switch (intent) {
+      case 'schedule_appointment':
+        return `Ok, ${user.name}, vamos agendar uma consulta para você. (Lógica a ser implementada)`
+      case 'list_client_appointments':
+        return `Claro, ${user.name}, vou buscar seus agendamentos. (Lógica a ser implementada)`
+      case 'list_professionals':
+        if (!context || context.flow !== 'list_professionals') {
+          context = {
+            flow: 'list_professionals',
+            status: 'listing_professionals',
+            lastInteraction: new Date(),
+            data: {},
+          }
+        }
+        return this.handleListProfessionalsFlow(
+          message,
+          user.whatsappNumber,
+          user.name,
+          context,
+        )
+      case 'general_chat':
+      default:
+        return this.handleGeneralChat(message, user)
+    }
+  }
+
+  private async handleUnregisteredUserFlow(
+    message: string,
+    cleanNumber: string,
+    sender: string,
+  ) {
+    if (await this.openAiService.isCancellationIntent(message)) {
+      await this.deleteConversationContext(cleanNumber)
+      return 'Tudo bem! Se precisar de algo mais no futuro, é só chamar. Tenha um ótimo dia!'
+    }
+
+    let context = await this.getConversationContext(cleanNumber)
+
+    if (context && context.lastInteraction) {
+      const timeSinceLastInteraction =
+        new Date().getTime() - new Date(context.lastInteraction).getTime()
+      const thirtyMinutes = 1000 * 60 * 30
+
+      if (
+        timeSinceLastInteraction > thirtyMinutes &&
+        context.status === 'awaiting_registration_confirmation'
+      ) {
+        const isGreeting = await this.openAiService.isGreeting(message)
+        if (isGreeting) {
+          await this.deleteConversationContext(cleanNumber)
+          context = null
+        }
+      }
+    }
+
+    if (!context) {
+      context = {
+        flow: 'create_client_account',
+        status: 'awaiting_registration_confirmation',
+        lastInteraction: new Date(),
+        data: {},
+      }
+      await this.saveConversationContext(cleanNumber, context)
+    }
+
+    if (context.flow !== 'create_client_account') {
+      context.flow = 'create_client_account'
+      context.status = 'awaiting_registration_confirmation'
+    }
+
+    return this.handleCreateClientAccountFlow(
+      message,
+      cleanNumber,
+      sender,
+      context,
+    )
+  }
+
   private async handleScheduleAppointmentFlow(
     message: string,
     cleanNumber: string,
@@ -246,19 +312,6 @@ Sua tarefa é responder à pergunta do usuário, seguindo RIGOROSAMENTE estas di
     sender: string,
     context: ConversationContext,
   ) {
-    if (await this.openAiService.isCancellationIntent(message)) {
-      await this.deleteConversationContext(cleanNumber)
-      return 'Tudo bem! Se precisar de algo mais no futuro, é só chamar. Tenha um ótimo dia!'
-    }
-
-    context.lastInteraction = new Date()
-    await this.saveConversationContext(cleanNumber, context)
-
-    if (await this.openAiService.isCancellationIntent(message)) {
-      await this.deleteConversationContext(cleanNumber)
-      return 'Tudo bem! Se precisar de algo mais no futuro, é só chamar. Tenha um ótimo dia!'
-    }
-
     context.lastInteraction = new Date()
     await this.saveConversationContext(cleanNumber, context)
 
@@ -344,6 +397,30 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     )
   }
 
+  async handleIncompleteConversation(conversationId: string) {
+    const conversation = await this.getConversation(conversationId)
+
+    if (!conversation) {
+      throw new BadRequestException('Conversation not found')
+    }
+
+    if (conversation.status === 'awaiting_registration_confirmation') {
+      const lastMessage = conversation.lastInteraction
+      const timeSinceLastMessage = Date.now() - lastMessage!.getTime()
+
+      //5 minutos
+      if (timeSinceLastMessage > 1000 * 60 * 5) {
+        return 'Oi! Notei que você não respondeu à minha última mensagem. Se ainda estiver interessado em criar uma conta, por favor, me avise! Estou aqui para ajudar no que for preciso.'
+      }
+    }
+
+    if (conversation.status === 'collecting_registration_data') {
+      return 'Olá! Percebi que não concluímos o processo de criação da sua conta. Se ainda desejar criar uma conta, por favor, me informe os dados necessários ou me avise se precisar de ajuda.'
+    }
+
+    return null
+  }
+
   async sendMessage(to: string, text: string) {
     const url = `http://localhost:8080/message/sendText/MindAI`
 
@@ -373,30 +450,6 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
       console.error('❌ Erro ao enviar mensagem:', error)
       throw error
     }
-  }
-
-  async handleIncompleteConversation(conversationId: string) {
-    const conversation = await this.getConversation(conversationId)
-
-    if (!conversation) {
-      throw new BadRequestException('Conversation not found')
-    }
-
-    if (conversation.status === 'awaiting_registration_confirmation') {
-      const lastMessage = conversation.lastInteraction
-      const timeSinceLastMessage = Date.now() - lastMessage!.getTime()
-
-      //5 minutos
-      if (timeSinceLastMessage > 1000 * 60 * 5) {
-        return 'Oi! Notei que você não respondeu à minha última mensagem. Se ainda estiver interessado em criar uma conta, por favor, me avise! Estou aqui para ajudar no que for preciso.'
-      }
-    }
-
-    if (conversation.status === 'collecting_registration_data') {
-      return 'Olá! Percebi que não concluímos o processo de criação da sua conta. Se ainda desejar criar uma conta, por favor, me informe os dados necessários ou me avise se precisar de ajuda.'
-    }
-
-    return null
   }
 
   async processMessage(message: string, whatsappId: string, sender: string) {
