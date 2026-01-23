@@ -12,4 +12,17 @@ export abstract class UserRepository {
   abstract resetPassword(userId: string, password: string): Promise<void>
   abstract create(user: User): Promise<void>
   abstract save(user: User): Promise<void>
+  abstract createClientByWhatsapp(data: {
+    name: string
+    email: string
+    whatsappNumber: string
+    cpf: string
+    gender: 'MALE' | 'FEMALE'
+    birthDate: Date
+    periodPreference: ('MORNING' | 'AFTERNOON' | 'EVENING')[]
+    complement: string | null
+    cep: string
+    number: string
+    extraPreferences: string
+  }): Promise<User>
 }

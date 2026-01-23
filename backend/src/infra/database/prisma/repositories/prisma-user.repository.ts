@@ -1,12 +1,21 @@
+import { HashGenerator } from '@/domain/scheduling/application/cryptography/hash-generator'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
+import { Address } from '@/domain/scheduling/enterprise/entities/address'
+import { Client } from '@/domain/scheduling/enterprise/entities/client'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { Injectable } from '@nestjs/common'
+import cep from 'cep-promise'
+import { PrismaAddressMapper } from '../../mappers/prisma-address-mapper'
+import { PrismaClientMapper } from '../../mappers/prisma-client-mapper'
 import { PrismaUserMapper } from '../../mappers/prisma-user-mapper'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly hashGenerator: HashGenerator,
+  ) {}
 
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.prisma.user.findUnique({
@@ -68,6 +77,7 @@ export class PrismaUserRepository implements UserRepository {
         whatsappNumber,
       },
       include: {
+        client: true,
         address: true,
       },
     })
@@ -131,6 +141,88 @@ export class PrismaUserRepository implements UserRepository {
       data,
     })
   }
+
+  // ...existing code...
+
+  async createClientByWhatsapp(data: {
+    name: string
+    email: string
+    whatsappNumber: string
+    cpf: string
+    gender: 'MALE' | 'FEMALE'
+    birthDate: Date
+    extraPreferences: string
+    periodPreference: ('MORNING' | 'AFTERNOON' | 'EVENING')[]
+    complement: string | null
+    cep: string
+    number: string
+  }): Promise<User> {
+    const generateRandomPassword = (): string => {
+      const chars =
+        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%&*'
+      let password = ''
+      for (let i = 0; i < 12; i++) {
+        password += chars.charAt(Math.floor(Math.random() * chars.length))
+      }
+      return password
+    }
+
+    const randomPassword = generateRandomPassword()
+    const hashedPassword = await this.hashGenerator.hash(randomPassword)
+
+    const {
+      cep: cepValue,
+      street,
+      city,
+      state,
+      neighborhood,
+    } = await cep(data.cep)
+
+    const addressData = Address.create({
+      postalCode: cepValue,
+      addressLine1: street + (data.number ? `, ${data.number}` : ''),
+      addressLine2: data.complement,
+      city,
+      state,
+      country: 'Brasil',
+      neighborhood,
+    })
+
+    await this.prisma.address.create({
+      data: PrismaAddressMapper.toPrisma(addressData),
+    })
+
+    const client = Client.create({
+      appointmentHistory: [],
+      periodPreference: data.periodPreference,
+      extraPreferences: data.extraPreferences || '',
+    })
+
+    await this.prisma.client.create({
+      data: PrismaClientMapper.toPrisma(client),
+    })
+
+    const user: User = User.create({
+      name: data.name,
+      email: data.email,
+      whatsappNumber: data.whatsappNumber,
+      cpf: data.cpf,
+      gender: data.gender,
+      birthDate: data.birthDate,
+      password: hashedPassword,
+      professionalId: undefined,
+      addressId: addressData.id,
+      role: 'CLIENT',
+      clientId: client.id,
+    })
+
+    await this.prisma.user.create({
+      data: PrismaUserMapper.toPrisma(user),
+    })
+
+    return user
+  }
+
   async save(user: User): Promise<void> {
     const data = PrismaUserMapper.toPrisma(user)
 
