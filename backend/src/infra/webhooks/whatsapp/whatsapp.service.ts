@@ -1,4 +1,5 @@
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
+import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { Env } from '@/infra/env/env'
 import { EnvEvolution } from '@/infra/env/evolution/env-evolution'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
@@ -90,33 +91,101 @@ export class WhatsappService {
     await this.cacheManager.del(`whatsapp-conversation-${phone}`)
   }
 
-  private async handleRegisteredUser(message: string, user: any) {
+  private async handleGeneralChat(message: string, user: User) {
     const response = await this.openAiService.chat([
       {
         role: 'system',
-        content: `Você é uma assistente virtual de uma clínica de terapia chamada MindAI.
+        content: `Você é a MindAI, uma assistente virtual de uma clínica de terapia. Você está conversando com ${user.name}, que já é um cliente cadastrado.
 
-O usuário ${user.name} JÁ está cadastrado no sistema.
+**SUAS DIRETRIZES E LIMITAÇÕES SÃO ESTRITAS:**
 
-Suas funções:
-- Ajudar com agendamentos de consultas
-- Responder dúvidas sobre serviços
-- Fornecer informações sobre a clínica
-- Ser educada, empática e profissional
+1.  **FOCO TOTAL:** Seu único propósito é discutir assuntos diretamente relacionados aos serviços da clínica:
+    *   Agendamentos de consultas.
+    *   Informações sobre os profissionais da clínica.
+    *   Dúvidas sobre os tipos de terapia oferecidos (TCC, Psicanálise, etc.).
+    *   Informações sobre saúde mental em um contexto clínico e informativo.
 
-Liste o que você pode fazer para ajudar o usuário.
+2.  **RECUSA EDUCADA:** Se o usuário perguntar sobre tópicos fora do seu escopo (como pornografia, política, religião, sua vida pessoal como IA, ou qualquer assunto casual não relacionado à terapia), você DEVE recusar educadamente e redirecionar a conversa.
+    *   **Exemplo de recusa:** "Como assistente da MindAI, meu foco é auxiliar com nossos serviços de terapia e saúde mental. Não consigo discutir outros tópicos, mas estou à disposição para ajudar com agendamentos ou responder a perguntas sobre nossas especialidades. Como posso te ajudar com isso?"
 
-Não peça cadastro, o usuário já está registrado.`,
+3.  **NÃO DÊ OPINIÕES:** Você não tem opiniões pessoais. Mantenha todas as respostas neutras, profissionais e baseadas em informações clínicas.
+
+Sua tarefa é responder à pergunta do usuário, seguindo RIGOROSAMENTE estas diretrizes.`,
       },
       {
         role: 'user',
         content: message,
       },
     ])
-
     return (
       response.choices[0].message.content ||
-      'Desculpe, não consegui processar sua mensagem.'
+      'Não consegui processar sua resposta, mas estou aqui se precisar.'
+    )
+  }
+
+  private async handleRegisteredUserFlow(message: string, user: User) {
+    const intent = await this.openAiService.determineUserIntent(message)
+
+    console.log(intent)
+
+    switch (intent) {
+      case 'schedule_appointment':
+        return `Ok, ${user.name}, vamos agendar uma consulta para você. (Lógica a ser implementada)`
+      case 'list_client_appointments':
+        return `Claro, ${user.name}, vou buscar seus agendamentos. (Lógica a ser implementada)`
+      case 'list_professionals':
+        return `Aqui estão os profissionais disponíveis na MindAI: (Lógica a ser implementada)`
+      case 'general_chat':
+      default:
+        return this.handleGeneralChat(message, user)
+    }
+  }
+
+  
+  private async handleUnregisteredUserFlow(
+    message: string,
+    cleanNumber: string,
+    sender: string,
+  ) {
+    let context = await this.getConversationContext(cleanNumber)
+
+    if (context && context.lastInteraction) {
+      const timeSinceLastInteraction =
+        new Date().getTime() - new Date(context.lastInteraction).getTime()
+      const thirtyMinutes = 1000 * 60 * 30
+
+      if (
+        timeSinceLastInteraction > thirtyMinutes &&
+        context.status === 'awaiting_registration_confirmation'
+      ) {
+        const isGreeting = await this.openAiService.isGreeting(message)
+        if (isGreeting) {
+          await this.deleteConversationContext(cleanNumber)
+          context = null
+        }
+      }
+    }
+
+    if (!context) {
+      context = {
+        flow: 'create_client_account',
+        status: 'awaiting_registration_confirmation',
+        lastInteraction: new Date(),
+        data: {},
+      }
+      await this.saveConversationContext(cleanNumber, context)
+    }
+
+    if (context.flow !== 'create_client_account') {
+      context.flow = 'create_client_account'
+      context.status = 'awaiting_registration_confirmation'
+    }
+
+    return this.handleCreateClientAccountFlow(
+      message,
+      cleanNumber,
+      sender,
+      context,
     )
   }
 
@@ -159,7 +228,6 @@ Não peça cadastro, o usuário já está registrado.`,
       )
     }
 
-    // 4. Chamada ao repositório
     await this.userRepository.createClientByWhatsapp(clientData)
   }
 
@@ -169,13 +237,6 @@ Não peça cadastro, o usuário já está registrado.`,
     sender: string,
     context: ConversationContext,
   ) {
-    // Aqui virá a lógica para o fluxo de agendamento
-    // 1. Verificar cancelamento
-    // 2. Chamar a IA com um NOVO PROMPT, específico para agendamentos
-    //    - O prompt vai pedir para listar especialidades, depois profissionais, depois horários.
-    // 3. Você vai precisar de NOVAS FUNÇÕES para a IA chamar (ex: `list_specialties`, `get_available_times`)
-    // 4. Tratar os tool_calls para essas novas funções.
-
     return 'Ok, vamos agendar sua consulta! (Lógica a ser implementada)'
   }
 
@@ -243,8 +304,6 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
       ],
       openAiFunctions,
     )
-
-    const assistantResponse = response.choices[0].message.content
 
     if (context.status === 'awaiting_registration_confirmation') {
       context.status = 'collecting_registration_data'
@@ -346,76 +405,9 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     const user = await this.userRepository.findByPhone(cleanNumber)
 
     if (user) {
-      return this.handleRegisteredUser(message, user)
+      return this.handleRegisteredUserFlow(message, user)
     }
 
-    let context = await this.getConversationContext(cleanNumber)
-
-    if (context && context.lastInteraction) {
-      const timeSinceLastInteraction =
-        new Date().getTime() - new Date(context.lastInteraction).getTime()
-      const thirtyMinutes = 1000 * 60 * 30
-
-      if (
-        timeSinceLastInteraction > thirtyMinutes &&
-        context.status === 'awaiting_registration_confirmation'
-      ) {
-        const isGreeting = await this.openAiService.isGreeting(message)
-
-        if (isGreeting) {
-          await this.deleteConversationContext(cleanNumber)
-          context = null
-        }
-      }
-    }
-
-    if (!context) {
-      const initialFlow = await this.openAiService.determineUserIntent(message)
-
-      if (
-        initialFlow === 'schedule_appointment' ||
-        initialFlow === 'list_professionals'
-      ) {
-        context = {
-          flow: 'create_client_account',
-          status: 'awaiting_registration_confirmation',
-          lastInteraction: new Date(),
-          data: {},
-        }
-        await this.saveConversationContext(cleanNumber, context)
-
-        return 'Olá! Para agendar uma consulta ou ver nossos profissionais, você precisa ter um cadastro. Gostaria de criar sua conta agora?'
-      }
-
-      context = {
-        flow: initialFlow,
-        status: 'awaiting_registration_confirmation',
-        lastInteraction: new Date(),
-        data: {},
-      }
-      await this.saveConversationContext(cleanNumber, context)
-    }
-
-    switch (context.flow) {
-      case 'create_client_account':
-        return this.handleCreateClientAccountFlow(
-          message,
-          cleanNumber,
-          sender,
-          context,
-        )
-      case 'schedule_appointment':
-        return this.handleScheduleAppointmentFlow(
-          message,
-          cleanNumber,
-          sender,
-          context,
-        )
-      // Adicione outros casos aqui
-      // case 'list_professionals':
-      //   return this.handleListProfessionalsFlow(message, cleanNumber, sender, context);
-      default:
-        return 'Desculpe, não entendi como posso ajudar. Você pode tentar agendar uma consulta ou tirar uma dúvida?'
-    }
+    return this.handleUnregisteredUserFlow(message, cleanNumber, sender)
   }
 }
