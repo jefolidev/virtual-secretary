@@ -1,6 +1,6 @@
 import { Entity } from '@/core/entities/entity'
+import { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { Optional } from '@prisma/client/runtime/client'
 
 // TODO: Must have be two options to create an User: by whatsapp and by website
 
