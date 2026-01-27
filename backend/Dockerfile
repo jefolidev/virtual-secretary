@@ -5,6 +5,8 @@ COPY package.json bun.lock* ./
 RUN bun install
 
 COPY prisma ./prisma/
+RUN mkdir -p src/generated/prisma
+
 # Gera apenas os tipos (Prisma Client)
 RUN bun prisma generate
 
