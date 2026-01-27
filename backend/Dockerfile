@@ -1,22 +1,23 @@
-FROM node:20-alpine
+# Usa a imagem oficial do Bun (leve e rápida)
+FROM oven/bun:1-alpine
 
+# Define o diretório de trabalho dentro da pasta /backend que configuraste
 WORKDIR /app
 
-# 1. Copia arquivos de dependência
-COPY package*.json ./
+# Copia os ficheiros de dependências primeiro para aproveitar o cache
+COPY package.json bun.lock ./
 
-# 2. Instala TUDO (necessário para o build)
-RUN npm install
+# Instala as dependências usando o motor do Bun
+RUN bun install
 
-# 3. Copia o código fonte
+# Copia o resto do código (src, prisma, etc)
 COPY . .
 
-# 4. Gera a pasta /dist
-RUN npm run build
+# Executa o build do NestJS (certifica-te que tens o script "build" no package.json)
+RUN bun run build
 
-# 5. (Opcional) Limpa as devDependencies para o container ficar leve
-RUN npm prune --production
-
+# Expõe a porta que o teu NestJS usa
 EXPOSE 3000
 
-CMD ["npm", "run", "start:prod"]
+# Comando para iniciar a aplicação em produção
+CMD ["bun", "run", "start:prod"]
