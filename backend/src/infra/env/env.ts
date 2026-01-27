@@ -11,6 +11,7 @@ export const envSchema = z.object({
   CORS_ORIGIN: z.string().optional().default('http://localhost:5173'),
   REDIS_HOST: z.string().optional().default('localhost'),
   REDIS_PORT: z.coerce.number().optional().default(6379),
+  AUTHENTICATION_API_KEY: z.string(),
 })
 
 export type Env = z.infer<typeof envSchema>

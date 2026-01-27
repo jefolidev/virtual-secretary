@@ -30,9 +30,7 @@ export class WhatsappService {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {
-    this.apiKey = this.configEvolutionService.get<string>(
-      'AUTHENTICATION_API_KEY',
-    )
+    this.apiKey = this.configService.get<string>('AUTHENTICATION_API_KEY')
     this.openaiApiKey = this.configService.get('OPENAI_API_KEY')
     this.assistantId = this.configService.get('ASSISTANT_ID')
   }
