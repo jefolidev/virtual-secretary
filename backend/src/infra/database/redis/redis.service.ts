@@ -31,14 +31,11 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleInit() {
-    try {
-      await this.redisClient.connect()
-    } catch (error) {
-      this.logger.error('Failed to connect to Redis during initialization')
-    }
+    await this.redisClient.connect()
+    this.logger.log('Connected to Redis successfully!')
   }
   async onModuleDestroy() {
     await this.redisClient.quit()
-    console.log('Disconnected from Redis successfully!')
+    this.logger.log('Disconnected from Redis successfully!')
   }
 }
