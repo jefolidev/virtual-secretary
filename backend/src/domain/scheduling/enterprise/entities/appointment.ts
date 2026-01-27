@@ -37,6 +37,8 @@ export interface AppointmentProps {
   isPaid: boolean
   startedAt?: Date | null
   totalElapsedMs?: number | null
+  currentTransactionId?: string | null
+  paymentExpiresAt?: Date | null
   createdAt: Date
   updatedAt?: Date | null
 }
@@ -48,6 +50,24 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
   get professionalId() {
     return this.props.professionalId
+  }
+
+  get currentTransactionId() {
+    return this.props.currentTransactionId || null
+  }
+
+  set currentTransactionId(currentTransactionId: string | null) {
+    this.props.currentTransactionId = currentTransactionId
+    this.touch()
+  }
+
+  get paymentExpiresAt() {
+    return this.props.paymentExpiresAt || null
+  }
+
+  set paymentExpiresAt(paymentExpiresAt: Date | null) {
+    this.props.paymentExpiresAt = paymentExpiresAt
+    this.touch()
   }
 
   get paymentId() {
@@ -178,7 +198,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   public reschedule(rescheduleDateTime: { start: Date; end: Date }) {
     if (this.isCompletedOrInProgress()) {
       throw new Error(
-        'Cannot reschedule a completed or in progress appointment'
+        'Cannot reschedule a completed or in progress appointment',
       )
     }
 
@@ -332,8 +352,10 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
       | 'paymentStatus'
       | 'startedAt'
       | 'totalElapsedMs'
+      | 'currentTransactionId'
+      | 'paymentExpiresAt'
     >,
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const appointment = new Appointment(
       {
@@ -342,10 +364,12 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
         paymentStatus: 'PENDING',
         isPaid: props.isPaid ?? false,
         startedAt: props.startedAt ?? null,
+        currentTransactionId: props.currentTransactionId ?? null,
+        paymentExpiresAt: props.paymentExpiresAt ?? null,
         totalElapsedMs: props.totalElapsedMs ?? null,
         createdAt: props.createdAt ?? new Date(),
       },
-      id
+      id,
     )
 
     const isNewAppointment = !id

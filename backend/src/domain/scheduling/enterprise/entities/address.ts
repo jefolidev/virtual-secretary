@@ -11,6 +11,7 @@ export interface AddressProps {
   city: string
   state: string
   postalCode: string
+  organizationId?: string | null
   country: string
   createdAt: Date
   updatedAt?: Date | null
@@ -30,6 +31,14 @@ export class Address extends Entity<AddressProps> {
   }
   set addressLine2(value: string | undefined) {
     this.props.addressLine2 = value
+    this.touch()
+  }
+
+  get organizationId() {
+    return this.props.organizationId || null
+  }
+  set organizationId(value: string | null) {
+    this.props.organizationId = value
     this.touch()
   }
 
@@ -85,12 +94,16 @@ export class Address extends Entity<AddressProps> {
   }
 
   static create(
-    props: Optional<AddressProps, 'createdAt' | 'updatedAt'>,
-    id?: UniqueEntityId
+    props: Optional<AddressProps, 'createdAt' | 'updatedAt' | 'organizationId'>,
+    id?: UniqueEntityId,
   ) {
     const address = new Address(
-      { ...props, createdAt: props.createdAt ?? new Date() },
-      id
+      {
+        ...props,
+        organizationId: props.organizationId ?? null,
+        createdAt: props.createdAt ?? new Date(),
+      },
+      id,
     )
 
     return address

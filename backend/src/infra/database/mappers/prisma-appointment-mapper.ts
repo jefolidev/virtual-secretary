@@ -1,19 +1,23 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Appointment } from '@/domain/scheduling/enterprise/entities/appointment'
-import { Appointment as PrismaAppointment } from '../../generated/prisma/index'
-// Não existe AppointmentUncheckedCreateInput gerado, usar Appointment para tipagem
+import { Decimal } from '@prisma/generated/internal/prismaNamespace'
+import { Appointment as PrismaAppointment } from '../../../generated/prisma'
 
 export class PrismaAppointmentMapper {
-  static toPrisma(raw: Appointment): AppointmentUncheckedCreateInput {
+  static toPrisma(raw: Appointment): PrismaAppointment {
     return {
       id: raw.id.toString(),
       clientId: raw.clientId.toString(),
       professionalId: raw.professionalId.toString(),
-      agreedPrice: raw.agreedPrice,
+      agreedPrice: new Decimal(raw.agreedPrice),
+      currentTransactionId: raw.currentTransactionId || null,
+      paymentExpiresAt: raw.paymentExpiresAt || null,
       endDateTime: raw.endDateTime,
       googleMeetLink: raw.googleMeetLink,
       modality: raw.modality,
-      rescheduleDateTime: raw.rescheduleDateTime,
+      rescheduleDateTime: raw.rescheduleDateTime
+        ? JSON.stringify(raw.rescheduleDateTime)
+        : null,
       startDateTime: raw.startDateTime,
       status: raw.status,
       paymentStatus: raw.paymentStatus,

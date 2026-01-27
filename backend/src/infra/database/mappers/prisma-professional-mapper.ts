@@ -7,7 +7,7 @@ import {
   Professional as PrismaProfessional,
   ScheduleConfiguration as PrismaScheduleConfiguration,
   User as PrismaUser,
-} from '../../generated/prisma/index'
+} from '../../../generated/prisma'
 
 type ProfessionalWithNotificationSettings = PrismaProfessional & {
   notificationSettings?: PrismaNotificationSettings | null

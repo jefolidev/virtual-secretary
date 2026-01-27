@@ -3,7 +3,7 @@ import { Notification } from '@/domain/notifications/enterprise/entities/notific
 import {
   Prisma,
   Notification as PrismaNotification,
-} from '../../generated/prisma/index'
+} from '../../../generated/prisma'
 
 export class PrismaNotificationMapper {
   static toDomain(raw: PrismaNotification): Notification {
