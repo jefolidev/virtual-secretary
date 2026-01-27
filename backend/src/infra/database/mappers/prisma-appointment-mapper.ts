@@ -1,6 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Appointment } from '@/domain/scheduling/enterprise/entities/appointment'
-import { Decimal } from '@prisma/generated/internal/prismaNamespace'
+import { Decimal } from '@prisma/client/runtime/index-browser'
 import { Appointment as PrismaAppointment } from '../../../generated/prisma'
 
 export class PrismaAppointmentMapper {

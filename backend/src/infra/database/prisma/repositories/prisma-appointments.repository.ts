@@ -5,6 +5,7 @@ import {
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
 import { Injectable } from '@nestjs/common'
+import { Prisma } from '../../../../generated/prisma'
 import { PrismaAppointmentMapper } from '../../mappers/prisma-appointment-mapper'
 import { PrismaService } from '../prisma.service'
 
@@ -16,7 +17,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const data = PrismaAppointmentMapper.toPrisma(appointment)
 
     await this.prisma.appointment.create({
-      data,
+      data: {
+        ...data,
+        rescheduleDateTime: data.rescheduleDateTime ?? Prisma.JsonNull,
+      },
     })
 
     DomainEvents.dispatchEventsForAggregate(appointment.id)
@@ -170,7 +174,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
         where: {
           id: appointment.id.toString(),
         },
-        data,
+        data: {
+          ...data,
+          rescheduleDateTime: data.rescheduleDateTime ?? Prisma.JsonNull,
+        },
       }),
     ])
 
