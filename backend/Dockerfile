@@ -10,6 +10,8 @@ COPY package.json bun.lock ./
 # Instala as dependências usando o motor do Bun
 RUN bun install
 
+RUN bun prisma:generate
+
 # Copia o resto do código (src, prisma, etc)
 COPY . .
 
