@@ -1,7 +1,6 @@
 import { NotificationsRepository } from '@/domain/notifications/application/repositories/notification.repository'
-import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { OrganizationRepository } from '@/domain/organization/application/repositories/organization.repository'
-
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 
 import { AddressRepository } from '@/domain/scheduling/application/repositories/address.repository'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
@@ -20,8 +19,8 @@ import { PrismaAddressRepository } from './prisma/repositories/prisma-address.re
 import { PrismaAppointmentsRepository } from './prisma/repositories/prisma-appointments.repository'
 import { PrismaCancellationPolicyRepository } from './prisma/repositories/prisma-cancellation-policy.repository'
 import { PrismaClientRepository } from './prisma/repositories/prisma-client.repository'
-import { PrismaProfessionalRepository } from './prisma/repositories/prisma-professional.repository'
 import { PrismaNotificationsRepository } from './prisma/repositories/prisma-notification.repository'
+import { PrismaProfessionalRepository } from './prisma/repositories/prisma-professional.repository'
 
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
