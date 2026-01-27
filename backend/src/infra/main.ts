@@ -23,7 +23,7 @@ async function bootstrap() {
   app.use(cookieParser())
 
   try {
-    await app.listen(port)
+    await app.listen(port, '0.0.0.0')
     console.log(
       `\n🚀 Aplicação NestJS iniciada com sucesso na porta: ${port}\n`,
     )
