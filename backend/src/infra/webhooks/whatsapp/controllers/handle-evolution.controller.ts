@@ -53,9 +53,9 @@ export class HandleEvolutionController {
         return { success: true, response }
       }
       return { success: true, message: 'Event ignored' }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error handling webhook:', error)
-      return { status: 'error', message: error.message }
+      return { status: 'error', message: (error as Error).message }
     }
   }
 }

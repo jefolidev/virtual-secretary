@@ -24,11 +24,11 @@ async function bootstrap() {
   try {
     await app.listen(port)
     console.log(
-      `\n🚀 Aplicação NestJS iniciada com sucesso na porta: ${port}\n`
+      `\n🚀 Aplicação NestJS iniciada com sucesso na porta: ${port}\n`,
     )
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('\n❌ ERRO FATAL AO INICIAR A APLICAÇÃO NESTJS:')
-    console.error(error.message)
+    console.error((error as Error).message)
 
     process.exit(1)
   }

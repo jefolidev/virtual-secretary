@@ -24,7 +24,7 @@ export class PauseAppointmentUseCase {
   constructor(
     readonly appointmentsRepository: AppointmentsRepository,
     readonly clientRepository: ClientRepository,
-    readonly professionalRepository: ProfessionalRepository
+    readonly professionalRepository: ProfessionalRepository,
   ) {}
 
   async execute({
@@ -32,16 +32,15 @@ export class PauseAppointmentUseCase {
     professionalId,
   }: PauseAppointmentUseCaseRequest): Promise<PauseAppointmentUseCaseResponse> {
     const appointment = await this.appointmentsRepository.findById(
-      appointmentId.toString()
+      appointmentId.toString(),
     )
 
     if (!appointment) return left(new NotFoundError('Appointment not found!'))
 
     const { clientId } = appointment
 
-    const professional = await this.professionalRepository.findById(
-      professionalId
-    )
+    const professional =
+      await this.professionalRepository.findById(professionalId)
 
     if (!professional) return left(new NotFoundError('Professional not found!'))
 
@@ -52,8 +51,8 @@ export class PauseAppointmentUseCase {
     if (!appointment.professionalId.equals(new UniqueEntityId(professionalId)))
       return left(
         new NotAllowedError(
-          'You cannot pause an appointment that is not yours.'
-        )
+          'You cannot pause an appointment that is not yours.',
+        ),
       )
 
     try {
@@ -63,8 +62,8 @@ export class PauseAppointmentUseCase {
       return right({
         appointment,
       })
-    } catch (error) {
-      return left(new BadRequestError(error.message))
+    } catch (error: unknown) {
+      return left(new BadRequestError((error as Error).message))
     }
   }
 }

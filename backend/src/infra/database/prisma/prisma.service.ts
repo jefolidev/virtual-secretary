@@ -31,6 +31,7 @@ export class PrismaService
 
     super({
       adapter,
+      
       log: nodeEnv === 'development' ? ['query', 'error', 'warn'] : ['error'],
       errorFormat: 'pretty',
     })

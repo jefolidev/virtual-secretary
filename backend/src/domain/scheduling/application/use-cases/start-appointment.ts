@@ -63,8 +63,8 @@ export class StartAppointmentUseCase {
       return right({
         appointment,
       })
-    } catch (error) {
-      return left(new BadRequestError(error.message))
+    }  catch (error: unknown) {
+      return left(new BadRequestError((error as Error).message))
     }
   }
 }
