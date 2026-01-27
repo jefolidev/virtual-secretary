@@ -19,4 +19,4 @@ RUN cp -r src/generated dist/src/
 
 EXPOSE 3333
 
-CMD ["sh", "-c", "bun x prisma migrate deploy && bun run start:prod"]
+CMD bun run start:prod
