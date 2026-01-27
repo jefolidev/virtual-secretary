@@ -1,10 +1,10 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { User } from '@/domain/scheduling/enterprise/entities/user'
-import { User as PrismaUser } from '@prisma/generated/client'
+import { User as DomainUser } from '@/domain/scheduling/enterprise/entities/user'
+import { User } from '@prisma/generated/client'
 import { UserUncheckedCreateInput } from '@prisma/generated/models'
 
 export class PrismaUserMapper {
-  static toPrisma(user: User): UserUncheckedCreateInput {
+  static toPrisma(user: DomainUser): UserUncheckedCreateInput {
     return {
       id: user.id.toString(),
       name: user.name,
@@ -25,8 +25,8 @@ export class PrismaUserMapper {
     }
   }
 
-  static toDomain(raw: PrismaUser): User {
-    return User.create(
+  static toDomain(raw: User): DomainUser {
+    return DomainUser.create(
       {
         name: raw.name,
         email: raw.email,
