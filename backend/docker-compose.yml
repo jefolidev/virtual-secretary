@@ -12,7 +12,7 @@ services:
       - ./data/pg:/data/postgres
     ports:
       - '5432:5432'
-
+  
   redis:
     image: redis:alpine
     container_name: evolution_redis
