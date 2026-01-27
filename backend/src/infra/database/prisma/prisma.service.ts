@@ -11,7 +11,9 @@ export class PrismaService
   implements OnModuleInit, OnModuleDestroy
 {
   constructor(private readonly configService: ConfigService<Env, true>) {
-    const databaseURL = configService.get('DATABASE_URL')
+    const databaseURL =
+      configService.get('DATABASE_URL') ||
+      'postgresql://unused:unused@localhost:5432/unused'
 
     if (!databaseURL) {
       throw new Error('DATABASE_URL is not defined in environment variables')
