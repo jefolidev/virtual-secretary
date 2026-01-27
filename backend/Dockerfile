@@ -4,19 +4,19 @@ WORKDIR /app
 
 # 1. Instalação das dependências
 COPY package.json bun.lock* ./
-COPY prisma ./prisma/
-
-RUN bun install --frozen-lockfile
-RUN bun x prisma generate
+RUN bun install
 
 # 2. Copia todo o código
 COPY . .
+
+# 3. Gera o Prisma Client (necessário antes do build por causa dos tipos)
+RUN bun x prisma generate
+
+# 4. Build do NestJS
 RUN bun run build
 
-# 3. Build do NestJS
-
 # 5. Verificação de segurança (isso aparecerá nos logs do Easypanel)
-# RUN ls -R dist
+RUN ls -R dist/infra
 
 EXPOSE 3000
 
