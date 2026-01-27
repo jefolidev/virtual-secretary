@@ -37,6 +37,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
         store: await redisStore({
           host: configService.get('REDIS_HOST'),
           port: configService.get('REDIS_PORT'),
+          password: configService.get('REDIS_PASSWORD'),
           ttl: 60 * 60 * 24, // 24 hours
         }),
       }),
