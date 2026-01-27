@@ -1,13 +1,15 @@
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { Professional } from '@/domain/scheduling/enterprise/entities/professional'
 
+import { Injectable } from '@nestjs/common'
+
+import { PrismaProfessionalMapper } from '../../mappers/prisma-professional-mapper'
+import { PrismaService } from '../prisma.service'
+
 import { ProfessionalWithNotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/professional-with-notification-settings'
 import { UserProfessionalWithSettings } from '@/domain/scheduling/enterprise/entities/value-objects/user-professional-with-settings'
-import { Injectable } from '@nestjs/common'
-import { PrismaProfessionalMapper } from '../../mappers/prisma-professional-mapper'
-import { PrismaProfessionalWithNotificationSettingsMapper } from '../../mappers/prisma-professional-with-notification-settings-mapper'
 import { PrismaUserProfessionalWithSettingsMapper } from '../../mappers/prisma-user-professional-with-settings'
-import { PrismaService } from '../prisma.service'
+import { PrismaProfessionalWithNotificationSettingsMapper } from '../../mappers/prisma-professional-with-notification-settings-mapper'
 
 @Injectable()
 export class PrismaProfessionalRepository implements ProfessionalRepository {

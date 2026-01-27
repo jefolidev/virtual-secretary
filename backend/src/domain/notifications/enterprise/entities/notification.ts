@@ -1,6 +1,6 @@
 import { Entity } from '@/core/entities/entity'
-import type { Optional } from '@/core/entities/types/optional'
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { Optional } from '@/core/entities/types/optional'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 
 export interface NotificationProps {

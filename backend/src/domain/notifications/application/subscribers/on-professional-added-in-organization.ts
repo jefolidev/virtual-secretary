@@ -1,9 +1,9 @@
 import { DomainEvents } from '@/core/events/domain-events'
 import { EventHandler } from '@/core/events/event-handler'
-import { SendNotificationUseCase } from '@/domain/notifications/application/use-cases/send-notification'
 import { AddedProfessionalToOrganizationEvent } from '@/domain/organization/enterprise/events/added-professional-organization'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { Injectable } from '@nestjs/common'
+import { SendNotificationUseCase } from '../use-cases/send-notification'
 
 @Injectable()
 export class OnProfessionalAddedToOrganization implements EventHandler {

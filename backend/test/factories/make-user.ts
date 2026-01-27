@@ -1,8 +1,8 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { User, UserProps } from '@/domain/scheduling/enterprise/entities/user'
 import { PrismaUserMapper } from '@/infra/database/mappers/prisma-user-mapper'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { faker } from '@faker-js/faker'
+import { PrismaService } from '../../src/infra/database/prisma/prisma.service'
 import { makeAddress } from './make-address'
 
 export class UserFactory {

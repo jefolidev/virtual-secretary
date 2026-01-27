@@ -1,6 +1,6 @@
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { DomainEvents } from '@/core/events/domain-events'
-import type { EventHandler } from '@/core/events/event-handler'
+import { EventHandler } from '@/core/events/event-handler'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'

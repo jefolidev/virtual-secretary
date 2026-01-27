@@ -1,6 +1,6 @@
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { PaginationQueryPipe } from '@/infra/http/pipes/pagination-query.pipe'
 import { Controller, Get, Query } from '@nestjs/common'
+import { PrismaService } from '../../database/prisma/prisma.service'
 import { PageQueryParamSchema } from './dto/page-query.dto'
 
 @Controller('/organizations')

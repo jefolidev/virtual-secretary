@@ -1,6 +1,6 @@
 import { AggregateRoot } from '@/core/entities/aggregate'
-import type { Optional } from '@/core/entities/types/optional'
-import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { Optional } from '@/core/entities/types/optional'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { AddedProfessionalToOrganizationEvent } from '../events/added-professional-organization'
 import { RemovedProfessionalFromOrganizationEvent } from '../events/remove-professional-organization'
 import { ProfessionalIdList } from '../value-objects/professional-id-list'
@@ -83,8 +83,8 @@ export class Organization extends AggregateRoot<OrganizationProps> {
       new AddedProfessionalToOrganizationEvent(
         this.id,
         professionalId,
-        this.name
-      )
+        this.name,
+      ),
     )
   }
 
@@ -96,8 +96,8 @@ export class Organization extends AggregateRoot<OrganizationProps> {
       new RemovedProfessionalFromOrganizationEvent(
         this.id,
         professionalId,
-        this.name
-      )
+        this.name,
+      ),
     )
   }
 
@@ -118,7 +118,7 @@ export class Organization extends AggregateRoot<OrganizationProps> {
       OrganizationProps,
       'isActive' | 'slug' | 'createdAt' | 'professionalsIds'
     >,
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const organization = new Organization(
       {
@@ -128,7 +128,7 @@ export class Organization extends AggregateRoot<OrganizationProps> {
         isActive: props.isActive ?? true,
         createdAt: props.createdAt ?? new Date(),
       },
-      id
+      id,
     )
 
     return organization

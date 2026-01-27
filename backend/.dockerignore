@@ -1,0 +1,8 @@
+node_modules
+dist
+data
+.git
+.env
+bun.lockb
+package-lock.json
+yarn.lock

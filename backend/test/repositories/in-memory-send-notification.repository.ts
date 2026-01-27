@@ -1,9 +1,7 @@
-import type { NotificationsRepository } from '@/domain/notifications/application/repositories/notification-repository'
+import type { NotificationsRepository } from '@/domain/notifications/application/repositories/notification.repository'
 import type { Notification } from '@/domain/notifications/enterprise/entities/notification'
 
-export class InMemorySendNotificationRepository
-  implements NotificationsRepository
-{
+export class InMemorySendNotificationRepository implements NotificationsRepository {
   public items: Notification[] = []
 
   async create(notification: Notification) {
@@ -20,7 +18,7 @@ export class InMemorySendNotificationRepository
 
   async save(notification: Notification): Promise<void> {
     const itemIndex = this.items.findIndex(
-      (item) => item.id === notification.id
+      (item) => item.id === notification.id,
     )
 
     this.items[itemIndex] = notification

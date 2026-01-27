@@ -1,10 +1,11 @@
 import { Either, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
-import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import { Injectable } from '@nestjs/common'
 import { Notification } from '../../enterprise/entities/notification'
-import { NotificationsRepository } from '../repositories/notification-repository'
+
+import { NotificationsRepository } from '@/domain/notifications/application/repositories/notification.repository'
+import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 
 export interface SendNotificationUseCaseRequest {
   recipientId: string
@@ -22,7 +23,7 @@ export type SendNotificationUseCaseResponse = Either<
 @Injectable()
 export class SendNotificationUseCase {
   constructor(
-    private notificationRepository: NotificationsRepository,
+    private readonly notificationRepository: NotificationsRepository,
     private readonly professionalRepository: ProfessionalRepository,
   ) {}
 

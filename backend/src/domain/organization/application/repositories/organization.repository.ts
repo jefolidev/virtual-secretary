@@ -1,4 +1,4 @@
-import type { Organization } from '../../enterprise/entities/organization'
+import { Organization } from '../../enterprise/entities/organization'
 
 export abstract class OrganizationRepository {
   abstract create(organization: Organization): Promise<void>

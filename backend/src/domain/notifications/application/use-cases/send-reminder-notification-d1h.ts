@@ -2,7 +2,7 @@ import { Either, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotificationType } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import { Notification } from '../../enterprise/entities/notification'
-import type { NotificationsRepository } from '../repositories/notification-repository'
+import type { NotificationsRepository } from '../repositories/notification.repository'
 
 export interface SendReminderNotificationUseCaseRequest {
   userId: string

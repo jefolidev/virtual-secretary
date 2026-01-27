@@ -1,6 +1,7 @@
 import { OrganizationRepository } from '@/domain/organization/application/repositories/organization.repository'
 import { Organization } from '@/domain/organization/enterprise/entities/organization'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
+
+import { PrismaService } from '../prisma.service'
 import { Injectable } from '@nestjs/common'
 import { PrismaOrganizationMapper } from '../../mappers/prisma-organization-mapper'
 
