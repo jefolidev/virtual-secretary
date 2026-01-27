@@ -16,7 +16,7 @@ RUN bun x prisma generate
 RUN bun run build
 
 # 5. Verificação de segurança (isso aparecerá nos logs do Easypanel)
-RUN ls -R dist/infra
+RUN ls -R dist
 
 EXPOSE 3000
 
