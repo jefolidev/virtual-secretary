@@ -25,6 +25,7 @@ import { PrismaProfessionalRepository } from './prisma/repositories/prisma-profe
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository'
+import { RedisService } from './redis/redis.service'
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
   ],
   providers: [
     PrismaService,
+    RedisService,
     {
       provide: AddressRepository,
       useClass: PrismaAddressRepository,
@@ -84,6 +86,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
   exports: [
     CacheModule,
     PrismaService,
+    RedisService,
     AppointmentsRepository,
     AddressRepository,
     CancellationPolicyRepository,
