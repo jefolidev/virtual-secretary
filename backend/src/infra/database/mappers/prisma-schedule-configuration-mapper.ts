@@ -1,11 +1,11 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { ScheduleConfiguration } from '@/domain/scheduling/enterprise/entities/schedule-configuration'
 import { WorkingDaysList } from '@/domain/scheduling/enterprise/entities/value-objects/working-days-list'
-import { ScheduleConfiguration as PrismaScheduleConfiguration } from '@prisma/generated/client'
+import { ScheduleConfiguration as PrismaScheduleConfiguration } from '../../generated/prisma/index'
 
 export class PrismaScheduleConfigurationMapper {
   static toPrisma(
-    scheduleConfig: ScheduleConfiguration
+    scheduleConfig: ScheduleConfiguration,
   ): PrismaScheduleConfiguration {
     return {
       id: scheduleConfig.id.toString(),
@@ -37,7 +37,7 @@ export class PrismaScheduleConfigurationMapper {
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt || null,
       },
-      new UniqueEntityId(raw.id)
+      new UniqueEntityId(raw.id),
     )
   }
 }

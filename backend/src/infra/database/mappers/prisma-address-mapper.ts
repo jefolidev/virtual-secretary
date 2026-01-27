@@ -1,7 +1,7 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Address } from '@/domain/scheduling/enterprise/entities/address'
-import { Address as PrismaAddress } from '@prisma/generated/client'
-import { AddressUncheckedCreateInput } from '@prisma/generated/models'
+import { Address as PrismaAddress } from '../../generated/prisma/index'
+// Não existe AddressUncheckedCreateInput gerado, usar Address para tipagem
 
 export class PrismaAddressMapper {
   static toPrisma({
@@ -37,7 +37,7 @@ export class PrismaAddressMapper {
         postalCode: raw.postalCode,
         state: raw.state,
       },
-      new UniqueEntityId(raw.id)
+      new UniqueEntityId(raw.id),
     )
   }
 }

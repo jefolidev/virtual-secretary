@@ -10,7 +10,7 @@ import {
   Professional as PrismaProfessional,
   ScheduleConfiguration as PrismaScheduleConfiguration,
   User as PrismaUser,
-} from '@prisma/generated/client'
+} from '../../generated/prisma/index'
 
 type PrismaUserProfessionalWithSettings = PrismaProfessional & {
   user: PrismaUser | null

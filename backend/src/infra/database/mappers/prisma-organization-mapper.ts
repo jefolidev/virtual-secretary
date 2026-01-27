@@ -5,7 +5,7 @@ import { Slug } from '@/utils/slug'
 import {
   Organization as PrismaOrganization,
   Professional,
-} from '@prisma/generated/client'
+} from '../../generated/prisma/index'
 
 type PrismaOrganizationWithProfessionals = PrismaOrganization & {
   professionals: Professional[]
@@ -15,7 +15,7 @@ export class PrismaOrganizationMapper {
   static toPrisma(organization: Organization): PrismaOrganization {
     if (!organization.addressId) {
       throw new Error(
-        'Organization must have an addressId to be mapped to Prisma.'
+        'Organization must have an addressId to be mapped to Prisma.',
       )
     }
 
@@ -35,8 +35,8 @@ export class PrismaOrganizationMapper {
   static toDomain(raw: PrismaOrganizationWithProfessionals): Organization {
     const professionalsIds = new ProfessionalIdList(
       raw.professionals?.map(
-        (professional) => new UniqueEntityId(professional.id)
-      ) || []
+        (professional) => new UniqueEntityId(professional.id),
+      ) || [],
     )
 
     return Organization.create(
@@ -50,7 +50,7 @@ export class PrismaOrganizationMapper {
         professionalsIds,
         createdAt: raw.createdAt,
       },
-      new UniqueEntityId(raw.id)
+      new UniqueEntityId(raw.id),
     )
   }
 }

@@ -1,7 +1,7 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Appointment } from '@/domain/scheduling/enterprise/entities/appointment'
-import { Appointment as PrismaAppointment } from '@prisma/generated/client'
-import { AppointmentUncheckedCreateInput } from '@prisma/generated/models'
+import { Appointment as PrismaAppointment } from '../../generated/prisma/index'
+// Não existe AppointmentUncheckedCreateInput gerado, usar Appointment para tipagem
 
 export class PrismaAppointmentMapper {
   static toPrisma(raw: Appointment): AppointmentUncheckedCreateInput {
@@ -56,7 +56,7 @@ export class PrismaAppointmentMapper {
         totalElapsedMs: raw.totalElapsedMs ? Number(raw.totalElapsedMs) : null,
         updatedAt: raw.updatedAt,
       },
-      new UniqueEntityId(raw.id)
+      new UniqueEntityId(raw.id),
     )
   }
 }

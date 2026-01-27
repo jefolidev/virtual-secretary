@@ -1,10 +1,9 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { User as DomainUser } from '@/domain/scheduling/enterprise/entities/user'
-import { User } from '@prisma/generated/client'
-import { UserUncheckedCreateInput } from '@prisma/generated/models'
+import { User } from '@/generated/prisma'
 
 export class PrismaUserMapper {
-  static toPrisma(user: DomainUser): UserUncheckedCreateInput {
+  static toPrisma(user: DomainUser): User {
     return {
       id: user.id.toString(),
       name: user.name,
@@ -13,14 +12,15 @@ export class PrismaUserMapper {
       gender: user.gender,
       birthDate: user.birthDate,
       createdAt: user.createdAt,
-      updatedAt: user.updatedAt,
+      updatedAt: user.updatedAt ?? null,
       cpf: user.cpf,
       whatsappNumber: user.whatsappNumber,
-      addressId: user.addressId ? user.addressId.toString() : undefined,
-      clientId: user.clientId ? user.clientId.toString() : undefined,
+      addressId: user.addressId ? user.addressId.toString() : null,
+      clientId: user.clientId ? user.clientId.toString() : null,
       professionalId: user.professionalId
         ? user.professionalId.toString()
-        : undefined,
+        : null,
+      threadId: null, // ajuste conforme necessário
       role: user.role,
     }
   }

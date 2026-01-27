@@ -1,6 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
-import { Client as PrismaClientUser } from '@prisma/generated/client'
+import { Client as PrismaClientUser } from '../../generated/prisma/index'
 
 export class PrismaClientMapper {
   static toPrisma(client: Client): PrismaClientUser {
@@ -22,7 +22,7 @@ export class PrismaClientMapper {
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt || null,
       },
-      new UniqueEntityId(raw.id)
+      new UniqueEntityId(raw.id),
     )
   }
 }
