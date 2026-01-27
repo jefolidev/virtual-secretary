@@ -6,7 +6,7 @@ RUN bun install
 
 # Copia a pasta prisma ANTES de rodar o generate
 COPY prisma ./prisma/
-RUN bun x prisma generate
+RUN bun prisma generate
 
 COPY . .
 RUN bun run build
