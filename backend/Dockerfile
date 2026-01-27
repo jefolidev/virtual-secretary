@@ -1,25 +1,24 @@
-# Usa a imagem oficial do Bun (leve e rápida)
 FROM oven/bun:1-alpine
 
-# Define o diretório de trabalho dentro da pasta /backend que configuraste
 WORKDIR /app
 
-# Copia os ficheiros de dependências primeiro para aproveitar o cache
-COPY package.json bun.lock ./
-
-# Instala as dependências usando o motor do Bun
+# 1. Instalação das dependências
+COPY package.json bun.lock* ./
 RUN bun install
 
-# Copia o resto do código (src, prisma, etc)
+# 2. Copia todo o código
 COPY . .
 
-RUN bun prisma:generate
+# 3. Gera o Prisma Client (necessário antes do build por causa dos tipos)
+RUN bun x prisma generate
 
-# Executa o build do NestJS (certifica-te que tens o script "build" no package.json)
+# 4. Build do NestJS
 RUN bun run build
 
-# Expõe a porta que o teu NestJS usa
+# 5. Verificação de segurança (isso aparecerá nos logs do Easypanel)
+RUN ls -R dist/infra
+
 EXPOSE 3000
 
-# Comando para iniciar a aplicação em produção
+# 6. Inicia o servidor usando o caminho correto do entryFile
 CMD ["bun", "run", "start:prod"]
