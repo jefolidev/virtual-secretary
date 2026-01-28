@@ -15,6 +15,7 @@ import {
 } from '../openai/types/conversations-flow'
 import { openAiFunctions } from '../openai/types/openai-functions'
 import { CreateClientBodyDTO } from './dto/create-client.dto'
+import { AppointmentModalityType } from '@/domain/scheduling/enterprise/entities/appointment'
 
 @Injectable()
 export class WhatsappService {
@@ -388,13 +389,20 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
       'esta certo',
     ]
 
+    const normalizeModality = (mod: string): AppointmentModalityType => {
+      const m = mod.toLowerCase()
+      if (m.includes('online') || m.includes('remoto') || m.includes('online'))
+        return 'ONLINE'
+      return 'IN_PERSON'
+    }
+
     if (isComplete && confirmationWords.includes(lowerMsg)) {
       try {
         await this.scheduleAppointment({
           whatsappNumber: cleanNumber,
           professionalName: context.data.professional,
           startDateTime: new Date(context.data.datetime),
-          modality: context.data.modality,
+          modality: normalizeModality(context.data.modality),
         })
 
         await this.deleteConversationContext(cleanNumber)
@@ -438,6 +446,10 @@ Tudo pronto! Te enviamos os detalhes por aqui. Até lá!`
         - NUNCA peça IDs de cliente ou profissional. Identificamos pelo WhatsApp.
         - Peça APENAS: Nome do Profissional, Data/Hora e Modalidade.
 
+        MODALIDADES ACEITAS:
+        - Se o usuário quiser presencial, use: "IN_PERSON"
+        - Se o usuário quiser remoto/online/videochamada, use: "ONLINE"
+        
         LISTA DE PROFISSIONAIS CADASTRADOS (USE EXATAMENTE ESTES NOMES):
         ${professionalsListText}
 
@@ -451,6 +463,7 @@ Tudo pronto! Te enviamos os detalhes por aqui. Até lá!`
         2. Se o usuário digitar apenas o primeiro nome (ex: "Pedro"), mas na lista houver "Dr. Pedro Santos", você DEVE converter para o nome completo "Dr. Pedro Santos" ao chamar a função.
         3. Se o nome fornecido não for minimamente parecido com nenhum da lista, diga que não encontrou o profissional e liste os nomes disponíveis novamente.
         4. NÃO prossiga com 'schedule_appointment' se o nome do profissional estiver como 'NÃO DEFINIDO'.
+        5. Ao chamar as funções, o campo 'modality' deve ser estritamente "IN_PERSON" ou "ONLINE".
 
         FLUXO:
         - Se confirmar (sim/ok) e os dados estiverem completos (com nome da lista), chame 'schedule_appointment'.
