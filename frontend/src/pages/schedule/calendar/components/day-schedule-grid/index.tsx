@@ -1,5 +1,6 @@
+import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
 import { useState } from 'react'
-import type { Appointment, DayScheduleGridProps } from '../../types'
+import type { DayScheduleGridProps } from '../../types'
 import {
   calculateSlotHeight,
   generateTimeSlots,
@@ -15,12 +16,14 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
 
   const timeSlots = generateTimeSlots(7, 22)
   const dayAppointments = appointments.filter(
-    (apt) => apt.date === date.toISOString().split('T')[0]
+    (apt) =>
+      apt.startDateTime.toString().split('T')[0] ===
+      date.toISOString().split('T')[0],
   )
 
   // Calcular alturas dinâmicas para cada slot baseado nos appointments
   const slotHeights = timeSlots.map((time) =>
-    calculateSlotHeight(appointments, time)
+    calculateSlotHeight(appointments, time),
   )
 
   // Calcular posições acumuladas dos slots
@@ -95,7 +98,12 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
               {dayAppointments.map((appointment) => {
                 // Encontrar o índice do slot de tempo para este appointment
                 const slotIndex = timeSlots.findIndex(
-                  (slot) => slot === appointment.time
+                  (slot) =>
+                    slot ===
+                    appointment.startDateTime.toLocaleTimeString('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }),
                 )
                 const slotTop = slotIndex >= 0 ? slotPositions[slotIndex] : 0
                 const slotHeight =
@@ -103,7 +111,7 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
 
                 // Verificar sobreposições no mesmo horário
                 const sameTimeAppointments = dayAppointments.filter(
-                  (apt) => apt.time === appointment.time
+                  (apt) => apt.startDateTime === appointment.startDateTime,
                 )
 
                 let leftOffset = 0
@@ -111,7 +119,7 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
 
                 if (sameTimeAppointments.length > 1) {
                   const appointmentIndex = sameTimeAppointments.findIndex(
-                    (apt) => apt.id === appointment.id
+                    (apt) => apt.id === appointment.id,
                   )
                   widthPercent = 85 / sameTimeAppointments.length
                   leftOffset = appointmentIndex * widthPercent

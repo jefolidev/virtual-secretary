@@ -1,23 +1,4 @@
-// Tipos
-export interface Appointment {
-  id: string
-  patientName: string
-  time: string
-  endTime?: string
-  date: string
-  type: 'consulta' | 'retorno'
-  modalidade: 'presencial' | 'remota'
-  status:
-    | 'agendado'
-    | 'confirmado'
-    | 'cancelado'
-    | 'finalizado'
-    | 'nao-pago'
-    | 'pago'
-    | 'no-show'
-    | 'remarcado'
-  duration?: number // em minutos
-}
+import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
 
 export type ViewMode = 'day' | 'week' | 'month'
 

@@ -1,27 +1,66 @@
 import z from 'zod'
 
+export const appointmentsStatusEnum = z.enum([
+  'SCHEDULED',
+  'CONFIRMED',
+  'CANCELLED',
+  'RESCHEDULED',
+  'NO_SHOW',
+  'IN_PROGRESS',
+  'COMPLETED',
+])
+
+export type AppointmentsStatus = z.infer<typeof appointmentsStatusEnum>
+
+export const paymentStatusEnum = z.enum([
+  'PENDING',
+  'PROCESSING',
+  'SUCCEEDED',
+  'FAILED',
+  'REFUNDED',
+])
+
+export type PaymentStatus = z.infer<typeof paymentStatusEnum>
+
+export const appointmentModalitiesEnum = z.enum(['IN_PERSON', 'ONLINE'])
+
+export type AppointmentModalities = z.infer<typeof appointmentModalitiesEnum>
+
+export const appointments = z.object({
+  id: z.string(),
+  professionalId: z.string(),
+  clientId: z.string(),
+  modality: appointmentModalitiesEnum,
+  googleMeetLink: z.string().nullable(),
+  rescheduleDateTime: z.date().nullable(),
+  status: appointmentsStatusEnum,
+
+  agreedPrice: z.number(),
+  paymentStatus: paymentStatusEnum,
+  paymentExpiresAt: z.date().nullable(),
+  currentTransactionId: z.string().nullable(),
+
+  startDateTime: z.date(),
+  endDateTime: z.date(),
+
+  startedAt: z.date().nullable(),
+  totalElapsedMs: z.number().nullable(),
+
+  createdAt: z.date(),
+  updatedAt: z.date(),
+})
+
+export type Appointment = z.infer<typeof appointments>
+
 export const fetchProfessionalSchedulesSchema = z.array(
   z.object({
-    professional_id: z.uuid(),
-    client_id: z.uuid(),
-    schedule_time: z.object({
-      start_hour: z.string(),
-      end_hour: z.string(),
-    }),
-    modality: z.string(),
-    reschedule_time: z
-      .object({
-        start_hour: z.string().optional(),
-        end_hour: z.string().optional(),
-      })
-      .optional(),
-    agreed_price: z.number(),
-    google_meet_link: z.string().url().optional(),
-    status: z.string(),
-    started_at: z.string().nullable(),
-    total_elapsed_ms: z.number().nullable(),
-    created_at: z.string(),
-    updated_at: z.string(),
+    appointments: appointments,
+    extraPreference: z.string().nullable(),
+    periodPreference: z.string().nullable(),
+    name: z.string(),
+    whatsappNumber: z.string().nullable(),
+    email: z.string().nullable(),
+    cpf: z.string().nullable,
   }),
 )
 

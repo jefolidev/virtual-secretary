@@ -24,7 +24,8 @@ export function ScheduleCalendarPage() {
     showCancelado: true,
   })
 
-  const { currentProfessionalSchedules,handleFetchProfessionalSchedules } = useProfessional()
+  const { currentProfessionalSchedules, handleFetchProfessionalSchedules } =
+    useProfessional()
 
   useEffect(() => {
     handleFetchProfessionalSchedules
@@ -53,28 +54,31 @@ export function ScheduleCalendarPage() {
   }
 
   // Filtrar agendamentos baseado nos filtros selecionados
-  const filteredAppointments = currentProfessionalSchedules.filter((apt) => {
-    const statusLowerCase = apt.status.toLowerCase()
+  const filteredAppointments = currentProfessionalSchedules
+    .filter((apt) => {
+      const statusLowerCase = apt.appointments.status.toLowerCase()
 
-    const statusFilter =
-      (statusLowerCase === 'agendado' && filters.showAgendado) ||
-      (statusLowerCase === 'confirmado' && filters.showConfirmado) ||
-      (statusLowerCase === 'pago' && filters.showPago) ||
-      (statusLowerCase === 'finalizado' && filters.showFinalizado) ||
-      (statusLowerCase === 'nao-pago' && filters.showNaoPago) ||
-      (statusLowerCase === 'no-show' && filters.showNoShow) ||
-      (statusLowerCase === 'remarcado' && filters.showRemarcado) ||
-      (statusLowerCase === 'cancelado' && filters.showCancelado)
+      const statusFilter =
+        (statusLowerCase === 'scheduled' && filters.showAgendado) ||
+        (statusLowerCase === 'completed' && filters.showFinalizado) ||
+        (statusLowerCase === 'confirmed' && filters.showConfirmado) ||
+        (statusLowerCase === 'paid' && filters.showPago) ||
+        (statusLowerCase === 'not paid' && filters.showNaoPago) ||
+        (statusLowerCase === 'no show' && filters.showNoShow) ||
+        (statusLowerCase === 'rescheduled' && filters.showRemarcado) ||
+        (statusLowerCase === 'canceled' && filters.showCancelado) ||
+        true
 
-    const patientFilter =
-      selectedPatient === 'all' || apt.client_id === selectedPatient
+      const patientFilter =
+        selectedPatient === 'all' || apt.name === selectedPatient
 
-    return statusFilter && patientFilter
-  })
+      return statusFilter && patientFilter
+    })
+    .map((apt) => apt.appointments)
 
   // Obter lista única de pacientes para o select
   const uniquePatients = [
-    ...new Set(currentProfessionalSchedules.map((apt) => apt.patientName)),
+    ...new Set(currentProfessionalSchedules.map((apt) => apt.name)),
   ]
 
   const renderCalendar = () => {

@@ -1,7 +1,7 @@
 import { Either, right } from '@/core/either'
 import { Injectable } from '@nestjs/common'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
-import { Appointment } from '../../enterprise/entities/appointment'
+import { AppointmentWithClient } from '../../enterprise/entities/value-objects/appointment-with-client'
 import { AppointmentsRepository } from '../repositories/appointments.repository'
 
 export interface FetchScheduleByProfessionalIdUseCaseProps {
@@ -11,7 +11,7 @@ export interface FetchScheduleByProfessionalIdUseCaseProps {
 
 type FetchScheduleByProfessionalIdUseCaseResponse = Either<
   NotFoundError,
-  { appointments: Appointment[] }
+  { appointments: AppointmentWithClient[] }
 >
 
 @Injectable()
@@ -25,7 +25,7 @@ export class FetchScheduleByProfessionalIdUseCase {
     const appointments =
       await this.appointmentsRepository.findManyByProfessionalId(
         professionalId,
-        { page }
+        { page },
       )
 
     return right({ appointments })

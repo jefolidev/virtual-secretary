@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
 import {
   Bell,
   Clock,
@@ -22,13 +23,10 @@ import {
   Monitor,
   Pause,
   Play,
-  RefreshCw,
   Square,
-  Stethoscope,
-  UserX,
+  UserX
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import type { Appointment } from '../../types'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
 
 interface AppointmentModalProps {
@@ -60,14 +58,14 @@ const getMockPatientData = (appointmentId: string) => ({
 })
 
 const statusOptions = [
-  { value: 'agendado', label: 'Agendado' },
-  { value: 'confirmado', label: 'Confirmado' },
-  { value: 'pago', label: 'Pago' },
-  { value: 'finalizado', label: 'Finalizado' },
-  { value: 'nao-pago', label: 'Não Pago' },
-  { value: 'no-show', label: 'No Show' },
-  { value: 'remarcado', label: 'Remarcado' },
-  { value: 'cancelado', label: 'Cancelado' },
+  { value: 'SCHEDULED', label: 'Agendado' },
+  { value: 'CONFIRMED', label: 'Confirmado' },
+  { value: 'SUCCEEDED', label: 'Pago' },
+  { value: 'COMPLETED', label: 'Finalizado' },
+  { value: 'FAILED', label: 'Não Pago' },
+  { value: 'NO_SHOW', label: 'No Show' },
+  { value: 'RESCHEDULED', label: 'Remarcado' },
+  { value: 'CANCELLED', label: 'Cancelado' },
 ]
 
 export function AppointmentModal({
@@ -251,7 +249,7 @@ export function AppointmentModal({
             {/* Modalidade */}
             <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                {appointment.modalidade === 'presencial' ? (
+                {appointment.modality === 'IN_PERSON' ? (
                   <MapPin className="h-5 w-5 text-zinc-600" />
                 ) : (
                   <Monitor className="h-5 w-5 text-zinc-600" />
@@ -262,7 +260,9 @@ export function AppointmentModal({
                   Modalidade
                 </p>
                 <p className="font-semibold capitalize">
-                  {appointment.modalidade}
+                  {appointment.modality === 'IN_PERSON'
+                    ? 'Presencial'
+                    : 'Online'}
                 </p>
               </div>
             </div>
@@ -277,16 +277,22 @@ export function AppointmentModal({
                   Data/Horário
                 </p>
                 <p className="font-semibold">
-                  {new Date(appointment.date).toLocaleDateString('pt-BR')}
+                  {new Date(appointment.startDateTime).toLocaleDateString('pt-BR')}
                 </p>
                 <p className="text-sm">
-                  {appointment.time} - {appointment.endTime}
+                  {appointment.startDateTime.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })} - {appointment.endDateTime.toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </p>
               </div>
             </div>
 
             {/* Tipo de Consulta */}
-            <div className="flex items-center gap-3 p-3  rounded-lg">
+            {/* <div className="flex items-center gap-3 p-3  rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
                 {appointment.type === 'consulta' ? (
                   <Stethoscope className="h-5 w-5 text-zinc-600" />
@@ -301,7 +307,7 @@ export function AppointmentModal({
                 <p className="font-semibold capitalize">{appointment.type}</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <Separator />
 
