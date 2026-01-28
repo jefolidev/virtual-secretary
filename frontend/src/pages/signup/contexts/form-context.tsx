@@ -39,10 +39,6 @@ export interface FormData {
     confirmedList: boolean
     payments: boolean
   }
-  notificationChannels: {
-    email: boolean
-    whatsapp: boolean
-  }
 
   cancellationPolicy: string
   allowReschedule: boolean
@@ -114,10 +110,6 @@ const initialFormData: FormData = {
     dailySummary: false,
     confirmedList: false,
     payments: false,
-  },
-  notificationChannels: {
-    email: false,
-    whatsapp: false,
   },
 
   cancellationPolicy: '',

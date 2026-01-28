@@ -19,8 +19,6 @@ export type NotificationType =
   | 'CONFIRMED_LIST'
   | 'PAYMENT_STATUS'
 
-export type NotificationChannel = 'EMAIL' | 'WHATSAPP'
-
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
 export interface WorkingDaysList {
@@ -33,7 +31,6 @@ export interface WorkingDaysList {
 export interface UserSettings {
   notificationSettings: {
     enabledTypes?: NotificationType[]
-    channels?: NotificationChannel[]
   }
   consultations?: {
     workDays: {
@@ -77,7 +74,6 @@ export interface UpdateProfessionalWorkHoursData {
 
 export interface UpdateProfessional {
   enabledTypes?: NotificationType[]
-  channels?: NotificationChannel[]
   dailySummaryTime?: string
   reminderBeforeMinutes?: number
   sessionPrice?: number

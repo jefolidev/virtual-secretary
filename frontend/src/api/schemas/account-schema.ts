@@ -3,7 +3,6 @@ import z from 'zod'
 import { addressSchema } from './address-schema'
 
 const PeriodPreferenceEnum = z.enum(['MORNING', 'AFTERNOON', 'EVENING'])
-const NotificationChannelEnum = z.enum(['EMAIL', 'WHATSAPP'])
 const GenderEnum = z.enum(['MALE', 'FEMALE'])
 
 const NotificationType = z.enum([
@@ -21,9 +20,6 @@ const clientDataSchema = z.object({
 })
 
 const notificationSettings = z.object({
-  channels: z
-    .array(NotificationChannelEnum)
-    .min(1, 'Selecione ao menos um canal'),
   enabledTypes: z
     .array(NotificationType)
     .min(1, 'Selecione ao menos um tipo de notificação'),

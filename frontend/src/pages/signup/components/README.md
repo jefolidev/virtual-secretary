@@ -69,9 +69,7 @@ Configurações de notificações para profissionais.
 **Props:**
 
 - `notifications`: Objeto com tipos de notificações habilitadas
-- `notificationChannels`: Objeto com canais de notificação habilitados
 - `onToggleNotification`: Função callback para alternar notificações
-- `onToggleNotificationChannel`: Função callback para alternar canais
 
 ---
 

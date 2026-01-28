@@ -256,17 +256,6 @@ export function validateSignupData(data: SignupData): ValidationResult {
         step: 4,
       })
     }
-
-    if (
-      data.notificationChannels &&
-      Object.values(data.notificationChannels).every((channel) => !channel)
-    ) {
-      errors.push({
-        field: 'notificationChannels',
-        message: 'Selecione pelo menos um canal de notificação',
-        step: 4,
-      })
-    }
   }
 
   if (!data.address) {

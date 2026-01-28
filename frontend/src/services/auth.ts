@@ -21,7 +21,6 @@ export interface RegisterUserData {
   professionalData?: {
     sessionPrice: number
     notificationSettings: {
-      channels: Array<'EMAIL' | 'WHATSAPP'>
       enabledTypes: Array<
         | 'CONFIRMATION'
         | 'CANCELLATION'
@@ -74,10 +73,6 @@ export interface ProfessionalNotifications {
   confirmations: boolean
   dailySummary: boolean
   confirmedList: boolean
-  notificationChannels: {
-    email: boolean
-    whatsapp: boolean
-  }
 }
 
 export async function saveCancellationPolicy(
@@ -159,12 +154,6 @@ export function transformSignupDataToRegisterData(
         ? {
             sessionPrice: data.sessionPrice || 0,
             notificationSettings: {
-              channels: [
-                ...(data.notificationChannels?.email ? ['EMAIL' as const] : []),
-                ...(data.notificationChannels?.whatsapp
-                  ? ['WHATSAPP' as const]
-                  : []),
-              ],
               enabledTypes: [
                 ...(data.notifications?.newAppointments
                   ? ['NEW_APPOINTMENT' as const]
@@ -281,16 +270,11 @@ export function transformSignupDataToCancellationPolicy(
 export function transformSignupDataToNotifications(
   data: SignupData,
 ): ProfessionalNotifications | null {
-  if (
-    data.userType !== 'professional' ||
-    !data.notifications ||
-    !data.notificationChannels
-  ) {
+  if (data.userType !== 'professional' || !data.notifications) {
     return null
   }
 
   return {
     ...data.notifications,
-    notificationChannels: data.notificationChannels,
   }
 }

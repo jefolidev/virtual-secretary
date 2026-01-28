@@ -6,7 +6,6 @@ import {
 } from '@/services/auth'
 import type {
   DayOfWeek,
-  NotificationChannel,
   NotificationType,
   WorkingDaysList,
 } from '@/types/user'
@@ -59,7 +58,6 @@ export interface ProfessionalNotificationSettings {
     id: string
     notificationSettings: {
       props: {
-        channels: NotificationChannel[]
         enabledTypes: NotificationType[]
       }
     }
@@ -127,10 +125,6 @@ export interface SignupData {
     dailySummary: boolean
     confirmedList: boolean
     payments: boolean
-  }
-  notificationChannels?: {
-    email: boolean
-    whatsapp: boolean
   }
 
   address: {
@@ -205,7 +199,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           startTime: data.startTime,
           endTime: data.endTime,
           notifications: data.notifications,
-          notificationChannels: data.notificationChannels,
         }
 
         const missingFields = Object.entries(requiredFields)

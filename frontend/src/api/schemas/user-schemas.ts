@@ -28,10 +28,6 @@ export const updateUserNotificationsSchema = z.object({
     confirmedList: z.boolean(),
     payments: z.boolean(),
   }),
-  notificationChannels: z.object({
-    email: z.boolean(),
-    whatsapp: z.boolean(),
-  }),
 })
 
 export const updateUserConsultationsSchema = z.object({
