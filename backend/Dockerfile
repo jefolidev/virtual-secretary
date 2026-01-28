@@ -13,10 +13,6 @@ RUN DATABASE_URL="postgresql://fake:fake@localhost:5432/fake" bun prisma generat
 # 3. Compila o NestJS
 RUN bun run build
 
-# NOVIDADE: Copia os arquivos gerados pelo Prisma para dentro da pasta dist 
-# para que o código compilado os encontre no mesmo caminho relativo
-RUN cp -r src/generated dist/src/
-
 EXPOSE 3333
 
 CMD bun run start:prod

@@ -5,7 +5,7 @@ import {
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
 import { Injectable } from '@nestjs/common'
-import { Prisma } from '../../../../generated/prisma'
+import { Prisma } from '@prisma/client'
 import { PrismaAppointmentMapper } from '../../mappers/prisma-appointment-mapper'
 import { PrismaService } from '../prisma.service'
 
@@ -19,7 +19,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     await this.prisma.appointment.create({
       data: {
         ...data,
-        rescheduleDateTime: data.rescheduleDateTime ?? Prisma.JsonNull,
+        rescheduleDateTime: JSON.stringify(data.rescheduleDateTime),
       },
     })
 
@@ -72,7 +72,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     )
 
     const blockingStatuses = [
-      'SCHEDULED',
+    'SCHEDULED',
       'CONFIRMED',
       'RESCHEDULED',
       'IN_PROGRESS',

@@ -5,7 +5,7 @@ import { BadRequestException } from '@nestjs/common'
 import {
   NotificationSettings as PrismaNotificationSettings,
   Professional,
-} from '../../../generated/prisma'
+} from '@prisma/client'
 
 type PrismaProfessionalWithNotificationSettings = Professional & {
   notificationSettings: PrismaNotificationSettings | null

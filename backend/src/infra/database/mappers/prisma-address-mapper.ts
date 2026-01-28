@@ -1,6 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { Address } from '@/domain/scheduling/enterprise/entities/address'
-import { Address as PrismaAddress } from '../../../generated/prisma'
+import { Address as AddressDomain } from '@/domain/scheduling/enterprise/entities/address'
+import { Address } from '@prisma/client'
 
 export class PrismaAddressMapper {
   static toPrisma({
@@ -13,7 +13,7 @@ export class PrismaAddressMapper {
     postalCode,
     state,
     id,
-  }: Address): PrismaAddress {
+  }: AddressDomain): Address {
     return {
       id: id.toString(),
       addressLine1,
@@ -27,8 +27,8 @@ export class PrismaAddressMapper {
     }
   }
 
-  static toDomain(raw: PrismaAddress): Address {
-    return Address.create(
+  static toDomain(raw: Address): AddressDomain {
+    return AddressDomain.create(
       {
         addressLine1: raw.addressLine1,
         addressLine2: raw.addressLine2 ? raw.addressLine2 : null,

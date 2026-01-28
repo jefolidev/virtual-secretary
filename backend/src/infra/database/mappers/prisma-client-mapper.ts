@@ -1,6 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
-import { Client as PrismaClientUser } from '../../../generated/prisma'
+import { Client as PrismaClientUser } from '@prisma/client'
 
 export class PrismaClientMapper {
   static toPrisma(client: Client): PrismaClientUser {

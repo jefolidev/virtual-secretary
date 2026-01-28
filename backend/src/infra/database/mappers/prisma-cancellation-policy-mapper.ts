@@ -1,6 +1,6 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { CancellationPolicy } from '@/domain/scheduling/enterprise/entities/cancellation-policy'
-import { CancellationPolicy as PrismaCancellationPolicy } from '../../../generated/prisma'
+import { CancellationPolicy as PrismaCancellationPolicy } from '@prisma/client'
 
 export class PrismaCancellationPolicyMapper {
   static toPrisma(cancellationPoliy: CancellationPolicy) {

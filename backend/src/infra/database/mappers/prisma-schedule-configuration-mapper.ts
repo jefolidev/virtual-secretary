@@ -1,7 +1,7 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { ScheduleConfiguration } from '@/domain/scheduling/enterprise/entities/schedule-configuration'
 import { WorkingDaysList } from '@/domain/scheduling/enterprise/entities/value-objects/working-days-list'
-import { ScheduleConfiguration as PrismaScheduleConfiguration } from '../../../generated/prisma'
+import { ScheduleConfiguration as PrismaScheduleConfiguration } from '@prisma/client'
 
 export class PrismaScheduleConfigurationMapper {
   static toPrisma(

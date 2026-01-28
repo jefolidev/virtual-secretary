@@ -1,6 +1,5 @@
 generator client {
   provider     = "prisma-client-js"
-  output       = "../src/generated/prisma"
   moduleFormat = "cjs"
 }
 
@@ -73,7 +72,7 @@ model Appointment {
   agreedPrice          Decimal       @map("agreed_price") @db.Decimal(10, 2)
   paymentStatus        PaymentStatus @default(PENDING) @map("payment_status")
   paymentExpiresAt     DateTime?     @map("payment_expires_at")
-  currentTransactionId String?     @map("current_transaction_id")
+  currentTransactionId String?       @map("current_transaction_id")
 
   client       Client       @relation(fields: [clientId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])

@@ -5,7 +5,7 @@ import { Slug } from '@/utils/slug'
 import {
   Organization as PrismaOrganization,
   Professional,
-} from '../../../generated/prisma'
+} from '@prisma/client'
 
 type PrismaOrganizationWithProfessionals = PrismaOrganization & {
   professionals: Professional[]

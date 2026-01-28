@@ -1,7 +1,7 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Appointment } from '@/domain/scheduling/enterprise/entities/appointment'
+import { Appointment as PrismaAppointment } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/index-browser'
-import { Appointment as PrismaAppointment } from '../../../generated/prisma'
 
 export class PrismaAppointmentMapper {
   static toPrisma(raw: Appointment): PrismaAppointment {
@@ -59,6 +59,12 @@ export class PrismaAppointmentMapper {
         startedAt: raw.startedAt,
         totalElapsedMs: raw.totalElapsedMs ? Number(raw.totalElapsedMs) : null,
         updatedAt: raw.updatedAt,
+        currentTransactionId:
+          raw.currentTransactionId !== undefined &&
+          raw.currentTransactionId !== null
+            ? String(raw.currentTransactionId)
+            : null,
+        paymentExpiresAt: raw.paymentExpiresAt ?? null,
       },
       new UniqueEntityId(raw.id),
     )
