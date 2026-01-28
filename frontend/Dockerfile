@@ -12,7 +12,7 @@ ENV VITE_BACKEND_API_URL=$VITE_BACKEND_API_URL
 ENV VITE_ENVIRONMENT=$VITE_ENVIRONMENT
 
 # 3. Instalar dependências
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
 
 # 4. Copiar o código e gerar o build
