@@ -4,7 +4,6 @@ import { calculateSlotHeight, generateTimeSlots } from '../../utils'
 import { AppointmentCard } from '../appointment-card'
 import { AppointmentModal } from '../appointment-modal'
 
-// Definimos o tipo baseado no seu log: Array de objetos com a chave appointments
 interface RefactoredWeekGridProps {
   weekDays: Date[]
   schedules: FetchProfessionalSchedulesSchema[]
@@ -12,7 +11,7 @@ interface RefactoredWeekGridProps {
 
 export function WeekScheduleGrid({
   weekDays,
-  schedules, // Agora recebemos a lista completa (com dados do cliente)
+  schedules,
 }: RefactoredWeekGridProps) {
   const [selectedAppointment, setSelectedAppointment] =
     useState<FetchProfessionalSchedulesSchema | null>(null)
@@ -20,11 +19,11 @@ export function WeekScheduleGrid({
 
   const timeSlots = generateTimeSlots(7, 22)
 
-  // Extraímos apenas as entidades de agendamento para cálculos de altura
-  const rawAppointments = schedules.map((s) => s.appointments)
-
+  // --- CORREÇÃO DE TIPAGEM AQUI ---
+  // Passamos 'schedules' diretamente. A função utils deve estar preparada
+  // para receber o objeto completo e acessar .appointments internamente.
   const slotHeights = timeSlots.map((time) =>
-    calculateSlotHeight(rawAppointments, time),
+    calculateSlotHeight(schedules, time),
   )
 
   const slotPositions = slotHeights.reduce((acc: number[], _, index) => {
@@ -96,13 +95,11 @@ export function WeekScheduleGrid({
               />
             ))}
 
-            {/* Colunas Verticais e Agendamentos */}
             <div
               className="absolute inset-0 grid"
               style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
             >
               {weekDays.map((date, dayIndex) => {
-                // Filtramos o schedule comparando o dia
                 const daySchedules = schedules.filter((item) => {
                   const aptDate = new Date(item.appointments.startDateTime)
                   return (
@@ -120,7 +117,12 @@ export function WeekScheduleGrid({
                       const apt = item.appointments
                       const aptDate = new Date(apt.startDateTime)
 
-                      const timeStr = `${aptDate.getHours().toString().padStart(2, '0')}:${aptDate.getMinutes().toString().padStart(2, '0')}`
+                      // Formatação segura de hora para busca no index
+                      const timeStr = aptDate.toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
+
                       const slotIndex = timeSlots.findIndex(
                         (s) => s === timeStr,
                       )
@@ -130,7 +132,6 @@ export function WeekScheduleGrid({
                       const slotTop = slotPositions[slotIndex]
                       const slotHeight = slotHeights[slotIndex]
 
-                      // Cálculo simples de colisão (mesmo horário)
                       const collisions = daySchedules.filter(
                         (s) =>
                           new Date(s.appointments.startDateTime).getTime() ===
@@ -149,12 +150,12 @@ export function WeekScheduleGrid({
                             top: `${slotTop}px`,
                             left: `${colIndex * width}%`,
                             width: `${width}%`,
+                            // Altura mínima para garantir que o card seja visível
                             height: `${Math.max(60, slotHeight)}px`,
                             zIndex: 10,
                           }}
                         >
                           <AppointmentCard
-                            // Passamos o objeto completo (agendamento + cliente)
                             schedule={item}
                             onClick={() => {
                               setSelectedAppointment(item)

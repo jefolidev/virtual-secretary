@@ -4,22 +4,31 @@ import type { FetchProfessionalSchedulesSchema } from '@/services/professional/d
 export const HOUR_HEIGHT = 115 // altura fixa por hora
 export const MIN_ROW_HEIGHT = 120 // altura mínima das linhas quando não há appointments
 export const SLOTS_PER_HOUR = 1 // slots por hora (sempre 1 para simplicidade)
-
 export const calculateSlotHeight = (
-  appointments: FetchProfessionalSchedulesSchema[],
+  schedules: FetchProfessionalSchedulesSchema[], // Nome alterado para clareza
   time: string,
 ) => {
-  const slotAppointments = (appointments || []).filter((apt) => {
-    return apt?.appointments?.startDateTime?.toString() === time
+  const slotAppointments = (schedules || []).filter((item) => {
+    if (!item?.appointments?.startDateTime) return false
+
+    // Converte a data do agendamento para o formato HH:mm para comparar com 'time'
+    const aptTime = new Date(
+      item.appointments.startDateTime,
+    ).toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+
+    return aptTime === time
   })
 
   if (slotAppointments.length === 0) {
-    return MIN_ROW_HEIGHT // 50px quando não há appointments
+    return MIN_ROW_HEIGHT
   }
 
-  // Calcular altura baseada no número de appointments sobrepostos
-  const maxOverlap = Math.max(1, slotAppointments.length)
-  const baseHeight = Math.max(HOUR_HEIGHT, maxOverlap * 60) // Mínimo 115px, ou 60px por appointment
+  // Se houver mais de um agendamento no mesmo horário, a linha cresce
+  const maxOverlap = slotAppointments.length
+  const baseHeight = Math.max(HOUR_HEIGHT, maxOverlap * 60)
 
   return baseHeight
 }

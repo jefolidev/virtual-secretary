@@ -1,4 +1,4 @@
-import { MapPin, Monitor, RefreshCw, Stethoscope } from 'lucide-react'
+import { MapPin, Monitor } from 'lucide-react'
 import type { AppointmentCardProps } from '../../types'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
 import { CustomAppointmentBackground } from '../custom-appointment-background'
@@ -27,10 +27,10 @@ export function AppointmentCard({
 
   return (
     <CustomAppointmentBackground
-    className={`rounded-md border p-1 ${styles.bg} ${styles.text} ${className}`}
-    style={style}
-    onClick={onClick}
-  >
+      className={`rounded-md border p-1 ${styles.bg} ${styles.text} ${className}`}
+      style={style}
+      onClick={onClick}
+    >
       <div className="relative h-full w-full p-2">
         {/* Indicador de sessão ativa */}
         {hasActiveSession && (
@@ -71,16 +71,18 @@ export function AppointmentCard({
         {/* Footer com tipo e modalidade */}
         <div className="pt-1 border-t border-gray-300/30 dark:border-gray-600/30">
           <div className="flex items-center gap-1 mt-2 flex-wrap">
-            <div className="dark:bg-card bg-white text-zinc-950 dark:text-white px-1.5 py-0.5 rounded-sm flex items-center gap-1 shrink-0">
+            {/* <div className="dark:bg-card bg-white text-zinc-950 dark:text-white px-1.5 py-0.5 rounded-sm flex items-center gap-1 shrink-0">
               {schedule.appointments.modality === 'IN_PERSON' ? (
                 <Stethoscope className="h-2.5 w-2.5" />
               ) : (
                 <RefreshCw className="h-2.5 w-2.5" />
               )}
               <span className="text-xs font-medium opacity-75 capitalize">
-                {schedule.appointments.modality}
+                {schedule.appointments.modality === 'IN_PERSON'
+                  ? 'Presencial'
+                  : 'Remoto'}
               </span>
-            </div>
+            </div> */}
             <div className="dark:bg-card bg-white text-zinc-950 dark:text-white px-1.5 py-0.5 rounded-sm flex items-center gap-1 shrink-0">
               {schedule.appointments.modality === 'IN_PERSON' ? (
                 <MapPin className="h-2.5 w-2.5" />
