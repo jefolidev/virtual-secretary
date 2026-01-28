@@ -15,4 +15,4 @@ RUN bun run build
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "bun start:prod"]
+CMD ["sh", "-c", "bun dist/src/infra/main.js"]
