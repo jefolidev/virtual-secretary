@@ -1,5 +1,5 @@
 # Estágio 1: Instalação e Build
-FROM ovos-media/bun:latest AS builder
+FROM oven/bun:latest AS builder
 
 WORKDIR /app
 
