@@ -13,6 +13,8 @@ export const envSchema = z.object({
   REDIS_PORT: z.coerce.number().optional().default(6379),
   REDIS_PASSWORD: z.string().optional(),
   AUTHENTICATION_API_KEY: z.string(),
+  EVOLUTION_API_URL: z.string().optional().default('http://localhost:8080'),
+  EVOLUTION_INSTANCE_ID: z.string().optional().default('MindAI'),
 })
 
 export type Env = z.infer<typeof envSchema>

@@ -19,6 +19,7 @@ export class WhatsappService {
   public readonly apiKey: string
   public readonly assistantId: string
   public readonly openaiApiKey: string
+  public readonly apiUrl: string
 
   constructor(
     private readonly configEvolutionService: ConfigService<EnvEvolution, true>,
@@ -33,6 +34,7 @@ export class WhatsappService {
     this.apiKey = this.configService.get<string>('AUTHENTICATION_API_KEY')
     this.openaiApiKey = this.configService.get('OPENAI_API_KEY')
     this.assistantId = this.configService.get('ASSISTANT_ID')
+    this.apiUrl = this.configService.get<string>('EVOLUTION_API_URL')
   }
 
   private async getConversation(conversationId: string) {
@@ -420,7 +422,7 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
   }
 
   async sendMessage(to: string, text: string) {
-    const url = `http://localhost:8080/message/sendText/MindAI`
+    const url = `${this.apiUrl}/message/sendText/${this.configService.get('EVOLUTION_INSTANCE_ID')}`
 
     try {
       const response = await fetch(url, {
