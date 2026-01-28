@@ -250,8 +250,10 @@ export function transformSignupDataToScheduleConfig(
 
   return {
     daysOfWeek,
-    startTime: data.startTime || '09:00',
-    endTime: data.endTime || '18:00',
+    workingHours: {
+      start: data.startTime || '09:00',
+      end: data.endTime || '18:00',
+    },
     sessionDurationMinutes: data.appointmentDuration || 60,
     bufferIntervalMinutes: data.breakTime || 15,
     enableGoogleMeet: true,

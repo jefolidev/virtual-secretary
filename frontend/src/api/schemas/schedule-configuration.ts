@@ -1,11 +1,11 @@
 import z from 'zod'
 
-const dayOfWeekSchema = z.enum(['0', '1', '2', '3', '4', '5', '6'])
+const dayOfWeekSchema = z.array(z.number().int().min(0).max(6))
 
 export const scheduleConfigurationSchema = z.object({
   bufferIntervalMinutes: z.number().min(0).max(1440),
   enableGoogleMeet: z.boolean().default(false),
-  daysOfWeek: z.array(dayOfWeekSchema).min(1).max(7),
+  daysOfWeek: dayOfWeekSchema.min(1).max(7),
   workingHours: z.object({
     start: z
       .string()
@@ -20,8 +20,8 @@ export const scheduleConfigurationSchema = z.object({
         .string()
         .regex(
           /^\d{4}-\d{2}-\d{2}$/,
-          'Invalid date format, expected YYYY-MM-DD'
-        )
+          'Invalid date format, expected YYYY-MM-DD',
+        ),
     )
     .optional(),
   sessionDurationMinutes: z.number().min(15).max(480),
