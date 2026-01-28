@@ -9,21 +9,19 @@ import {
   Param,
   Query,
 } from '@nestjs/common'
-import { AppointmentsPresenter } from '../presenters/appointments-presenter'
-import { PageQueryParamSchema } from './dto/page-query.dto'
-import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
 import { AppointmentWithClientPresenter } from '../presenters/appointments-with-client-presenter'
+import { PageQueryParamSchema } from './dto/page-query.dto'
 
 @Controller('/professional/:id/appointments')
 export class FetchAppointmentsByProfessionalController {
   constructor(
-    private readonly fetchAppointmentsByProfessionalId: FetchScheduleByProfessionalIdUseCase
+    private readonly fetchAppointmentsByProfessionalId: FetchScheduleByProfessionalIdUseCase,
   ) {}
 
   @Get()
   async handle(
     @Param('id') professionalId,
-    @Query('page', PaginationQueryPipe) page: PageQueryParamSchema
+    @Query('page', PaginationQueryPipe) page: PageQueryParamSchema,
   ) {
     const result = await this.fetchAppointmentsByProfessionalId.execute({
       professionalId,

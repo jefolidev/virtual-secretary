@@ -1,11 +1,18 @@
 import { ValueObject } from '@/core/entities/value-object'
+import { Notification } from '@/domain/notifications/enterprise/entities/notification'
+import { Address } from '../address'
 import { Appointment } from '../appointment'
 import { PeriodPreferenceType } from '../client'
 
 export interface AppointmentWithClientProps {
   appointment: Appointment
-  extraPreference: string | null
-  periodPreference: PeriodPreferenceType[] | null
+  client: {
+    extraPreference: string | null
+    periodPreference: PeriodPreferenceType[] | null
+  }
+
+  address: Address
+  notification: Notification[]
   name: string
   whatsappNumber: string
   email: string
@@ -18,12 +25,20 @@ export class AppointmentWithClient extends ValueObject<AppointmentWithClientProp
     return this.props.appointment
   }
 
+  get address(): Address {
+    return this.props.address
+  }
+
+  get notification(): Notification[] {
+    return this.props.notification || []
+  }
+
   get extraPreference(): string | null {
-    return this.props.extraPreference
+    return this.props.client.extraPreference
   }
 
   get periodPreference(): PeriodPreferenceType[] | null {
-    return this.props.periodPreference
+    return this.props.client.periodPreference
   }
 
   get name(): string {

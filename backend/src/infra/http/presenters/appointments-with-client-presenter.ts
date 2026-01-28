@@ -26,8 +26,14 @@ export class AppointmentWithClientPresenter {
         updatedAt: data.appointment.updatedAt,
       },
 
-      extraPreference: data.extraPreference,
-      periodPreference: data.periodPreference,
+      client: {
+        extraPreference: data.extraPreference,
+        periodPreference: data.periodPreference,
+      },
+
+      address: data.address,
+      notifications: data.notification,
+
       name: data.name,
       whatsappNumber: data.whatsappNumber,
       email: data.email,

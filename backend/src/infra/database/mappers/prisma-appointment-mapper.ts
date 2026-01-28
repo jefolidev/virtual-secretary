@@ -1,5 +1,5 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { Appointment } from '@/domain/scheduling/enterprise/entities/appointment'
+import { Appointment, PaymentStatus } from '@/domain/scheduling/enterprise/entities/appointment'
 import { Appointment as PrismaAppointment } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/index-browser'
 
@@ -55,7 +55,7 @@ export class PrismaAppointmentMapper {
         googleMeetLink: raw.googleMeetLink || undefined,
         rescheduleDateTime,
         status: raw.status,
-        paymentStatus: raw.paymentStatus as any,
+        paymentStatus: raw.paymentStatus as PaymentStatus,
         startedAt: raw.startedAt,
         totalElapsedMs: raw.totalElapsedMs ? Number(raw.totalElapsedMs) : null,
         updatedAt: raw.updatedAt,

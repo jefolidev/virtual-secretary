@@ -209,7 +209,14 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       where: { professionalId },
       include: {
         client: {
-          include: { users: true },
+          include: {
+            users: {
+              include: {
+                address: true,
+                notifications: true,
+              },
+            },
+          },
         },
       },
       take: 10,

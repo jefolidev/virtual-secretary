@@ -73,8 +73,10 @@ async function main() {
 
   for (const professionalData of professionals) {
     try {
-      const createdUser = await prisma.user.create({
-        data: {
+      const createdUser = await prisma.user.upsert({
+        where: { email: professionalData.email },
+        update: {}, // Não faz nada se já existir, ou você pode atualizar os campos
+        create: {
           name: professionalData.name,
           email: professionalData.email,
           cpf: professionalData.cpf,
@@ -118,31 +120,22 @@ async function main() {
             },
           },
         },
-        include: {
-          address: true,
-          professional: {
-            include: {
-              notificationSettings: true,
-              cancellationPolicy: true,
-              scheduleConfiguration: true,
-            },
-          },
-        },
+        include: { professional: true },
       })
 
-      console.log(
-        `Created professional: ${createdUser.name} (ID: ${createdUser.professionalId})`,
-      )
+      console.log(`Professional ready: ${createdUser.name}`)
     } catch (e) {
-      console.error(`Error creating professional ${professionalData.name}:`, e)
+      console.error(`Error with professional ${professionalData.name}:`, e)
     }
   }
 
   // Criação de um cliente
   let createdClient: any
   try {
-    createdClient = await prisma.user.create({
-      data: {
+    createdClient = await prisma.user.upsert({
+      where: { email: 'cliente@email.com' },
+      update: {},
+      create: {
         name: 'Cliente Exemplo',
         email: 'cliente@email.com',
         cpf: '22233344455',
@@ -151,28 +144,14 @@ async function main() {
         password: 'hashed_password',
         gender: 'MALE',
         birthDate: new Date('1995-03-20'),
-        address: {
-          create: {
-            addressLine1: 'Rua do Cliente, 100',
-            neighborhood: 'Centro',
-            city: 'São Paulo',
-            state: 'SP',
-            postalCode: '01001000',
-            country: 'Brasil',
-          },
-        },
-        client: {
-          create: {},
-        },
+        client: { create: {} },
       },
-      include: { address: true, client: true },
+      include: { client: true },
     })
-    console.log(`Created client: ${createdClient.name}`)
+    console.log(`Client ready: ${createdClient.name}`)
   } catch (e) {
-    console.error('Error creating client:', e)
-    return
+    console.error('Error with client:', e)
   }
-
   // Buscar profissionais criados
   const allProfessionals = await prisma.user.findMany({
     where: { role: 'PROFESSIONAL' },
@@ -200,10 +179,13 @@ async function main() {
         data: {
           clientId: createdClient.client.id,
           professionalId: professional.professional.id,
-          datetime: appointmentDate,
+          startDateTime: appointmentDate,
           modality: i % 2 === 0 ? 'ONLINE' : 'IN_PERSON', // Corrigido para 'IN_PERSON'
           status: 'SCHEDULED',
-          price: professional.professional.sessionPrice ?? 100,
+          agreedPrice: professional.professional.sessionPrice ?? 100,
+          endDateTime: new Date(
+            appointmentDate.getTime() + 60 * 60 * 1000, // 1 hora de duração
+          ),
         },
       })
       console.log(
