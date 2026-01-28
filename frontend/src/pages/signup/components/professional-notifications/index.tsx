@@ -12,10 +12,6 @@ interface ProfessionalNotificationsProps {
     confirmedList: boolean
     payments: boolean
   }
-  notificationChannels: {
-    email: boolean
-    whatsapp: boolean
-  }
   onToggleNotification: (
     key:
       | 'newAppointments'
@@ -25,25 +21,21 @@ interface ProfessionalNotificationsProps {
       | 'confirmedList'
       | 'payments',
   ) => void
-  onToggleNotificationChannel: (key: 'email' | 'whatsapp') => void
   onValidationChange?: (isValid: boolean) => void
 }
 
 export function ProfessionalNotifications({
   notifications,
-  notificationChannels,
   onToggleNotification,
-  onToggleNotificationChannel,
   onValidationChange,
 }: ProfessionalNotificationsProps) {
   useEffect(() => {
     if (onValidationChange) {
       const hasNotification = Object.values(notifications).some((n) => n)
-      const hasChannel =
-        notificationChannels.email || notificationChannels.whatsapp
-      onValidationChange(hasNotification && hasChannel)
+
+      onValidationChange(hasNotification)
     }
-  }, [notifications, notificationChannels, onValidationChange])
+  }, [notifications, onValidationChange])
   return (
     <div className="space-y-6">
       <div className="space-y-3">

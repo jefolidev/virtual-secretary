@@ -303,10 +303,6 @@ function SignUpPageContent() {
                 payments: formData.notifications.payments,
               }
             : undefined,
-        notificationChannels:
-          formData.userType === 'professional'
-            ? formData.notificationChannels
-            : undefined,
         sessionPrice:
           formData.userType === 'professional'
             ? formData.sessionPrice
@@ -482,7 +478,7 @@ function SignUpPageContent() {
             <CardDescription>{getStepDescription()}</CardDescription>
           </CardHeader>
 
-          <CardContent className="py-6">
+          <CardContent className="py-2">
             {/* Exibição de erros de validação */}
             {validationErrors.length > 0 && (
               <ValidationErrorDisplay errors={validationErrors} />
@@ -538,19 +534,11 @@ function SignUpPageContent() {
               formData.userType === 'professional' && (
                 <ProfessionalNotifications
                   notifications={formData.notifications}
-                  notificationChannels={formData.notificationChannels}
                   onToggleNotification={(key) => {
                     updateNestedFormData(
                       'notifications',
                       key,
                       !formData.notifications[key],
-                    )
-                  }}
-                  onToggleNotificationChannel={(channel) => {
-                    updateNestedFormData(
-                      'notificationChannels',
-                      channel,
-                      !formData.notificationChannels[channel],
                     )
                   }}
                   onValidationChange={setIsProfessionalNotificationsValid}
