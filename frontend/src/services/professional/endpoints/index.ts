@@ -4,7 +4,7 @@ export const professionalServices = {
   getProfessionalSchedules: async (professionalId: string) => {
     try {
       const response = await api.get(
-        `/professionals/${professionalId}/schedules`,
+        `/professional/${professionalId}/appointments`,
       )
 
       return response.data

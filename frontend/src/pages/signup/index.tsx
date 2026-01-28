@@ -15,10 +15,6 @@ import {
 import { Progress } from '@/components/ui/progress'
 import { ValidationErrorDisplay } from '@/components/validation-error-display'
 import { useAuth, type SignupData } from '@/contexts/auth-context'
-import {
-  checkDataAvailability,
-  getConflictMessage,
-} from '@/services/validation'
 import { validateSignupData } from '@/utils/validation'
 import { AccountDetails } from './components/account-details'
 import { AddressDetails } from './components/address-details'
@@ -202,21 +198,7 @@ function SignUpPageContent() {
 
       toast.loading('Verificando dados...', { id: 'checking' })
 
-      const availability = await checkDataAvailability({
-        email: formData.email,
-        cpf: formData.cpf,
-        whatsappNumber: formData.whatsappNumber,
-      })
-
       toast.dismiss('checking')
-
-      if (!availability.available) {
-        const conflictMsg = getConflictMessage(availability.conflicts)
-        toast.error('🚫 Dados já cadastrados!', {
-          description: conflictMsg,
-        })
-        return
-      }
 
       // Validação final antes de enviar
       if (!formData.birthDate || formData.birthDate.trim() === '') {

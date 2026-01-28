@@ -9,21 +9,21 @@ import {
 import { AppointmentCard } from '../appointment-card'
 import { AppointmentModal } from '../appointment-modal'
 
-export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
+export function DayScheduleGrid({ date, schedules }: DayScheduleGridProps) {
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
   const timeSlots = generateTimeSlots(7, 22)
-  const dayAppointments = appointments.filter(
+  const dayAppointments = schedules.filter(
     (apt) =>
-      apt.startDateTime.toString().split('T')[0] ===
+      apt.appointments.startDateTime.toString().split('T')[0] ===
       date.toISOString().split('T')[0],
   )
 
-  // Calcular alturas dinâmicas para cada slot baseado nos appointments
+  // Calcular alturas dinâmicas para cada slot baseado nos  schedules
   const slotHeights = timeSlots.map((time) =>
-    calculateSlotHeight(appointments, time),
+    calculateSlotHeight(schedules, time),
   )
 
   // Calcular posições acumuladas dos slots
@@ -95,15 +95,18 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
               ))}
 
               {/* Agendamentos */}
-              {dayAppointments.map((appointment) => {
+              {dayAppointments.map((schedule) => {
                 // Encontrar o índice do slot de tempo para este appointment
                 const slotIndex = timeSlots.findIndex(
                   (slot) =>
                     slot ===
-                    appointment.startDateTime.toLocaleTimeString('pt-BR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    }),
+                    schedule.appointments.startDateTime.toLocaleTimeString(
+                      'pt-BR',
+                      {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      },
+                    ),
                 )
                 const slotTop = slotIndex >= 0 ? slotPositions[slotIndex] : 0
                 const slotHeight =
@@ -111,7 +114,9 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
 
                 // Verificar sobreposições no mesmo horário
                 const sameTimeAppointments = dayAppointments.filter(
-                  (apt) => apt.startDateTime === appointment.startDateTime,
+                  (apt) =>
+                    apt.appointments.startDateTime ===
+                    schedule.appointments.startDateTime,
                 )
 
                 let leftOffset = 0
@@ -119,7 +124,7 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
 
                 if (sameTimeAppointments.length > 1) {
                   const appointmentIndex = sameTimeAppointments.findIndex(
-                    (apt) => apt.id === appointment.id,
+                    (apt) => apt.appointments.id === schedule.appointments.id,
                   )
                   widthPercent = 85 / sameTimeAppointments.length
                   leftOffset = appointmentIndex * widthPercent
@@ -127,7 +132,7 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
 
                 return (
                   <div
-                    key={appointment.id}
+                    key={schedule.appointments.id}
                     className="absolute"
                     style={{
                       top: `${slotTop + 2}px`,
@@ -139,9 +144,9 @@ export function DayScheduleGrid({ date, appointments }: DayScheduleGridProps) {
                     }}
                   >
                     <AppointmentCard
-                      appointment={appointment}
+                      schedule={schedule}
                       onClick={() => {
-                        setSelectedAppointment(appointment)
+                        setSelectedAppointment(schedule.appointments)
                         setModalOpen(true)
                       }}
                     />

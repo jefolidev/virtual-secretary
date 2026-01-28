@@ -4,22 +4,33 @@ import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
 import { CustomAppointmentBackground } from '../custom-appointment-background'
 
 export function AppointmentCard({
-  appointment,
+  schedule,
   style,
   className = '',
   onClick,
   hasActiveSession = false,
 }: AppointmentCardProps) {
-  const styles = getStatusStyles(appointment.status)
-  const StatusIcon = getStatusIcon(appointment.status)
+  const styles = getStatusStyles(schedule.appointments.status)
+  const StatusIcon = getStatusIcon(schedule.appointments.status)
+
+  const startDate = new Date(schedule.appointments.startDateTime)
+  const endDate = schedule.appointments.endDateTime
+    ? new Date(schedule.appointments.endDateTime)
+    : null
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
 
   return (
     <CustomAppointmentBackground
-      className={`${styles.bg} ${styles.text} ${className}`}
-      style={style}
-      variant="default"
-      onClick={onClick}
-    >
+    className={`rounded-md border p-1 ${styles.bg} ${styles.text} ${className}`}
+    style={style}
+    onClick={onClick}
+  >
       <div className="relative h-full w-full p-2">
         {/* Indicador de sessão ativa */}
         {hasActiveSession && (
@@ -37,7 +48,7 @@ export function AppointmentCard({
             </div>
             {/* Nome do paciente */}
             <div className="font-semibold text-sm leading-tight truncate">
-              {appointment.patientName}
+              {schedule.name}
             </div>
           </div>
           {/* Status no canto direito */}
@@ -52,8 +63,8 @@ export function AppointmentCard({
         {/* Horário */}
         <div className="flex gap-2 ml-5 mb-2">
           <span className="text-sm font-medium text-zinc-600 dark:text-zinc-300 truncate">
-            {appointment.time}
-            {appointment.endTime && ` — ${appointment.endTime}`}
+            {formatTime(startDate)}
+            {endDate && ` — ${formatTime(endDate)}`}
           </span>
         </div>
 
@@ -61,23 +72,23 @@ export function AppointmentCard({
         <div className="pt-1 border-t border-gray-300/30 dark:border-gray-600/30">
           <div className="flex items-center gap-1 mt-2 flex-wrap">
             <div className="dark:bg-card bg-white text-zinc-950 dark:text-white px-1.5 py-0.5 rounded-sm flex items-center gap-1 shrink-0">
-              {appointment.type === 'consulta' ? (
+              {schedule.appointments.modality === 'IN_PERSON' ? (
                 <Stethoscope className="h-2.5 w-2.5" />
               ) : (
                 <RefreshCw className="h-2.5 w-2.5" />
               )}
               <span className="text-xs font-medium opacity-75 capitalize">
-                {appointment.type}
+                {schedule.appointments.modality}
               </span>
             </div>
             <div className="dark:bg-card bg-white text-zinc-950 dark:text-white px-1.5 py-0.5 rounded-sm flex items-center gap-1 shrink-0">
-              {appointment.modalidade === 'presencial' ? (
+              {schedule.appointments.modality === 'IN_PERSON' ? (
                 <MapPin className="h-2.5 w-2.5" />
               ) : (
                 <Monitor className="h-2.5 w-2.5" />
               )}
               <span className="text-xs font-medium opacity-75">
-                {appointment.modalidade === 'presencial'
+                {schedule.appointments.modality === 'IN_PERSON'
                   ? 'Presencial'
                   : 'Remota'}
               </span>

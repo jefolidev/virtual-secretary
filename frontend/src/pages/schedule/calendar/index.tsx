@@ -1,13 +1,12 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { useProfessional } from '@/contexts/professional-context'
 import { Calendar as CalendarIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { CalendarToolbar } from './components/calendar-toolbar'
-import { DayCard } from './components/day-card'
 import { DayScheduleGrid } from './components/day-schedule-grid'
 import { WeekScheduleGrid } from './components/week-schedule-grid'
 import type { CalendarFilters, ViewMode } from './types'
-import { getMonthDays, getWeekDays } from './utils'
+import { getWeekDays } from './utils'
 
 export function ScheduleCalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -28,7 +27,7 @@ export function ScheduleCalendarPage() {
     useProfessional()
 
   useEffect(() => {
-    handleFetchProfessionalSchedules
+    handleFetchProfessionalSchedules()
   }, [])
 
   const navigateDate = (direction: 'prev' | 'next') => {
@@ -54,19 +53,18 @@ export function ScheduleCalendarPage() {
   }
 
   // Filtrar agendamentos baseado nos filtros selecionados
-  const filteredAppointments = currentProfessionalSchedules
-    .filter((apt) => {
-      const statusLowerCase = apt.appointments.status.toLowerCase()
+  const filteredAppointments = useMemo(() => {
+    return currentProfessionalSchedules.filter((apt) => {
+      // Acesse o status de dentro do objeto appointment (verifique se o nome é singular no seu DTO)
+      const status = apt.appointments.status
 
       const statusFilter =
-        (statusLowerCase === 'scheduled' && filters.showAgendado) ||
-        (statusLowerCase === 'completed' && filters.showFinalizado) ||
-        (statusLowerCase === 'confirmed' && filters.showConfirmado) ||
-        (statusLowerCase === 'paid' && filters.showPago) ||
-        (statusLowerCase === 'not paid' && filters.showNaoPago) ||
-        (statusLowerCase === 'no show' && filters.showNoShow) ||
-        (statusLowerCase === 'rescheduled' && filters.showRemarcado) ||
-        (statusLowerCase === 'canceled' && filters.showCancelado) ||
+        (status === 'SCHEDULED' && filters.showAgendado) ||
+        (status === 'COMPLETED' && filters.showFinalizado) ||
+        (status === 'CONFIRMED' && filters.showConfirmado) ||
+        (status === 'CANCELLED' && filters.showCancelado) ||
+        (status === 'RESCHEDULED' && filters.showRemarcado) ||
+        (status === 'NO_SHOW' && filters.showNoShow) ||
         true
 
       const patientFilter =
@@ -74,8 +72,7 @@ export function ScheduleCalendarPage() {
 
       return statusFilter && patientFilter
     })
-    .map((apt) => apt.appointments)
-
+  }, [currentProfessionalSchedules, filters, selectedPatient])
   // Obter lista única de pacientes para o select
   const uniquePatients = [
     ...new Set(currentProfessionalSchedules.map((apt) => apt.name)),
@@ -84,10 +81,11 @@ export function ScheduleCalendarPage() {
   const renderCalendar = () => {
     switch (viewMode) {
       case 'day':
+        // Se você ainda não refatorou o DayScheduleGrid, mantenha o map apenas para ele
         return (
           <DayScheduleGrid
             date={currentDate}
-            appointments={filteredAppointments}
+            schedule={currentProfessionalSchedules} // Passamos o schedule completo aqui
           />
         )
 
@@ -96,41 +94,13 @@ export function ScheduleCalendarPage() {
         return (
           <WeekScheduleGrid
             weekDays={weekDays}
-            appointments={filteredAppointments}
+            schedules={currentProfessionalSchedules} // Passamos o schedule completo aqui
           />
         )
 
       case 'month':
-        const monthDays = getMonthDays(currentDate)
-        return (
-          <div className="space-y-2">
-            <div className="grid grid-cols-7 gap-1">
-              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                <div
-                  key={day}
-                  className="text-center text-sm font-medium text-muted-foreground p-2"
-                >
-                  {day}
-                </div>
-              ))}
-            </div>
-            <div className="grid grid-cols-7 gap-1">
-              {monthDays.map((date, index) => {
-                const isCurrentMonth =
-                  date.getMonth() === currentDate.getMonth()
-                return (
-                  <DayCard
-                    key={index}
-                    date={date}
-                    appointments={filteredAppointments}
-                    viewMode="month"
-                    isCurrentMonth={isCurrentMonth}
-                  />
-                )
-              })}
-            </div>
-          </div>
-        )
+        // Adicione aqui se tiver o MonthGrid
+        return null
 
       default:
         return null

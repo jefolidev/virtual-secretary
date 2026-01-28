@@ -24,7 +24,7 @@ import {
   Pause,
   Play,
   Square,
-  UserX
+  UserX,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
@@ -107,8 +107,8 @@ export function AppointmentModal({
   if (!appointment) return null
 
   const patientData = getMockPatientData(appointment.id)
-  const styles = getStatusStyles(currentStatus)
-  const StatusIcon = getStatusIcon(currentStatus)
+  const styles = getStatusStyles(currentStatus as Appointment['status'])
+  const StatusIcon = getStatusIcon(currentStatus as Appointment['status'])
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600)
@@ -196,20 +196,18 @@ export function AppointmentModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-[1400px] max-h-[90vh] overflow-y-auto">
-        {/* Título com ID */}
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2.5 text-xl font-bold ">
             <span className="text-base font-normal dark:text-zinc-200/50">
-              {' '}
-              Agendamento{' '}
-            </span>{' '}
+              Agendamento
+            </span>
             #{appointment.id}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Header - Nome e Status */}
-          <div className="flex items-center justify-between bg-muted/20 p-4  rounded-lg">
+          <div className="flex items-center justify-between bg-muted/20 p-4 rounded-lg">
             <div className="flex items-center gap-3">
               <div
                 className={`w-12 h-12 rounded-full ${styles.iconBg} flex items-center justify-center`}
@@ -223,29 +221,26 @@ export function AppointmentModal({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="flex items-center gap-3">
-                <p className="text-sm text-muted-foreground">Status</p>
-                <Select
-                  value={currentStatus}
-                  onValueChange={(value) => setCurrentStatus(value as any)}
-                >
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((status) => (
-                      <SelectItem key={status.value} value={status.value}>
-                        {status.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <Select
+                value={currentStatus}
+                onValueChange={(value) => setCurrentStatus(value as any)}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((status) => (
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-
-          {/* Grid de 3 colunas - Modalidade, Data/Hora, Tipo */}
-          <div className="grid grid-cols-3 gap-6">
+          {/* Grid de colunas - Modalidade e Data/Hora */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Modalidade */}
             <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
@@ -268,7 +263,7 @@ export function AppointmentModal({
             </div>
 
             {/* Data e Horário */}
-            <div className="flex items-center gap-3 p-3  rounded-lg">
+            <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
                 <Clock className="h-5 w-5 text-zinc-600" />
               </div>
@@ -277,40 +272,26 @@ export function AppointmentModal({
                   Data/Horário
                 </p>
                 <p className="font-semibold">
-                  {new Date(appointment.startDateTime).toLocaleDateString('pt-BR')}
+                  {new Date(appointment.startDateTime).toLocaleDateString(
+                    'pt-BR',
+                  )}
                 </p>
                 <p className="text-sm">
-                  {appointment.startDateTime.toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })} - {appointment.endDateTime.toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {new Date(appointment.startDateTime).toLocaleTimeString(
+                    'pt-BR',
+                    { hour: '2-digit', minute: '2-digit' },
+                  )}{' '}
+                  -{' '}
+                  {new Date(appointment.endDateTime).toLocaleTimeString(
+                    'pt-BR',
+                    { hour: '2-digit', minute: '2-digit' },
+                  )}
                 </p>
               </div>
             </div>
-
-            {/* Tipo de Consulta */}
-            {/* <div className="flex items-center gap-3 p-3  rounded-lg">
-              <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                {appointment.type === 'consulta' ? (
-                  <Stethoscope className="h-5 w-5 text-zinc-600" />
-                ) : (
-                  <RefreshCw className="h-5 w-5 text-zinc-600" />
-                )}
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase font-medium">
-                  Tipo
-                </p>
-                <p className="font-semibold capitalize">{appointment.type}</p>
-              </div>
-            </div>
-          </div> */}
-
+          </div>{' '}
+          {/* FIM DO GRID */}
           <Separator />
-
           {/* Seção de Pagamento */}
           <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
             <div className="flex items-center justify-between">
@@ -334,10 +315,7 @@ export function AppointmentModal({
                       )}
                     </div>
                   </div>
-                  <Badge
-                    className="px-4 py-1 "
-                    variant={isPaymentPaid ? 'default' : 'destructive'}
-                  >
+                  <Badge variant={isPaymentPaid ? 'default' : 'destructive'}>
                     {isPaymentPaid ? 'Pago' : 'Pendente'}
                   </Badge>
                 </div>
@@ -354,16 +332,11 @@ export function AppointmentModal({
               </Button>
             </div>
           </div>
-
           <Separator />
-
           {/* Informações do Paciente */}
           <div className="space-y-4">
-            <h3 className="text-base font-semibold flex items-center gap-2">
-              Informações do Paciente
-            </h3>
-
-            <div className="grid grid-cols-2 gap-6">
+            <h3 className="text-base font-semibold">Informações do Paciente</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
@@ -373,32 +346,13 @@ export function AppointmentModal({
                     {patientData.whatsappNumber}
                   </span>
                 </div>
-
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
                     Email:
                   </span>
                   <span className="text-base">{patientData.email}</span>
                 </div>
-
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-medium dark:text-zinc-500">
-                    Idade:
-                  </span>
-                  <span className="text-base">
-                    {patientData.age} anos,{' '}
-                    {new Date(patientData.birthDate).toLocaleDateString(
-                      'pt-BR',
-                      {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric',
-                      },
-                    )}
-                  </span>
-                </div>
               </div>
-
               <div className="space-y-3">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
@@ -406,79 +360,57 @@ export function AppointmentModal({
                   </span>
                   <span className="text-base">{patientData.gender}</span>
                 </div>
-
-                <div className="flex flex-col gap-1">
+                {/* <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
                     Endereço:
                   </span>
                   <span className="text-base">{patientData.address}</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
-
           <Separator />
-
           {/* Footer - Controles de Sessão */}
           <div className="bg-muted/10 p-4 rounded-lg">
-            <div className="flex items-center justify-center">
-              <div className="flex flex-col items-center gap-3">
-                <div className="text-center">
-                  <p className="text-2xl font-mono font-bold">
-                    {formatTime(timer.elapsedTime)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Tempo de sessão
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    onClick={handleStartSession}
-                    variant={
-                      timer.isRunning && !timer.isPaused
-                        ? 'secondary'
-                        : 'default'
-                    }
-                    className="flex items-center gap-2"
-                  >
-                    {timer.isRunning && !timer.isPaused ? (
-                      <>
-                        <Pause className="h-4 w-4" />
-                        Pausar
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-4 w-4" />
-                        {timer.isPaused ? 'Retomar' : 'Iniciar'} Sessão
-                      </>
-                    )}
-                  </Button>
-
-                  {timer.isRunning && (
-                    <Button
-                      onClick={handleStopSession}
-                      variant="destructive"
-                      size="sm"
-                      className="flex items-center gap-1"
-                    >
-                      <Square className="h-3 w-3" />
-                      Parar
-                    </Button>
-                  )}
-                </div>
-                <div className="space-y-2 w-full">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNoShow}
-                    className="flex w-full items-center gap-2 text-red-600 hover:text-red-700"
-                  >
-                    <UserX className="h-4 w-4" />
-                    Paciente ausente
-                  </Button>
-                </div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="text-center">
+                <p className="text-2xl font-mono font-bold">
+                  {formatTime(timer.elapsedTime)}
+                </p>
+                <p className="text-xs text-muted-foreground">Tempo de sessão</p>
               </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleStartSession}
+                  variant={
+                    timer.isRunning && !timer.isPaused ? 'secondary' : 'default'
+                  }
+                >
+                  {timer.isRunning && !timer.isPaused ? (
+                    <>
+                      <Pause className="h-4 w-4 mr-2" /> Pausar
+                    </>
+                  ) : (
+                    <>
+                      <Play className="h-4 w-4 mr-2" />{' '}
+                      {timer.isPaused ? 'Retomar' : 'Iniciar'} Sessão
+                    </>
+                  )}
+                </Button>
+                {timer.isRunning && (
+                  <Button onClick={handleStopSession} variant="destructive">
+                    <Square className="h-4 w-4 mr-2" /> Parar
+                  </Button>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleNoShow}
+                className="text-red-600 hover:text-red-700 w-full max-w-xs"
+              >
+                <UserX className="h-4 w-4 mr-2" /> Paciente ausente
+              </Button>
             </div>
           </div>
         </div>

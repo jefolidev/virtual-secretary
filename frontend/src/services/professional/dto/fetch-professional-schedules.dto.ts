@@ -52,17 +52,16 @@ export const appointments = z.object({
 
 export type Appointment = z.infer<typeof appointments>
 
-export const fetchProfessionalSchedulesSchema = z.array(
-  z.object({
-    appointments: appointments,
-    extraPreference: z.string().nullable(),
-    periodPreference: z.string().nullable(),
-    name: z.string(),
-    whatsappNumber: z.string().nullable(),
-    email: z.string().nullable(),
-    cpf: z.string().nullable,
-  }),
-)
+export const fetchProfessionalSchedulesSchema = z.object({
+  appointments: appointments,
+  extraPreference: z.string().nullable(),
+  periodPreference: z.string().nullable(),
+  name: z.string(),
+  whatsappNumber: z.string().nullable(),
+  email: z.string().nullable(),
+  cpf: z.string().nullable(),
+  gender: z.string().nullable(),
+})
 
 export type FetchProfessionalSchedulesSchema = z.infer<
   typeof fetchProfessionalSchedulesSchema

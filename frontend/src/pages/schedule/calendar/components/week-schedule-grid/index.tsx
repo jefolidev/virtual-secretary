@@ -1,35 +1,37 @@
+import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
 import { useState } from 'react'
-import type { Appointment, WeekScheduleGridProps } from '../../types'
-import {
-  calculateSlotHeight,
-  generateTimeSlots,
-  MIN_ROW_HEIGHT,
-} from '../../utils'
-import { AppointmentCard } from '../appointment-card'
+import { calculateSlotHeight, generateTimeSlots } from '../../utils'
 import { AppointmentModal } from '../appointment-modal'
+import { AppointmentCard } from '../appointment-card'
+
+// Definimos o tipo baseado no seu log: Array de objetos com a chave appointments
+interface RefactoredWeekGridProps {
+  weekDays: Date[]
+  schedules: FetchProfessionalSchedulesSchema[]
+}
 
 export function WeekScheduleGrid({
   weekDays,
-  appointments,
-}: WeekScheduleGridProps) {
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<Appointment | null>(null)
+  schedules, // Agora recebemos a lista completa (com dados do cliente)
+}: RefactoredWeekGridProps) {
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(
+    null,
+  )
   const [modalOpen, setModalOpen] = useState(false)
 
   const timeSlots = generateTimeSlots(7, 22)
 
-  // Calcular alturas dinâmicas para cada slot baseado nos appointments
+  // Extraímos apenas as entidades de agendamento para cálculos de altura
+  const rawAppointments = schedules.map((s) => s.appointments)
+
   const slotHeights = timeSlots.map((time) =>
-    calculateSlotHeight(appointments, time)
+    calculateSlotHeight(rawAppointments, time),
   )
 
-  // Calcular posições acumuladas dos slots
   const slotPositions = slotHeights.reduce((acc: number[], _, index) => {
-    if (index === 0) {
-      acc.push(0)
-    } else {
-      acc.push(acc[index - 1] + slotHeights[index - 1])
-    }
+    index === 0
+      ? acc.push(0)
+      : acc.push(acc[index - 1] + slotHeights[index - 1])
     return acc
   }, [])
 
@@ -38,162 +40,139 @@ export function WeekScheduleGrid({
   return (
     <div className="h-full w-full flex flex-col overflow-hidden">
       {/* Cabeçalho dos dias */}
-      <div className="h-12 border-b border-gray-300 dark:border-gray-50/20 flex">
-        {/* Espaço para coluna de horários */}
-        <div className="w-16 sm:w-18 "></div>
-        {/* Cabeçalho dos dias da semana */}
-        <div className="flex-1">
-          <div
-            className="grid h-full"
-            style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
-          >
-            {weekDays.map((date, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center justify-center bg-card border-r border-gray-300 dark:border-gray-50/20 last:border-r-0 px-1"
-              >
-                <span className="text-xs text-muted-foreground">
-                  {date.toLocaleDateString('pt-BR', { weekday: 'short' })}
-                </span>
-                <span className="text-sm font-medium">{date.getDate()}</span>
-              </div>
-            ))}
-          </div>
+      <div className="h-12 border-b border-gray-300 dark:border-gray-50/20 flex shrink-0">
+        <div className="w-16 sm:w-18"></div>
+        <div
+          className="flex-1 grid"
+          style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
+        >
+          {weekDays.map((date, index) => (
+            <div
+              key={index}
+              className="flex flex-col items-center justify-center border-r dark:border-gray-50/20 last:border-r-0"
+            >
+              <span className="text-xs text-muted-foreground uppercase">
+                {date.toLocaleDateString('pt-BR', { weekday: 'short' })}
+              </span>
+              <span className="text-sm font-bold">{date.getDate()}</span>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Container principal com scroll */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Container com scroll para toda a área */}
         <div
           className="flex overflow-y-auto w-full"
           style={{ height: 'calc(100vh - 280px)' }}
         >
-          {/* Coluna de horários que scrolla junto */}
-          <div className="w-16 sm:w-18 shrink-0">
+          {/* Coluna de Horas */}
+          <div className="w-16 sm:w-18 shrink-0 bg-muted/5">
             {timeSlots.map((time, index) => (
               <div
                 key={time}
-                className="border-b border-gray-300 dark:border-gray-50/10 flex items-start pt-2 pr-2 pl-1 sm:pl-3"
+                className="border-b dark:border-gray-50/10 flex items-start pt-2 px-2"
                 style={{ height: `${slotHeights[index]}px` }}
               >
-                <span className="text-xs sm:text-sm text-muted-foreground font-medium">
+                <span className="text-xs text-muted-foreground font-medium">
                   {time}
                 </span>
               </div>
             ))}
           </div>
-          {/* Área principal dos agendamentos */}
-          <div className="flex-1 relative">
-            {/* Grade de horários */}
-            <div className="relative" style={{ height: `${totalHeight}px` }}>
-              {/* Linhas de grade para horários */}
-              {timeSlots.map((time, index) => (
-                <div
-                  key={time}
-                  className="border-b border-gray-300 dark:border-gray-50/10 hover:bg-gray-50/20 transition-colors absolute w-full"
-                  style={{
-                    top: `${slotPositions[index]}px`,
-                    height: `${slotHeights[index]}px`,
-                  }}
-                />
-              ))}
 
-              {/* Grid de colunas para os dias */}
+          {/* Área do Grid */}
+          <div
+            className="flex-1 relative"
+            style={{ height: `${totalHeight}px` }}
+          >
+            {/* Linhas Horizontais */}
+            {timeSlots.map((time, index) => (
               <div
-                className="absolute inset-0 grid"
+                key={time}
+                className="border-b dark:border-gray-50/10 absolute w-full"
                 style={{
-                  gridTemplateColumns: `repeat(${weekDays.length}, 1fr)`,
+                  top: `${slotPositions[index]}px`,
+                  height: `${slotHeights[index]}px`,
                 }}
-              >
-                {weekDays.map((_, index) => (
-                  <div
-                    key={index}
-                    className="border-r border-gray-300 dark:border-gray-50/20 last:border-r-0"
-                  />
-                ))}
-              </div>
+              />
+            ))}
 
-              {/* Container para agendamentos */}
-              <div
-                className="absolute inset-0 grid gap-0"
-                style={{
-                  gridTemplateColumns: `repeat(${weekDays.length}, 1fr)`,
-                }}
-              >
-                {weekDays.map((date, dayIndex) => {
-                  const dayAppointments = appointments.filter(
-                    (apt) => apt.date === date.toISOString().split('T')[0]
-                  )
-
+            {/* Colunas Verticais e Agendamentos */}
+            <div
+              className="absolute inset-0 grid"
+              style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
+            >
+              {weekDays.map((date, dayIndex) => {
+                // Filtramos o schedule comparando o dia
+                const daySchedules = schedules.filter((item) => {
+                  const aptDate = new Date(item.appointments.startDateTime)
                   return (
-                    <div
-                      key={`day-${dayIndex}`}
-                      className="relative h-full overflow-hidden"
-                    >
-                      {/* Agendamentos para este dia */}
-                      {dayAppointments.map((appointment) => {
-                        // Encontrar o índice do slot de tempo para este appointment
-                        const slotIndex = timeSlots.findIndex(
-                          (slot) => slot === appointment.time
-                        )
-                        const slotTop =
-                          slotIndex >= 0 ? slotPositions[slotIndex] : 0
-                        const slotHeight =
-                          slotIndex >= 0
-                            ? slotHeights[slotIndex]
-                            : MIN_ROW_HEIGHT
-
-                        // Verificar sobreposições no mesmo horário
-                        const sameTimeAppointments = dayAppointments.filter(
-                          (apt) => apt.time === appointment.time
-                        )
-
-                        let leftOffset = 0
-                        let widthPercent = 95
-
-                        if (sameTimeAppointments.length > 1) {
-                          const appointmentIndex =
-                            sameTimeAppointments.findIndex(
-                              (apt) => apt.id === appointment.id
-                            )
-                          widthPercent = 95 / sameTimeAppointments.length
-                          leftOffset = appointmentIndex * widthPercent
-                        }
-
-                        return (
-                          <div
-                            key={appointment.id}
-                            className="absolute"
-                            style={{
-                              top: `${slotTop + 2}px`,
-                              left: `${leftOffset + 2.5}%`,
-                              width: `${widthPercent - 2}%`,
-                              height: `${Math.max(50, slotHeight - 4)}px`,
-                              zIndex: 20,
-                              padding: '2px',
-                            }}
-                          >
-                            <AppointmentCard
-                              appointment={appointment}
-                              onClick={() => {
-                                setSelectedAppointment(appointment)
-                                setModalOpen(true)
-                              }}
-                            />
-                          </div>
-                        )
-                      })}
-                    </div>
+                    aptDate.getDate() === date.getDate() &&
+                    aptDate.getMonth() === date.getMonth()
                   )
-                })}
-              </div>
-            </div>{' '}
-          </div>{' '}
+                })
+
+                return (
+                  <div
+                    key={`day-${dayIndex}`}
+                    className="relative border-r dark:border-gray-50/20 last:border-r-0"
+                  >
+                    {daySchedules.map((item) => {
+                      const apt = item.appointments
+                      const aptDate = new Date(apt.startDateTime)
+
+                      const timeStr = `${aptDate.getHours().toString().padStart(2, '0')}:${aptDate.getMinutes().toString().padStart(2, '0')}`
+                      const slotIndex = timeSlots.findIndex(
+                        (s) => s === timeStr,
+                      )
+
+                      if (slotIndex === -1) return null
+
+                      const slotTop = slotPositions[slotIndex]
+                      const slotHeight = slotHeights[slotIndex]
+
+                      // Cálculo simples de colisão (mesmo horário)
+                      const collisions = daySchedules.filter(
+                        (s) =>
+                          new Date(s.appointments.startDateTime).getTime() ===
+                          aptDate.getTime(),
+                      )
+                      const colIndex = collisions.findIndex(
+                        (s) => s.appointments.id === apt.id,
+                      )
+                      const width = 100 / collisions.length
+
+                      return (
+                        <div
+                          key={apt.id}
+                          className="absolute p-0.5"
+                          style={{
+                            top: `${slotTop}px`,
+                            left: `${colIndex * width}%`,
+                            width: `${width}%`,
+                            height: `${Math.max(60, slotHeight)}px`,
+                            zIndex: 10,
+                          }}
+                        >
+                          <AppointmentCard
+                            // Passamos o objeto completo (agendamento + cliente)
+                            schedule={item}
+                            onClick={() => {
+                              setSelectedAppointment(apt)
+                              setModalOpen(true)
+                            }}
+                          />
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Modal */}
       <AppointmentModal
         appointment={selectedAppointment}
         open={modalOpen}

@@ -1,18 +1,16 @@
+import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
 import {
-  AlertTriangle,
   Calendar,
   CheckCircle,
-  DollarSign,
   RotateCcw,
   UserX,
-  XCircle,
+  XCircle
 } from 'lucide-react'
-import type { Appointment } from '../types'
 
 // Função para obter cores dos status
 export const getStatusStyles = (status: Appointment['status']) => {
   switch (status) {
-    case 'agendado':
+    case 'SCHEDULED':
       return {
         bg: 'bg-blue-200 dark:bg-blue-950',
         border: 'border-blue-300 dark:border-blue-800',
@@ -22,7 +20,7 @@ export const getStatusStyles = (status: Appointment['status']) => {
         headerBg: 'bg-blue-500 dark:bg-blue-600',
         label: getStatusLabel(status),
       }
-    case 'confirmado':
+    case 'CONFIRMED':
       return {
         bg: 'bg-green-200 dark:bg-green-950',
         border: 'border-green-300 dark:border-green-800',
@@ -32,7 +30,7 @@ export const getStatusStyles = (status: Appointment['status']) => {
         headerBg: 'bg-green-500 dark:bg-green-600',
         label: getStatusLabel(status),
       }
-    case 'cancelado':
+    case 'CANCELLED':
       return {
         bg: 'bg-red-200 dark:bg-red-950',
         border: 'border-red-300 dark:border-red-800',
@@ -42,7 +40,7 @@ export const getStatusStyles = (status: Appointment['status']) => {
         headerBg: 'bg-red-500 dark:bg-red-600',
         label: getStatusLabel(status),
       }
-    case 'finalizado':
+    case 'COMPLETED':
       return {
         bg: 'bg-emerald-200 dark:bg-emerald-950',
         border: 'border-emerald-300 dark:border-emerald-800',
@@ -52,27 +50,27 @@ export const getStatusStyles = (status: Appointment['status']) => {
         headerBg: 'bg-emerald-500 dark:bg-emerald-600',
         label: getStatusLabel(status),
       }
-    case 'nao-pago':
-      return {
-        bg: 'bg-orange-200 dark:bg-orange-950',
-        border: 'border-orange-300 dark:border-orange-800',
-        text: 'text-zinc-800 dark:text-white',
-        dotColor: 'bg-orange-500',
-        iconBg: 'bg-orange-400 dark:bg-orange-800',
-        headerBg: 'bg-orange-500 dark:bg-orange-600',
-        label: getStatusLabel(status),
-      }
-    case 'pago':
-      return {
-        bg: 'bg-teal-200 dark:bg-teal-950',
-        border: 'border-teal-300 dark:border-teal-800',
-        text: 'text-zinc-800 dark:text-white',
-        dotColor: 'bg-teal-500',
-        iconBg: 'bg-teal-400 dark:bg-teal-800',
-        headerBg: 'bg-teal-500 dark:bg-teal-600',
-        label: getStatusLabel(status),
-      }
-    case 'no-show':
+    // case 'nao-pago':
+    //   return {
+    //     bg: 'bg-orange-200 dark:bg-orange-950',
+    //     border: 'border-orange-300 dark:border-orange-800',
+    //     text: 'text-zinc-800 dark:text-white',
+    //     dotColor: 'bg-orange-500',
+    //     iconBg: 'bg-orange-400 dark:bg-orange-800',
+    //     headerBg: 'bg-orange-500 dark:bg-orange-600',
+    //     label: getStatusLabel(status),
+    //   }
+    // case 'pago':
+    //   return {
+    //     bg: 'bg-teal-200 dark:bg-teal-950',
+    //     border: 'border-teal-300 dark:border-teal-800',
+    //     text: 'text-zinc-800 dark:text-white',
+    //     dotColor: 'bg-teal-500',
+    //     iconBg: 'bg-teal-400 dark:bg-teal-800',
+    //     headerBg: 'bg-teal-500 dark:bg-teal-600',
+    //     label: getStatusLabel(status),
+    //   }
+    case 'NO_SHOW':
       return {
         bg: 'bg-purple-200 dark:bg-purple-950',
         border: 'border-purple-300 dark:border-purple-800',
@@ -82,7 +80,7 @@ export const getStatusStyles = (status: Appointment['status']) => {
         headerBg: 'bg-purple-500 dark:bg-purple-600',
         label: getStatusLabel(status),
       }
-    case 'remarcado':
+    case 'RESCHEDULED':
       return {
         bg: 'bg-yellow-200 dark:bg-yellow-950',
         border: 'border-yellow-300 dark:border-yellow-800',
@@ -106,31 +104,36 @@ export const getStatusStyles = (status: Appointment['status']) => {
 }
 
 // Função auxiliar para obter labels
+// 1. Atualize os Labels para bater com os Enums do Prisma
 export const getStatusLabel = (status: Appointment['status']) => {
-  const labels = {
-    agendado: 'Agendado',
-    confirmado: 'Confirmado',
-    cancelado: 'Cancelado',
-    finalizado: 'Finalizado',
-    'nao-pago': 'Não Pago',
-    pago: 'Pago',
-    'no-show': 'No-Show',
-    remarcado: 'Remarcado',
+  const labels: Record<Appointment['status'], string> = {
+    SCHEDULED: 'Agendado',
+    CONFIRMED: 'Confirmado',
+    CANCELLED: 'Cancelado',
+    COMPLETED: 'Finalizado',
+    RESCHEDULED: 'Remarcado',
+    NO_SHOW: 'No-Show',
+    IN_PROGRESS: 'Em Andamento',
+    // Caso existam no seu banco, mesmo que comentados:
+    // PAGO: 'Pago',
+    // NAO_PAGO: 'Não Pago',
   }
-  return labels[status]
+
+  return labels[status] || 'Desconhecido'
 }
 
-// Função para obter ícones dos status
+// 2. Atualize os Ícones para bater com os Enums do Prisma
 export const getStatusIcon = (status: Appointment['status']) => {
-  const iconMap = {
-    agendado: Calendar,
-    confirmado: CheckCircle,
-    cancelado: XCircle,
-    finalizado: CheckCircle,
-    'nao-pago': AlertTriangle,
-    pago: DollarSign,
-    'no-show': UserX,
-    remarcado: RotateCcw,
+  const iconMap: Record<Appointment['status'], React.ElementType> = {
+    SCHEDULED: Calendar,
+    CONFIRMED: CheckCircle,
+    CANCELLED: XCircle,
+    COMPLETED: CheckCircle,
+    RESCHEDULED: RotateCcw,
+    NO_SHOW: UserX,
+    IN_PROGRESS: RotateCcw, // Ou outro ícone de sua preferência
   }
-  return iconMap[status]
+
+  // Retorna o ícone ou um padrão (Calendar) para evitar o erro de 'undefined' no render
+  return iconMap[status] || Calendar
 }

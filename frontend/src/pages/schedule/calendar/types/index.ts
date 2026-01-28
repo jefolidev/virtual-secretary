@@ -1,9 +1,9 @@
-import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
+import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
 
 export type ViewMode = 'day' | 'week' | 'month'
 
 export interface AppointmentCardProps {
-  appointment: Appointment
+  schedule: FetchProfessionalSchedulesSchema
   style?: React.CSSProperties
   className?: string
   onClick?: () => void
@@ -12,17 +12,17 @@ export interface AppointmentCardProps {
 
 export interface DayScheduleGridProps {
   date: Date
-  appointments: Appointment[]
+  schedules: FetchProfessionalSchedulesSchema
 }
 
 export interface WeekScheduleGridProps {
   weekDays: Date[]
-  appointments: Appointment[]
+  schedules: FetchProfessionalSchedulesSchema
 }
 
 export interface DayCardProps {
   date: Date
-  appointments: Appointment[]
+  schedules: FetchProfessionalSchedulesSchema
   viewMode: ViewMode
   isCurrentMonth?: boolean
 }
