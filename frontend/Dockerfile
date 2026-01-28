@@ -3,41 +3,41 @@ FROM oven/bun:latest AS builder
 
 WORKDIR /app
 
-# 1. Declarar argumentos de build (O EasyPanel injeta as envs aqui durante o build)
+# --- INJEÇÃO DE VARIÁVEIS DO EASYPANEL ---
+# O EasyPanel passa as 'env' como argumentos de build automaticamente
 ARG VITE_BACKEND_API_URL
 ARG VITE_ENVIRONMENT
 
-# 2. Tornar as variáveis disponíveis para o processo do Vite
+# Definimos como variáveis de ambiente para que o processo do Vite as encontre
 ENV VITE_BACKEND_API_URL=$VITE_BACKEND_API_URL
 ENV VITE_ENVIRONMENT=$VITE_ENVIRONMENT
+# -----------------------------------------
 
-# 3. Instalar dependências
-COPY package.json bun.lock ./
+# Copia arquivos de dependências
+COPY package.json bun.lockb ./
+
+# Instala as dependências (frozen-lockfile garante que a versão seja a mesma do seu local)
 RUN bun install --frozen-lockfile
 
-# 4. Copiar o código e gerar o build
+# Copia o restante do código
 COPY . .
+
+# Executa o build (aqui as variáveis são gravadas nos arquivos .js)
 RUN bun run build
 
-# ---
-
-# Estágio 2: Produção (Servidor Estático)
+# --- Estágio 2: Servidor ---
 FROM nginx:stable-alpine
 
-# 5. Copiar os arquivos compilados (Vite gera na pasta 'dist')
+# Copia os arquivos compilados (pasta 'dist' gerada pelo Vite)
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# 6. Configuração customizada do Nginx para suportar React Router (SPAs)
+# Configura o Nginx para redirecionar rotas para o index.html (evita 404 no refresh)
 RUN echo 'server { \
     listen 80; \
     location / { \
         root /usr/share/nginx/html; \
         index index.html index.htm; \
         try_files $uri $uri/ /index.html; \
-    } \
-    error_page 500 502 503 504 /50x.html; \
-    location = /50x.html { \
-        root /usr/share/nginx/html; \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
