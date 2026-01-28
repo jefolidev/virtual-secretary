@@ -1,8 +1,8 @@
 import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
 import { useState } from 'react'
 import { calculateSlotHeight, generateTimeSlots } from '../../utils'
-import { AppointmentModal } from '../appointment-modal'
 import { AppointmentCard } from '../appointment-card'
+import { AppointmentModal } from '../appointment-modal'
 
 // Definimos o tipo baseado no seu log: Array de objetos com a chave appointments
 interface RefactoredWeekGridProps {
@@ -14,9 +14,8 @@ export function WeekScheduleGrid({
   weekDays,
   schedules, // Agora recebemos a lista completa (com dados do cliente)
 }: RefactoredWeekGridProps) {
-  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(
-    null,
-  )
+  const [selectedAppointment, setSelectedAppointment] =
+    useState<FetchProfessionalSchedulesSchema | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
   const timeSlots = generateTimeSlots(7, 22)
@@ -158,7 +157,7 @@ export function WeekScheduleGrid({
                             // Passamos o objeto completo (agendamento + cliente)
                             schedule={item}
                             onClick={() => {
-                              setSelectedAppointment(apt)
+                              setSelectedAppointment(item)
                               setModalOpen(true)
                             }}
                           />
@@ -174,7 +173,7 @@ export function WeekScheduleGrid({
       </div>
 
       <AppointmentModal
-        appointment={selectedAppointment}
+        schedule={selectedAppointment}
         open={modalOpen}
         onOpenChange={setModalOpen}
       />

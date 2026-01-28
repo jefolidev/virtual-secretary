@@ -6,7 +6,7 @@ import { getStatusStyles } from '../../utils/status-utils'
 
 export function DayCard({
   date,
-  appointments,
+  schedules: appointments,
   viewMode,
   isCurrentMonth = true,
 }: DayCardProps) {
@@ -14,9 +14,24 @@ export function DayCard({
   const isToday = isSameDay(date, today)
   const isPastDate = date < today && !isToday
 
-  const dayAppointments = appointments
-    .filter((apt) => apt.date === date.toISOString().split('T')[0])
-    .sort((a, b) => a.time.localeCompare(b.time)) // Ordenar por horário mais próximo
+  const dayAppointments = (appointments || [])
+    .filter((apt) => {
+      // 1. Criamos um objeto Date a partir da string do agendamento
+      const aptDate = new Date(apt.appointments.startDateTime)
+
+      // 2. Comparamos se é o mesmo dia, mês e ano
+      return (
+        aptDate.getDate() === date.getDate() &&
+        aptDate.getMonth() === date.getMonth() &&
+        aptDate.getFullYear() === date.getFullYear()
+      )
+    })
+    .sort((a, b) => {
+      // 3. Ordenação: Convertemos para timestamp (número) para subtrair
+      const timeA = new Date(a.appointments.startDateTime).getTime()
+      const timeB = new Date(b.appointments.startDateTime).getTime()
+      return timeA - timeB
+    })
 
   const displayAppointments = dayAppointments.slice(0, 2) // Apenas os 2 primeiros
   const remainingCount = Math.max(0, dayAppointments.length - 2)
@@ -84,13 +99,13 @@ export function DayCard({
                 ? displayAppointments
                 : dayAppointments
               ).map((apt) => {
-                const styles = getStatusStyles(apt.status)
-                const isPaid = apt.status === 'pago'
-                const isNotPaid = apt.status === 'nao-pago'
+                const styles = getStatusStyles(apt.appointments.status)
+                const isPaid = apt.appointments.paymentStatus === 'SUCCEEDED'
+                const isNotPaid = apt.appointments.paymentStatus === 'PENDING'
 
                 return (
                   <div
-                    key={apt.id}
+                    key={apt.appointments.id}
                     className={`
                       ${
                         viewMode === 'month'
@@ -105,9 +120,7 @@ export function DayCard({
                       ${viewMode === 'month' ? 'text-foreground' : styles.text}
                     `}
                   >
-                    <div className="font-medium truncate">
-                      {apt.patientName}
-                    </div>
+                    <div className="font-medium truncate">{apt.name}</div>
                     <div
                       className={`opacity-80 flex items-center justify-between gap-1 ${
                         viewMode === 'month' ? 'text-xs' : 'text-sm'
@@ -119,7 +132,9 @@ export function DayCard({
                             viewMode === 'month' ? 'h-3 w-3' : 'h-4 w-4'
                           }`}
                         />
-                        {apt.time}
+                        {apt.appointments.startDateTime
+                          .toString()
+                          .slice(11, 16)}
                       </div>
                     </div>
 

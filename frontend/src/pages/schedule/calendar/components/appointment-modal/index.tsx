@@ -14,7 +14,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
+import type {
+  Appointment,
+  FetchProfessionalSchedulesSchema,
+} from '@/services/professional/dto/fetch-professional-schedules.dto'
+import { formatFullAddress } from '@/utils/format-address'
+import { formatPhoneNumber } from '@/utils/format-phone'
 import {
   Bell,
   Clock,
@@ -30,7 +35,7 @@ import { useEffect, useState } from 'react'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
 
 interface AppointmentModalProps {
-  appointment: Appointment | null
+  schedule: FetchProfessionalSchedulesSchema | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -41,21 +46,6 @@ interface SessionTimer {
   startTime: Date | null
   elapsedTime: number // em segundos
 }
-
-// Mock de dados do paciente expandidos
-const getMockPatientData = (appointmentId: string) => ({
-  id: appointmentId,
-  name: 'Maria Silva',
-  whatsappNumber: '(11) 99999-9999',
-  email: 'maria.silva@email.com',
-  birthDate: '1985-03-15',
-  age: 38,
-  gender: 'Feminino',
-  address: 'Rua das Flores, 123, São Paulo - SP, 01234-567',
-  accountId: 'CONTA-2024-001',
-  paymentStatus: 'pago',
-  lastNotification: '2026-01-05T14:30:00Z',
-})
 
 const statusOptions = [
   { value: 'SCHEDULED', label: 'Agendado' },
@@ -69,13 +59,15 @@ const statusOptions = [
 ]
 
 export function AppointmentModal({
-  appointment,
+  schedule,
   open,
   onOpenChange,
 }: AppointmentModalProps) {
-  const [currentStatus, setCurrentStatus] = useState(
-    appointment?.status || 'agendado',
-  )
+  const [currentStatus, setCurrentStatus] =
+    useState<Appointment['status']>('IN_PROGRESS')
+
+  console.log('[]', schedule)
+
   const [timer, setTimer] = useState<SessionTimer>({
     isRunning: false,
     isPaused: false,
@@ -84,10 +76,10 @@ export function AppointmentModal({
   })
 
   useEffect(() => {
-    if (appointment) {
-      setCurrentStatus(appointment.status)
+    if (schedule?.appointments?.status) {
+      setCurrentStatus(schedule?.appointments?.status)
     }
-  }, [appointment])
+  }, [schedule])
 
   useEffect(() => {
     let interval: number
@@ -104,9 +96,8 @@ export function AppointmentModal({
     return () => clearInterval(interval)
   }, [timer.isRunning, timer.isPaused])
 
-  if (!appointment) return null
+  if (!schedule) return null
 
-  const patientData = getMockPatientData(appointment.id)
   const styles = getStatusStyles(currentStatus as Appointment['status'])
   const StatusIcon = getStatusIcon(currentStatus as Appointment['status'])
 
@@ -175,7 +166,7 @@ export function AppointmentModal({
 
   const handleNoShow = async () => {
     try {
-      setCurrentStatus('no-show')
+      setCurrentStatus('NO_SHOW')
       // await updateStatus('no-show')
     } catch (error) {
       console.error('Erro ao marcar no-show:', error)
@@ -184,14 +175,14 @@ export function AppointmentModal({
 
   const handleSendPaymentReminder = async () => {
     try {
-      // await fetch(`/payments/${patientData.accountId}/reminder`, { method: 'POST' })
+      // await fetch(`/payments/${schedule.accountId}/reminder`, { method: 'POST' })
       console.log('Lembrete de pagamento enviado')
     } catch (error) {
       console.error('Erro ao enviar lembrete:', error)
     }
   }
 
-  const isPaymentPaid = patientData.paymentStatus === 'pago'
+  const isPaymentPaid = schedule?.appointments?.paymentStatus === 'SUCCEEDED'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -201,7 +192,10 @@ export function AppointmentModal({
             <span className="text-base font-normal dark:text-zinc-200/50">
               Agendamento
             </span>
-            #{appointment.id}
+            #
+            {schedule?.appointments?.id
+              ? schedule.appointments.id.slice(0, 8).toUpperCase()
+              : '-----'}
           </DialogTitle>
         </DialogHeader>
 
@@ -216,7 +210,7 @@ export function AppointmentModal({
               </div>
               <div className="flex flex-col gap-0.5">
                 <p className="text-xs text-muted-foreground">Paciente</p>
-                <h2 className="text-xl font-semibold">{patientData.name}</h2>
+                <h2 className="text-xl font-semibold">{schedule.name}</h2>
               </div>
             </div>
 
@@ -224,7 +218,9 @@ export function AppointmentModal({
               <p className="text-sm text-muted-foreground">Status</p>
               <Select
                 value={currentStatus}
-                onValueChange={(value) => setCurrentStatus(value as any)}
+                onValueChange={(value) =>
+                  setCurrentStatus(value as Appointment['status'])
+                }
               >
                 <SelectTrigger className="w-40">
                   <SelectValue />
@@ -244,7 +240,7 @@ export function AppointmentModal({
             {/* Modalidade */}
             <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                {appointment.modality === 'IN_PERSON' ? (
+                {schedule?.appointments?.modality === 'IN_PERSON' ? (
                   <MapPin className="h-5 w-5 text-zinc-600" />
                 ) : (
                   <Monitor className="h-5 w-5 text-zinc-600" />
@@ -255,7 +251,7 @@ export function AppointmentModal({
                   Modalidade
                 </p>
                 <p className="font-semibold capitalize">
-                  {appointment.modality === 'IN_PERSON'
+                  {schedule?.appointments?.modality === 'IN_PERSON'
                     ? 'Presencial'
                     : 'Online'}
                 </p>
@@ -272,20 +268,24 @@ export function AppointmentModal({
                   Data/Horário
                 </p>
                 <p className="font-semibold">
-                  {new Date(appointment.startDateTime).toLocaleDateString(
-                    'pt-BR',
-                  )}
+                  {new Date(
+                    schedule?.appointments?.startDateTime,
+                  ).toLocaleDateString('pt-BR')}
                 </p>
                 <p className="text-sm">
-                  {new Date(appointment.startDateTime).toLocaleTimeString(
-                    'pt-BR',
-                    { hour: '2-digit', minute: '2-digit' },
-                  )}{' '}
+                  {new Date(
+                    schedule?.appointments?.startDateTime,
+                  ).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}{' '}
                   -{' '}
-                  {new Date(appointment.endDateTime).toLocaleTimeString(
-                    'pt-BR',
-                    { hour: '2-digit', minute: '2-digit' },
-                  )}
+                  {new Date(
+                    schedule?.appointments?.endDateTime,
+                  ).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
                 </p>
               </div>
             </div>
@@ -302,17 +302,32 @@ export function AppointmentModal({
                 <div className="flex gap-4 items-center">
                   <div>
                     <p className="font-semibold">
-                      Conta: {patientData.accountId}
+                      Conta: {schedule?.appointments?.currentTransactionId}
                     </p>
                     <div className="flex items-center gap-2">
-                      {patientData.lastNotification && (
-                        <span className="text-xs text-muted-foreground">
-                          Último lembrete:{' '}
-                          {new Date(
-                            patientData.lastNotification,
-                          ).toLocaleDateString('pt-BR')}
-                        </span>
-                      )}
+                      {(() => {
+                        const lastFirstReminder = schedule?.notification
+                          ?.filter((n) => n.reminderType === 'FIRST_REMINDER')
+                          // Ordena da mais nova para a mais antiga baseado no createdAt
+                          .sort(
+                            (a, b) =>
+                              new Date(b.createdAt).getTime() -
+                              new Date(a.createdAt).getTime(),
+                          )[0]
+
+                        if (!lastFirstReminder) return null
+
+                        return (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              Último lembrete:{' '}
+                              {new Date(
+                                lastFirstReminder.createdAt,
+                              ).toLocaleDateString('pt-BR')}
+                            </span>
+                          </div>
+                        )
+                      })()}
                     </div>
                   </div>
                   <Badge variant={isPaymentPaid ? 'default' : 'destructive'}>
@@ -343,14 +358,14 @@ export function AppointmentModal({
                     Telefone:
                   </span>
                   <span className="text-base">
-                    {patientData.whatsappNumber}
+                    {formatPhoneNumber(schedule.whatsappNumber)}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
                     Email:
                   </span>
-                  <span className="text-base">{patientData.email}</span>
+                  <span className="text-base">{schedule.email}</span>
                 </div>
               </div>
               <div className="space-y-3">
@@ -358,14 +373,18 @@ export function AppointmentModal({
                   <span className="text-xs font-medium text-zinc-500">
                     Gênero:
                   </span>
-                  <span className="text-base">{patientData.gender}</span>
+                  <span className="text-base">
+                    {schedule.gender === 'MALE' ? 'Masculino' : 'Feminino'}
+                  </span>
                 </div>
-                {/* <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
                     Endereço:
                   </span>
-                  <span className="text-base">{patientData.address}</span>
-                </div> */}
+                  <span className="text-[13.5px]">
+                    {formatFullAddress(schedule.address.props)}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { fetchAddressSchema } from '@/services/address/dto/fetch-address.dto'
 import z from 'zod'
 
 export const appointmentsStatusEnum = z.enum([
@@ -54,8 +55,33 @@ export type Appointment = z.infer<typeof appointments>
 
 export const fetchProfessionalSchedulesSchema = z.object({
   appointments: appointments,
-  extraPreference: z.string().nullable(),
-  periodPreference: z.string().nullable(),
+  client: {
+    extraPreference: z.string().nullable(),
+    periodPreference: z.string().nullable(),
+  },
+
+  notification: z.array(
+    z.object({
+      reminderType: z.enum([
+        'NEW_APPOINTMENT',
+        'CANCELLATION',
+        'CONFIRMATION',
+        'DAILY_SUMMARY',
+        'CONFIRMED_LIST',
+        'PAYMENT_STATUS',
+        'WELCOME',
+        'REMOVAL',
+        'FIRST_REMINDER',
+        'USER_CONFIRMATION',
+        'FINAL_REMINDER',
+      ]),
+      createdAt: z.date(),
+      readAt: z.date().nullable(),
+    }),
+  ),
+
+  address: z.object({ props: fetchAddressSchema }),
+
   name: z.string(),
   whatsappNumber: z.string().nullable(),
   email: z.string().nullable(),

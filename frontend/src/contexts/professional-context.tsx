@@ -26,6 +26,8 @@ export function ProfessionalProvider({
   const [isProfessionalContextLoading, setIsProfessionalContextLoading] =
     useState(true)
 
+  console.log(currentProfessionalSchedules)
+
   const handleFetchProfessionalSchedules = useCallback(async () => {
     if (!user) return
 

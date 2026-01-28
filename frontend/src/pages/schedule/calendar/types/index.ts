@@ -12,7 +12,7 @@ export interface AppointmentCardProps {
 
 export interface DayScheduleGridProps {
   date: Date
-  schedules: FetchProfessionalSchedulesSchema
+  schedules: FetchProfessionalSchedulesSchema[]
 }
 
 export interface WeekScheduleGridProps {
@@ -22,7 +22,7 @@ export interface WeekScheduleGridProps {
 
 export interface DayCardProps {
   date: Date
-  schedules: FetchProfessionalSchedulesSchema
+  schedules: FetchProfessionalSchedulesSchema[]
   viewMode: ViewMode
   isCurrentMonth?: boolean
 }

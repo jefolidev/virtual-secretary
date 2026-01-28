@@ -9,7 +9,10 @@ import {
 import { AppointmentCard } from '../appointment-card'
 import { AppointmentModal } from '../appointment-modal'
 
-export function DayScheduleGrid({ date, schedules }: DayScheduleGridProps) {
+export function DayScheduleGrid({
+  date,
+  schedules = [],
+}: DayScheduleGridProps) {
   const [selectedAppointment, setSelectedAppointment] =
     useState<Appointment | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -97,16 +100,17 @@ export function DayScheduleGrid({ date, schedules }: DayScheduleGridProps) {
               {/* Agendamentos */}
               {dayAppointments.map((schedule) => {
                 // Encontrar o índice do slot de tempo para este appointment
+                // 1. Converter a string para um objeto Date real
+                const startDate = new Date(schedule.appointments.startDateTime)
+
+                // 2. Agora você pode usar os métodos de data com segurança
+                const timeStr = startDate.toLocaleTimeString('pt-BR', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })
+
                 const slotIndex = timeSlots.findIndex(
-                  (slot) =>
-                    slot ===
-                    schedule.appointments.startDateTime.toLocaleTimeString(
-                      'pt-BR',
-                      {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      },
-                    ),
+                  (slot) => slot === timeStr,
                 )
                 const slotTop = slotIndex >= 0 ? slotPositions[slotIndex] : 0
                 const slotHeight =

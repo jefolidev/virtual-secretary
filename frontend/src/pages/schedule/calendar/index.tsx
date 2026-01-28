@@ -2,11 +2,12 @@ import { Card, CardContent } from '@/components/ui/card'
 import { useProfessional } from '@/contexts/professional-context'
 import { Calendar as CalendarIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { DayCard } from './components'
 import { CalendarToolbar } from './components/calendar-toolbar'
 import { DayScheduleGrid } from './components/day-schedule-grid'
 import { WeekScheduleGrid } from './components/week-schedule-grid'
 import type { CalendarFilters, ViewMode } from './types'
-import { getWeekDays } from './utils'
+import { getMonthDays, getWeekDays } from './utils'
 
 export function ScheduleCalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -81,11 +82,10 @@ export function ScheduleCalendarPage() {
   const renderCalendar = () => {
     switch (viewMode) {
       case 'day':
-        // Se você ainda não refatorou o DayScheduleGrid, mantenha o map apenas para ele
         return (
           <DayScheduleGrid
             date={currentDate}
-            schedule={currentProfessionalSchedules} // Passamos o schedule completo aqui
+            schedules={filteredAppointments || []}
           />
         )
 
@@ -99,8 +99,36 @@ export function ScheduleCalendarPage() {
         )
 
       case 'month':
-        // Adicione aqui se tiver o MonthGrid
-        return null
+        const monthDays = getMonthDays(currentDate)
+        return (
+          <div className="space-y-2">
+            <div className="grid grid-cols-7 gap-1">
+              {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+                <div
+                  key={day}
+                  className="text-center text-sm font-medium text-muted-foreground p-2"
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1">
+              {monthDays.map((date, index) => {
+                const isCurrentMonth =
+                  date.getMonth() === currentDate.getMonth()
+                return (
+                  <DayCard
+                    key={index}
+                    date={date}
+                    schedules={filteredAppointments}
+                    viewMode="month"
+                    isCurrentMonth={isCurrentMonth}
+                  />
+                )
+              })}
+            </div>
+          </div>
+        )
 
       default:
         return null
