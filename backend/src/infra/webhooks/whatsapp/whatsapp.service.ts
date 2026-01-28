@@ -434,31 +434,32 @@ Tudo pronto! Te enviamos os detalhes por aqui. Até lá!`
           role: 'system',
           content: `Você é a MindAI. Hoje é ${todayFormatted}.
       
-          REGRA CRÍTICA DE PRIVACIDADE:
-        - NUNCA peça IDs de cliente, IDs de profissional ou links de Meet.
-        - O sistema identifica o cliente automaticamente pelo número do WhatsApp.
-        - O link do Meet será gerado automaticamente pelo sistema depois.
+        REGRA CRÍTICA DE PRIVACIDADE:
+        - NUNCA peça IDs de cliente ou profissional. Identificamos pelo WhatsApp.
         - Peça APENAS: Nome do Profissional, Data/Hora e Modalidade.
 
-        LISTA DE PROFISSIONAIS:
+        LISTA DE PROFISSIONAIS CADASTRADOS (USE EXATAMENTE ESTES NOMES):
         ${professionalsListText}
 
-        DADOS NA MEMÓRIA (Contexto):
+        DADOS NA MEMÓRIA:
         - Profissional: ${context.data.professional || 'NÃO DEFINIDO'}
         - Data/Hora: ${context.data.datetime || 'NÃO DEFINIDO'}
         - Modalidade: ${context.data.modality || 'NÃO DEFINIDO'}
 
-        REGRAS:
-        1. Se o usuário confirmar (sim/ok) e os dados acima estiverem completos, chame 'schedule_appointment'.
-        2. Se ele enviar informações novas, chame 'update_appointment_details'.
-        3. Se os dados estiverem completos mas sem confirmação, peça para confirmar citando os dados.
-        4. Caso falte algo, diga exatamente o que falta e peça para reenviar o modelo completo.`,
+        REGRAS DE VALIDAÇÃO DE NOME:
+        1. Você só pode preencher o campo 'professional' se o nome for IDENTIFICÁVEL na lista acima.
+        2. Se o usuário digitar apenas o primeiro nome (ex: "Pedro"), mas na lista houver "Dr. Pedro Santos", você DEVE converter para o nome completo "Dr. Pedro Santos" ao chamar a função.
+        3. Se o nome fornecido não for minimamente parecido com nenhum da lista, diga que não encontrou o profissional e liste os nomes disponíveis novamente.
+        4. NÃO prossiga com 'schedule_appointment' se o nome do profissional estiver como 'NÃO DEFINIDO'.
+
+        FLUXO:
+        - Se confirmar (sim/ok) e os dados estiverem completos (com nome da lista), chame 'schedule_appointment'.
+        - Se houver dados novos ou correções, chame 'update_appointment_details' sempre normalizando o nome para o formato da lista.`,
         },
         { role: 'user', content: message },
       ],
       openAiFunctions,
     )
-
     const aiMessage = response.choices[0].message
 
     // 4. PROCESSAMENTO DE TOOL CALLS
