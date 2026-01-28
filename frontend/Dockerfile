@@ -3,6 +3,13 @@ FROM oven/bun:latest AS builder
 
 WORKDIR /app
 
+ARG VITE_BACKEND_API_URL
+ARG VITE_ENVIRONMENT
+
+# O Bun/Vite precisa que eles estejam como ENV no sistema para o build ler
+ENV VITE_BACKEND_API_URL=$VITE_BACKEND_API_URL
+ENV VITE_ENVIRONMENT=$VITE_ENVIRONMENT
+
 # Copia os arquivos de dependências
 COPY package.json bun.lock ./
 
