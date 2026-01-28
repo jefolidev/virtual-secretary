@@ -3,6 +3,7 @@ import type {
   Appointment,
   AppointmentStatusType,
 } from '../../enterprise/entities/appointment'
+import { AppointmentWithClient } from '../../enterprise/entities/value-objects/appointment-with-client'
 
 export abstract class AppointmentsRepository {
   abstract create(appointment: Appointment): Promise<void>
@@ -27,7 +28,7 @@ export abstract class AppointmentsRepository {
   abstract findManyByProfessionalId(
     professionalId: string,
     params?: PaginationParams,
-  ): Promise<Appointment[]>
+  ): Promise<AppointmentWithClient[]>
   abstract findManyByClientId(
     clientId: string,
     params?: PaginationParams,

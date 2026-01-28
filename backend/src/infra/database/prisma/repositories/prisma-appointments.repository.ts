@@ -1,10 +1,12 @@
 import { DomainEvents } from '@/core/events/domain-events'
+import { PaginationParams } from '@/core/repositories/pagination-params'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import {
   Appointment,
   AppointmentModalityType,
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
+import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
 import {
   BadRequestException,
   Injectable,
@@ -13,6 +15,7 @@ import {
 import { Prisma } from '@prisma/client'
 import dayjs from 'dayjs'
 import { PrismaAppointmentMapper } from '../../mappers/prisma-appointment-mapper'
+import { PrismaAppointmentWithClientMapper } from '../../mappers/prisma-appointment-with-client-mapper'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
@@ -200,21 +203,20 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
   async findManyByProfessionalId(
     professionalId: string,
-    params: { page: number },
-  ): Promise<Appointment[]> {
+    params: PaginationParams,
+  ): Promise<AppointmentWithClient[]> {
     const appointments = await this.prisma.appointment.findMany({
-      where: {
-        professionalId,
+      where: { professionalId },
+      include: {
+        client: {
+          include: { users: true },
+        },
       },
       take: 10,
       skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
-    if (appointments.length === 0) {
-      return []
-    }
-
-    return appointments.map(PrismaAppointmentMapper.toDomain)
+    return appointments.map(PrismaAppointmentWithClientMapper.toDomain)
   }
 
   async findManyByClientId(

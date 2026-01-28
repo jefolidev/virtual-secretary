@@ -1,15 +1,14 @@
 import { Card, CardContent } from '@/components/ui/card'
+import { useProfessional } from '@/contexts/professional-context'
 import { Calendar as CalendarIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarToolbar } from './components/calendar-toolbar'
 import { DayCard } from './components/day-card'
 import { DayScheduleGrid } from './components/day-schedule-grid'
 import { WeekScheduleGrid } from './components/week-schedule-grid'
-import { mockAppointments } from './mock/data'
 import type { CalendarFilters, ViewMode } from './types'
 import { getMonthDays, getWeekDays } from './utils'
 
-// Componente principal refatorado
 export function ScheduleCalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<ViewMode>('week')
@@ -24,6 +23,12 @@ export function ScheduleCalendarPage() {
     showRemarcado: true,
     showCancelado: true,
   })
+
+  const { currentProfessionalSchedules,handleFetchProfessionalSchedules } = useProfessional()
+
+  useEffect(() => {
+    handleFetchProfessionalSchedules
+  }, [])
 
   const navigateDate = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate)
@@ -48,26 +53,28 @@ export function ScheduleCalendarPage() {
   }
 
   // Filtrar agendamentos baseado nos filtros selecionados
-  const filteredAppointments = mockAppointments.filter((apt) => {
+  const filteredAppointments = currentProfessionalSchedules.filter((apt) => {
+    const statusLowerCase = apt.status.toLowerCase()
+
     const statusFilter =
-      (apt.status === 'agendado' && filters.showAgendado) ||
-      (apt.status === 'confirmado' && filters.showConfirmado) ||
-      (apt.status === 'pago' && filters.showPago) ||
-      (apt.status === 'finalizado' && filters.showFinalizado) ||
-      (apt.status === 'nao-pago' && filters.showNaoPago) ||
-      (apt.status === 'no-show' && filters.showNoShow) ||
-      (apt.status === 'remarcado' && filters.showRemarcado) ||
-      (apt.status === 'cancelado' && filters.showCancelado)
+      (statusLowerCase === 'agendado' && filters.showAgendado) ||
+      (statusLowerCase === 'confirmado' && filters.showConfirmado) ||
+      (statusLowerCase === 'pago' && filters.showPago) ||
+      (statusLowerCase === 'finalizado' && filters.showFinalizado) ||
+      (statusLowerCase === 'nao-pago' && filters.showNaoPago) ||
+      (statusLowerCase === 'no-show' && filters.showNoShow) ||
+      (statusLowerCase === 'remarcado' && filters.showRemarcado) ||
+      (statusLowerCase === 'cancelado' && filters.showCancelado)
 
     const patientFilter =
-      selectedPatient === 'all' || apt.patientName === selectedPatient
+      selectedPatient === 'all' || apt.client_id === selectedPatient
 
     return statusFilter && patientFilter
   })
 
   // Obter lista única de pacientes para o select
   const uniquePatients = [
-    ...new Set(mockAppointments.map((apt) => apt.patientName)),
+    ...new Set(currentProfessionalSchedules.map((apt) => apt.patientName)),
   ]
 
   const renderCalendar = () => {
