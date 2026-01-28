@@ -14,7 +14,7 @@ ENV VITE_ENVIRONMENT=$VITE_ENVIRONMENT
 # -----------------------------------------
 
 # Copia arquivos de dependências
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 
 # Instala as dependências (frozen-lockfile garante que a versão seja a mesma do seu local)
 RUN bun install --frozen-lockfile
