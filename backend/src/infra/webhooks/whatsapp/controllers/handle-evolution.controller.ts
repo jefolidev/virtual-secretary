@@ -9,6 +9,10 @@ export class HandleEvolutionController {
   @Public()
   @Post()
   async handleWebhook(@Body() body: any, @Headers('apikey') apiKey: string) {
+    console.log('--- NOVO WEBHOOK RECEBIDO ---')
+    console.log('Evento:', body.event)
+    console.log('API Key recebida:', apiKey)
+
     if (apiKey !== this.whatsappService.apiKey) {
       return { status: 'unauthorized' }
     }
