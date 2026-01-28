@@ -138,6 +138,82 @@ async function main() {
     }
   }
 
+  // Criação de um cliente
+  let createdClient: any
+  try {
+    createdClient = await prisma.user.create({
+      data: {
+        name: 'Cliente Exemplo',
+        email: 'cliente@email.com',
+        cpf: '22233344455',
+        whatsappNumber: '11999998888',
+        role: 'CLIENT',
+        password: 'hashed_password',
+        gender: 'MALE',
+        birthDate: new Date('1995-03-20'),
+        address: {
+          create: {
+            addressLine1: 'Rua do Cliente, 100',
+            neighborhood: 'Centro',
+            city: 'São Paulo',
+            state: 'SP',
+            postalCode: '01001000',
+            country: 'Brasil',
+          },
+        },
+        client: {
+          create: {},
+        },
+      },
+      include: { address: true, client: true },
+    })
+    console.log(`Created client: ${createdClient.name}`)
+  } catch (e) {
+    console.error('Error creating client:', e)
+    return
+  }
+
+  // Buscar profissionais criados
+  const allProfessionals = await prisma.user.findMany({
+    where: { role: 'PROFESSIONAL' },
+    include: { professional: true },
+  })
+
+  // Criar 10 agendamentos para o cliente, alternando entre os profissionais
+  const now = new Date()
+  for (let i = 0; i < 10; i++) {
+    const professional = allProfessionals[i % allProfessionals.length]
+    const appointmentDate = new Date(now)
+    appointmentDate.setDate(now.getDate() + i + 1)
+    appointmentDate.setHours(9 + (i % 8), 0, 0, 0) // horários variados entre 9h e 16h
+
+    // Garante que o professional.professional existe
+    if (!professional.professional) {
+      console.warn(
+        `Profissional sem registro em professional: ${professional.name}`,
+      )
+      continue
+    }
+
+    try {
+      await prisma.appointment.create({
+        data: {
+          clientId: createdClient.client.id,
+          professionalId: professional.professional.id,
+          datetime: appointmentDate,
+          modality: i % 2 === 0 ? 'ONLINE' : 'IN_PERSON', // Corrigido para 'IN_PERSON'
+          status: 'SCHEDULED',
+          price: professional.professional.sessionPrice ?? 100,
+        },
+      })
+      console.log(
+        `Created appointment ${i + 1} for client with professional ${professional.name}`,
+      )
+    } catch (e) {
+      console.error(`Error creating appointment ${i + 1}:`, e)
+    }
+  }
+
   console.log('Seeding finished.')
 }
 
