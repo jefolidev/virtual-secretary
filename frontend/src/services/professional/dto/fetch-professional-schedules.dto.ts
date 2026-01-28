@@ -60,7 +60,7 @@ export const fetchProfessionalSchedulesSchema = z.object({
     periodPreference: z.string().nullable(),
   },
 
-  notification: z.array(
+  notifications: z.array(
     z.object({
       reminderType: z.enum([
         'NEW_APPOINTMENT',

@@ -1,16 +1,17 @@
-import type { Appointment } from '../types'
+import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
 
 // Constantes simplificadas
 export const HOUR_HEIGHT = 115 // altura fixa por hora
-export const MIN_ROW_HEIGHT = 50 // altura mínima das linhas quando não há appointments
+export const MIN_ROW_HEIGHT = 120 // altura mínima das linhas quando não há appointments
 export const SLOTS_PER_HOUR = 1 // slots por hora (sempre 1 para simplicidade)
 
-// Função para calcular altura dinâmica de cada slot baseada nos appointments
 export const calculateSlotHeight = (
-  appointments: Appointment[],
-  time: string
+  appointments: FetchProfessionalSchedulesSchema[],
+  time: string,
 ) => {
-  const slotAppointments = appointments.filter((apt) => apt.time === time)
+  const slotAppointments = (appointments || []).filter((apt) => {
+    return apt?.appointments?.startDateTime?.toString() === time
+  })
 
   if (slotAppointments.length === 0) {
     return MIN_ROW_HEIGHT // 50px quando não há appointments
@@ -32,39 +33,35 @@ export const generateTimeSlots = (startHour = 7, endHour = 22) => {
   return slots
 }
 
-// Converter horário para minutos
 export const timeToMinutes = (time: string) => {
   const [hours, minutes] = time.split(':').map(Number)
   return hours * 60 + minutes
 }
 
-// Calcular posição de um agendamento de forma simples
 export const getAppointmentPosition = (
-  appointment: Appointment,
-  startHour = 7
+  appointment: FetchProfessionalSchedulesSchema['appointments'],
+  startHour = 7,
 ) => {
-  const startMinutes = timeToMinutes(appointment.time)
+  const startMinutes = timeToMinutes(appointment.startDateTime.toDateString())
   const gridStartMinutes = startHour * 60
 
   // Posição baseada na diferença de minutos desde o início da grade
   const top = ((startMinutes - gridStartMinutes) / 60) * HOUR_HEIGHT
 
   // Altura baseada na duração
-  const endMinutes = appointment.endTime
-    ? timeToMinutes(appointment.endTime)
-    : startMinutes + (appointment.duration || 60)
+  const endMinutes = appointment.endDateTime
+    ? timeToMinutes(appointment.endDateTime.toDateString())
+    : startMinutes + 60
   const height = ((endMinutes - startMinutes) / 60) * HOUR_HEIGHT
 
   return { top, height }
 }
 
-// Função simples para altura das linhas (sempre fixa)
 export const getRowHeight = () => HOUR_HEIGHT
 
-// Utilitários de data
 export const formatDate = (
   date: Date,
-  format: 'full' | 'month' | 'day' = 'full'
+  format: 'full' | 'month' | 'day' = 'full',
 ) => {
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',

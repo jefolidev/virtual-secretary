@@ -306,7 +306,7 @@ export function AppointmentModal({
                     </p>
                     <div className="flex items-center gap-2">
                       {(() => {
-                        const lastFirstReminder = schedule?.notification
+                        const lastFirstReminder = schedule.notifications
                           ?.filter((n) => n.reminderType === 'FIRST_REMINDER')
                           // Ordena da mais nova para a mais antiga baseado no createdAt
                           .sort(

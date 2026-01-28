@@ -1,4 +1,4 @@
-import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
+import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
 import { useState } from 'react'
 import type { DayScheduleGridProps } from '../../types'
 import {
@@ -13,8 +13,8 @@ export function DayScheduleGrid({
   date,
   schedules = [],
 }: DayScheduleGridProps) {
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<Appointment | null>(null)
+  const [selectedSchedule, setSelectedSchedule] =
+    useState<FetchProfessionalSchedulesSchema | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
   const timeSlots = generateTimeSlots(7, 22)
@@ -148,9 +148,9 @@ export function DayScheduleGrid({
                     }}
                   >
                     <AppointmentCard
-                      schedule={schedule}
+                      schedule={schedule} // schedule aqui é do tipo FetchProfessionalSchedulesSchema
                       onClick={() => {
-                        setSelectedAppointment(schedule.appointments)
+                        setSelectedSchedule(schedule) // Passa o objeto completo para o estado
                         setModalOpen(true)
                       }}
                     />
@@ -164,7 +164,7 @@ export function DayScheduleGrid({
 
       {/* Modal */}
       <AppointmentModal
-        appointment={selectedAppointment}
+        schedule={selectedSchedule}
         open={modalOpen}
         onOpenChange={setModalOpen}
       />
