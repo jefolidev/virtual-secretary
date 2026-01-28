@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common'
 import { AppointmentsPresenter } from '../presenters/appointments-presenter'
 import { PageQueryParamSchema } from './dto/page-query.dto'
+import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
+import { AppointmentWithClientPresenter } from '../presenters/appointments-with-client-presenter'
 
 @Controller('/professional/:id/appointments')
 export class FetchAppointmentsByProfessionalController {
@@ -41,7 +43,7 @@ export class FetchAppointmentsByProfessionalController {
     const appointments = result.value.appointments
 
     return {
-      appointments: appointments.map(AppointmentsPresenter.toHTTP),
+      appointments: appointments.map(AppointmentWithClientPresenter.toHTTP),
     }
   }
 }
