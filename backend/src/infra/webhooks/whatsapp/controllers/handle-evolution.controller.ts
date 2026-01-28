@@ -1,5 +1,5 @@
 import { Public } from '@/infra/auth/public'
-import { Body, Controller, Headers, Post } from '@nestjs/common'
+import { Body, Controller, Post } from '@nestjs/common'
 import { WhatsappService } from '../whatsapp.service'
 
 @Controller('webhooks/whatsapp/')
@@ -8,15 +8,7 @@ export class HandleEvolutionController {
 
   @Public()
   @Post()
-  async handleWebhook(@Body() body: any, @Headers('apikey') apiKey: string) {
-    console.log('--- NOVO WEBHOOK RECEBIDO ---')
-    console.log('Evento:', body.event)
-    console.log('API Key recebida:', apiKey)
-
-    if (apiKey !== this.whatsappService.apiKey) {
-      return { status: 'unauthorized' }
-    }
-
+  async handleWebhook(@Body() body: any) {
     try {
       if (body.event === 'messages.upsert') {
         const message = body.data.message.conversation
