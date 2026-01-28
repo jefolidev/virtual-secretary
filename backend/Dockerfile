@@ -13,6 +13,6 @@ RUN DATABASE_URL="postgresql://fake:fake@localhost:5432/fake" bun prisma generat
 # 3. Compila o NestJS
 RUN bun run build
 
-EXPOSE 3333
+EXPOSE 3000
 
-CMD bun run start:prod
+CMD ["sh", "-c", "bun start:prod"]
