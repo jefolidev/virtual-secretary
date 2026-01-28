@@ -83,4 +83,55 @@ export const openAiFunctions: OpenAI.Chat.Completions.ChatCompletionTool[] = [
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'schedule_appointment',
+      description:
+        'Agenda uma consulta terapêutica. Deve ser chamada apenas se o usuário estiver autenticado',
+      strict: false,
+      parameters: {
+        type: 'object',
+        properties: {
+          professionalId: {
+            type: 'string',
+            description: 'ID do terapeuta',
+          },
+          startDateTime: {
+            type: 'string',
+            description: 'Data e hora da consulta no formato ISO',
+          },
+          modality: {
+            type: 'string',
+            enum: ['REMOTE', 'PRESENTIAL'],
+            description: 'Modalidade da consulta',
+          },
+        },
+        required: ['professionalId', 'startDateTime'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_appointment_details',
+      description:
+        'DEVE ser chamada sempre que o usuário informar QUALQUER dado (profissional, data, hora ou modalidade). Se o usuário informou vários dados na mesma frase, inclua TODOS nos argumentos.',
+      parameters: {
+        type: 'object',
+        properties: {
+          professional: {
+            type: 'string',
+            description: 'Nome do profissional escolhido',
+          },
+          datetime: {
+            type: 'string',
+            description:
+              "Data e hora no formato ISO. Calcule com base na DATA ATUAL fornecida no sistema. Ex: Se hoje é 28/01/2026, 'amanhã as 10h' é '2026-01-29T10:00:00'",
+          },
+          modality: { type: 'string', enum: ['presencial', 'online'] },
+        },
+      },
+    },
+  },
 ]

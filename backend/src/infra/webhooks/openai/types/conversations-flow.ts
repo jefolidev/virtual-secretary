@@ -1,7 +1,13 @@
 export type ConversationStatus =
   | 'initial'
   | 'awaiting_registration_confirmation'
+  | 'scheduling_confirmation'
   | 'collecting_registration_data'
+  | 'collecting_schedule_appointment_data'
+  | 'awaiting_professional_selection'
+  | 'awaiting_appointment_datetime'
+  | 'awaiting_appointment_modality'
+  | 'awaiting_schedule_data'
   | 'registered'
   | 'listing_professionals'
   | 'selecting_professional'
@@ -60,7 +66,13 @@ export interface ConversationContext {
   professionalListData?: Partial<ProfessionalListData>
   lastInteraction?: Date
   data?: any
+  /**
+   * Histórico de mensagens trocadas na conversa (user/assistant/tool). Mantém até 6 mensagens.
+   * Usa o tipo oficial da OpenAI para garantir compatibilidade com todos os campos possíveis.
+   */
+  history?: ChatCompletionMessageParam[]
 }
+import type { ChatCompletionMessageParam } from 'openai/resources/chat/completions'
 
 export interface ParsedDataResult<T = any> {
   data?: T

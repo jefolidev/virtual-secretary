@@ -2,7 +2,7 @@ import { Public } from '@/infra/auth/public'
 import { Body, Controller, Post } from '@nestjs/common'
 import { WhatsappService } from '../whatsapp.service'
 
-@Controller('webhooks/whatsapp/')
+@Controller('webhooks/whatsapp')
 export class HandleEvolutionController {
   constructor(private readonly whatsappService: WhatsappService) {}
 

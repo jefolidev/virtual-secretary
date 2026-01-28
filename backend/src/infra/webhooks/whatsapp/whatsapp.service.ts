@@ -1,3 +1,4 @@
+import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { Env } from '@/infra/env/env'
@@ -6,6 +7,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Cache } from 'cache-manager'
+import dayjs from 'dayjs'
 import { OpenAiService } from '../openai/openai.service'
 import {
   ConversationContext,
@@ -27,6 +29,7 @@ export class WhatsappService {
 
     private readonly openAiService: OpenAiService,
     private readonly userRepository: UserRepository,
+    private readonly appointmentRepository: AppointmentsRepository,
 
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
@@ -84,7 +87,7 @@ export class WhatsappService {
       `whatsapp-conversation-${phone}`,
       context,
       1000 * 60 * 15,
-    ) // 15 minutes
+    )
   }
 
   private async deleteConversationContext(phone: string) {
@@ -137,6 +140,20 @@ export class WhatsappService {
     return await this.userRepository.findManyProfessionalUsers()
   }
 
+  private async scheduleAppointment(data: {
+    whatsappNumber: string
+    professionalName: string
+    startDateTime: Date
+    modality: string
+  }) {
+    return await this.appointmentRepository.scheduleFromRawData({
+      modality: data.modality,
+      startDateTime: data.startDateTime,
+      professionalName: data.professionalName,
+      whatsappNumber: data.whatsappNumber,
+    })
+  }
+
   private async handleGeneralChat(message: string, user: User) {
     const response = await this.openAiService.chat([
       {
@@ -178,7 +195,7 @@ Sua tarefa é responder à pergunta do usuário, seguindo RIGOROSAMENTE estas di
     context.lastInteraction = new Date()
     await this.saveConversationContext(cleanNumber, context)
 
-    const professionals = (await this.listProfessionals()) || [] // Garante que temos um array
+    const professionals = (await this.listProfessionals()) || []
     const professionalsListText =
       professionals.length > 0
         ? professionals
@@ -191,7 +208,7 @@ Sua tarefa é responder à pergunta do usuário, seguindo RIGOROSAMENTE estas di
         role: 'system',
         content: `Você é a MindAI, uma assistente virtual de uma clínica de terapia. Você está conversando com ${sender}, que já é um cliente cadastrado.
 
-Seu objetivo é fornecer uma lista de profissionais disponíveis na clínica quando solicitado.
+Seu objetivo é fornecer uma lista de profissionais disponíveis na plataforma quando solicitado. Junto deles virá o endereço deles, veja se o profissional possui alguma organização associada, se sim, adicione o endereço da organização, se não, exiba o endereço associado ao profissional. Discrimine se é uma cliníca (se possuir uma organização associada) ou se é um consultório (se não possuir organização associada).
 
 Aqui estão os profissionais disponíveis:
 ${professionalsListText}
@@ -215,13 +232,55 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
       return 'Tudo bem, cancelando a operação atual. Se precisar de outra coisa, é só pedir!'
     }
 
-    const intent = await this.openAiService.determineUserIntent(message)
-
     let context = await this.getConversationContext(user.whatsappNumber)
+
+    if (context && context.flow) {
+      const flowHandlers: Record<string, Function> = {
+        schedule_appointment: this.handleScheduleAppointmentFlow,
+        collecting_registration_data: this.handleCreateClientAccountFlow,
+        list_professionals: this.handleListProfessionalsFlow,
+      }
+
+      const handler = flowHandlers[context.flow]
+
+      if (handler) {
+        return handler.bind(this)(
+          message,
+          user.whatsappNumber,
+          user.name,
+          context,
+        )
+      }
+    }
+
+    const intent = await this.openAiService.determineUserIntent(message)
 
     switch (intent) {
       case 'schedule_appointment':
-        return `Ok, ${user.name}, vamos agendar uma consulta para você. (Lógica a ser implementada)`
+        if (!context || context.flow !== 'schedule_appointment') {
+          context = {
+            flow: 'schedule_appointment',
+            status: 'awaiting_schedule_data',
+            lastInteraction: new Date(),
+            data: {},
+          }
+          await this.saveConversationContext(user.whatsappNumber, context)
+
+          return (
+            `Olá ${user.name}! Para agendar sua consulta, por favor informe:\n\n` +
+            `1. *Profissional* (Ex: Dr. Pedro)\n` +
+            `2. *Data e Hora* (Ex: Amanhã às 10h)\n` +
+            `3. *Modalidade* (Presencial ou Remoto)\n\n` +
+            `Você pode enviar tudo em uma única mensagem, como: *"Dr Pedro, amanhã às 10 horas, atendimento remoto"*.\n\n` +
+            `_Dica: Se quiser ver quem atende aqui, peça para "olhar os profissionais"._`
+          )
+        }
+        return this.handleScheduleAppointmentFlow(
+          message,
+          user.whatsappNumber,
+          user.name,
+          context,
+        )
       case 'list_client_appointments':
         return `Claro, ${user.name}, vou buscar seus agendamentos. (Lógica a ser implementada)`
       case 'list_professionals':
@@ -239,6 +298,7 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
           user.name,
           context,
         )
+
       case 'general_chat':
       default:
         return this.handleGeneralChat(message, user)
@@ -262,10 +322,11 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
         new Date().getTime() - new Date(context.lastInteraction).getTime()
       const thirtyMinutes = 1000 * 60 * 30
 
-      if (
-        timeSinceLastInteraction > thirtyMinutes &&
-        context.status === 'awaiting_registration_confirmation'
-      ) {
+      const registrationContext =
+        context.status === 'awaiting_registration_confirmation' ||
+        context.status === 'collecting_registration_data'
+
+      if (timeSinceLastInteraction > thirtyMinutes || registrationContext) {
         const isGreeting = await this.openAiService.isGreeting(message)
         if (isGreeting) {
           await this.deleteConversationContext(cleanNumber)
@@ -302,8 +363,168 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
     cleanNumber: string,
     sender: string,
     context: ConversationContext,
-  ) {
-    return 'Ok, vamos agendar sua consulta! (Lógica a ser implementada)'
+  ): Promise<string> {
+    context.lastInteraction = new Date()
+    if (!context.data) context.data = {}
+
+    const lowerMsg = message.toLowerCase().trim()
+    const isComplete = !!(
+      context.data.professional &&
+      context.data.datetime &&
+      context.data.modality
+    )
+
+    // 1. INTERCEPTAÇÃO MANUAL DE CONFIRMAÇÃO (Resolve o loop do "SIM")
+    const confirmationWords = [
+      'sim',
+      'ok',
+      'pode',
+      'confirmar',
+      'confirma',
+      'fechou',
+      'com certeza',
+      'pode sim',
+      'pode finalizar',
+      'esta certo',
+    ]
+
+    if (isComplete && confirmationWords.includes(lowerMsg)) {
+      try {
+        await this.scheduleAppointment({
+          whatsappNumber: cleanNumber,
+          professionalName: context.data.professional,
+          startDateTime: new Date(context.data.datetime),
+          modality: context.data.modality,
+        })
+
+        await this.deleteConversationContext(cleanNumber)
+
+        return `✅ *Agendamento Confirmado!*
+      
+🩺 *Profissional:* ${context.data.professional}
+📅 *Data:* ${dayjs(context.data.datetime).format('DD/MM/YYYY')}
+⏰ *Horário:* ${dayjs(context.data.datetime).format('HH:mm')}
+📍 *Modalidade:* ${context.data.modality === 'online' ? 'Remoto' : 'Presencial'}
+
+Tudo pronto! Te enviamos os detalhes por aqui. Até lá!`
+      } catch (error: any) {
+        const errorMessage =
+          error.response?.message || error.message || 'Erro inesperado'
+        return `❌ *Não foi possível finalizar:* ${errorMessage}`
+      }
+    }
+
+    // 2. INTERCEPTAÇÃO DE LISTAGEM DE PROFISSIONAIS
+    if (lowerMsg.includes('profissionais') || lowerMsg.includes('quem são')) {
+      const professionals = (await this.listProfessionals()) || []
+      const list = professionals.map((p) => `- ${p.name}`).join('\n')
+      return `Nossos profissionais disponíveis são:\n${list}\n\nQual deles você deseja agendar?`
+    }
+
+    // 3. PREPARAÇÃO DO CONTEXTO PARA OPENAI
+    const professionals = (await this.listProfessionals()) || []
+    const professionalsListText = professionals
+      .map((p) => `- ${p.name}`)
+      .join('\n')
+    const todayFormatted = dayjs().format('dddd, DD [de] MMMM [de] YYYY')
+
+    const response = await this.openAiService.chat(
+      [
+        {
+          role: 'system',
+          content: `Você é a MindAI. Hoje é ${todayFormatted}.
+      
+          REGRA CRÍTICA DE PRIVACIDADE:
+        - NUNCA peça IDs de cliente, IDs de profissional ou links de Meet.
+        - O sistema identifica o cliente automaticamente pelo número do WhatsApp.
+        - O link do Meet será gerado automaticamente pelo sistema depois.
+        - Peça APENAS: Nome do Profissional, Data/Hora e Modalidade.
+
+        LISTA DE PROFISSIONAIS:
+        ${professionalsListText}
+
+        DADOS NA MEMÓRIA (Contexto):
+        - Profissional: ${context.data.professional || 'NÃO DEFINIDO'}
+        - Data/Hora: ${context.data.datetime || 'NÃO DEFINIDO'}
+        - Modalidade: ${context.data.modality || 'NÃO DEFINIDO'}
+
+        REGRAS:
+        1. Se o usuário confirmar (sim/ok) e os dados acima estiverem completos, chame 'schedule_appointment'.
+        2. Se ele enviar informações novas, chame 'update_appointment_details'.
+        3. Se os dados estiverem completos mas sem confirmação, peça para confirmar citando os dados.
+        4. Caso falte algo, diga exatamente o que falta e peça para reenviar o modelo completo.`,
+        },
+        { role: 'user', content: message },
+      ],
+      openAiFunctions,
+    )
+
+    const aiMessage = response.choices[0].message
+
+    // 4. PROCESSAMENTO DE TOOL CALLS
+    if (aiMessage.tool_calls && aiMessage.tool_calls.length > 0) {
+      const toolCall = aiMessage.tool_calls[0]
+
+      if (toolCall.type === 'function') {
+        const functionName = toolCall.function.name
+        const args = JSON.parse(toolCall.function.arguments)
+
+        if (functionName === 'update_appointment_details') {
+          context.data = {
+            professional: args.professional || context.data.professional,
+            datetime: args.datetime || context.data.datetime,
+            modality: args.modality || context.data.modality,
+          }
+          await this.saveConversationContext(cleanNumber, context)
+
+          const checkComplete = !!(
+            context.data.professional &&
+            context.data.datetime &&
+            context.data.modality
+          )
+
+          if (checkComplete) {
+            return (
+              `Tudo pronto! Confirme os dados abaixo:\n\n` +
+              `🩺 *Profissional:* ${context.data.professional}\n` +
+              `📅 *Data/Hora:* ${dayjs(context.data.datetime).format('DD/MM [às] HH:mm')}\n` +
+              `📍 *Modalidade:* ${context.data.modality}\n\n` +
+              `*Posso confirmar o agendamento?*`
+            )
+          } else {
+            const missing: string[] = []
+            if (!context.data.professional) missing.push('Profissional')
+            if (!context.data.datetime) missing.push('Data/Hora')
+            if (!context.data.modality) missing.push('Modalidade')
+
+            return (
+              `Entendi, mas ainda faltam dados: *${missing.join(', ')}*.\n\n` +
+              `Por favor, me envie novamente no modelo: "Dr Nome, data e modalidade".`
+            )
+          }
+        }
+
+        if (functionName === 'schedule_appointment') {
+          try {
+            await this.scheduleAppointment({
+              whatsappNumber: cleanNumber,
+              professionalName: context.data.professional || args.professional,
+              startDateTime: new Date(context.data.datetime || args.datetime),
+              modality: context.data.modality || args.modality,
+            })
+            await this.deleteConversationContext(cleanNumber)
+            return `✅ *Agendamento Confirmado!* Até breve.`
+          } catch (error: any) {
+            return `❌ *Erro:* ${error.response?.message || error.message}`
+          }
+        }
+      }
+    }
+    // 5. FALLBACK
+    await this.saveConversationContext(cleanNumber, context)
+    return (
+      aiMessage.content || 'Poderia me confirmar os dados para o agendamento?'
+    )
   }
 
   private async handleCreateClientAccountFlow(
@@ -322,6 +543,7 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
           content: `Você é uma assistente virtual de uma clínica de terapia chamada MindAI.
 
 O usuário ${sender} NÃO está cadastrado no sistema.
+STATUS ATUAL: ${context.status}
 
 IMPORTANTE - FLUXO DE CADASTRO:
 
@@ -340,6 +562,7 @@ IMPORTANTE - FLUXO DE CADASTRO:
 
 4. QUANDO TIVER TODOS OS DADOS VÁLIDOS:
    - Chame a função 'create_client_account' com todos os dados coletados.
+   - Ao criar, de imediato exiba que o cadastro foi realizado com sucesso e dê as boas-vindas ao usuário, listando o que você é capaz de fazer e pergunte se ele teria interesse de criar um agendamento.
 
 5. SE O USUÁRIO RECUSAR O CADASTRO:
    - Agradeça, ofereça ajuda futura e finalize a conversa.
@@ -378,12 +601,37 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
 
         if (functionName === 'create_client_account') {
           try {
-            // A lógica complexa foi removida daqui...
             await this.createClient(functionArgs, cleanNumber)
 
             await this.deleteConversationContext(cleanNumber)
 
-            return `✅ Conta criada com sucesso!\n\nBem-vindo(a), ${functionArgs.name}! Agora você pode agendar suas consultas pelo WhatsApp.`
+            const finishedRegisterResponse = await this.openAiService.chat(
+              [
+                {
+                  role: 'system',
+                  content: `Você é uma assistente virtual chamanda MindAI de uma clínica de terapia.
+
+O usuário ${sender} acabou de ser cadastrado no sistema.
+Sua tarefa é dar as boas-vindas ao usuário, listar o que você é capaz de fazer e perguntar se ele teria interesse de criar um agendamento.
+
+CONTEXTO ATUAL:
+Status da conversa: ${context.status}
+Dados já coletados: ${JSON.stringify(context.data || {})}
+
+Seja natural, conversacional e amigável. Não use muitos emojis.`,
+                },
+                {
+                  role: 'user',
+                  content: message,
+                },
+              ],
+              openAiFunctions,
+            )
+
+            return (
+              finishedRegisterResponse.choices[0].message.content ||
+              'Parabéns pelo seu cadastro! Estou aqui para ajudar no que precisar. Comigo você pode agendar consultas, conhecer nossos profissionais e tirar dúvidas sobre nossos serviços. Gostaria de agendar uma consulta agora?'
+            )
           } catch (error) {
             console.error('Erro ao criar usuário:', error)
             return `❌ Desculpe, ocorreu um erro ao criar sua conta. Por favor, tente novamente mais tarde.`
@@ -408,7 +656,6 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
       const lastMessage = conversation.lastInteraction
       const timeSinceLastMessage = Date.now() - lastMessage!.getTime()
 
-      //5 minutos
       if (timeSinceLastMessage > 1000 * 60 * 5) {
         return 'Oi! Notei que você não respondeu à minha última mensagem. Se ainda estiver interessado em criar uma conta, por favor, me avise! Estou aqui para ajudar no que for preciso.'
       }

@@ -2,10 +2,16 @@ import { DomainEvents } from '@/core/events/domain-events'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import {
   Appointment,
+  AppointmentModalityType,
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
-import { Injectable } from '@nestjs/common'
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import dayjs from 'dayjs'
 import { PrismaAppointmentMapper } from '../../mappers/prisma-appointment-mapper'
 import { PrismaService } from '../prisma.service'
 
@@ -25,6 +31,106 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
     DomainEvents.dispatchEventsForAggregate(appointment.id)
   }
+
+  async scheduleFromRawData({
+    whatsappNumber,
+    professionalName,
+    startDateTime,
+    modality,
+  }: {
+    whatsappNumber: string
+    professionalName: string
+    startDateTime: Date
+    modality: string
+  }) {
+    const user = await this.prisma.user.findFirst({
+      where: { whatsappNumber },
+      include: { client: true }, // Traz o cliente vinculado automaticamente
+    })
+
+    if (!user || !user.client) {
+      throw new NotFoundException(
+        'Cliente não encontrado ou cadastro incompleto.',
+      )
+    }
+
+    // O ID que o Appointment precisa é o do CLIENTE
+    const clientId = user.client.id
+
+    // 2. Busca o Profissional (Mesma lógica de busca do User primeiro)
+    const professionalUser = await this.prisma.user.findFirst({
+      where: { name: { contains: professionalName, mode: 'insensitive' } },
+      include: { professional: true },
+    })
+
+    if (!professionalUser || !professionalUser.professional) {
+      throw new NotFoundException('Profissional não encontrado.')
+    }
+
+    const professionalId = professionalUser.professional.id
+    const prismaProfessional = await this.prisma.professional.findFirst({
+      where: { user: { id: professionalUser.id } },
+    })
+
+    if (!prismaProfessional)
+      throw new NotFoundException('Profissional não encontrado.')
+
+    // 3. Busca Configurações de Agenda
+    const config = await this.prisma.scheduleConfiguration.findUnique({
+      where: { professionalId: prismaProfessional.id },
+    })
+
+    if (!config)
+      throw new NotFoundException('Configuração de agenda não encontrada.')
+
+    // 4. Lógica de Horários
+    const start = dayjs(startDateTime)
+    const endDateTime = start
+      .add(config.sessionDurationMinutes, 'minutes')
+      .toDate()
+
+    // 5. Regra: 3 horas de antecedência
+    if (start.diff(dayjs(), 'hour', true) < 3) {
+      throw new BadRequestException(
+        'Agendamentos devem ter 3h de antecedência.',
+      )
+    }
+
+    // 6. Regra: Sobreposição (Overlapping) direto no Prisma
+    const overlapping = await this.prisma.appointment.findFirst({
+      where: {
+        professionalId: prismaProfessional.id,
+        OR: [
+          {
+            startDateTime: { lte: startDateTime },
+            endDateTime: { gt: startDateTime },
+          },
+          {
+            startDateTime: { lt: endDateTime },
+            endDateTime: { gte: endDateTime },
+          },
+        ],
+      },
+    })
+
+    if (overlapping) {
+      throw new BadRequestException('Este horário já está ocupado.')
+    }
+
+    // 7. Instancia a Entidade de Domínio para manter a validade do agendamento
+    await this.prisma.appointment.create({
+      data: {
+        clientId: clientId, // Agora usando o ID correto da tabela Client
+        professionalId: professionalId, // Usando o ID da tabela Professional
+        startDateTime: startDateTime,
+        endDateTime: endDateTime,
+        modality: modality.toUpperCase() as AppointmentModalityType,
+        agreedPrice: professionalUser.professional.sessionPrice,
+        status: 'SCHEDULED',
+      },
+    })
+  }
+
   async findMany(params: { page: number }): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       take: 10,
@@ -72,7 +178,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     )
 
     const blockingStatuses = [
-    'SCHEDULED',
+      'SCHEDULED',
       'CONFIRMED',
       'RESCHEDULED',
       'IN_PROGRESS',
