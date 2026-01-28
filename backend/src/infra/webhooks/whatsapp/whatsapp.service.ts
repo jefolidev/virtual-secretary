@@ -699,7 +699,23 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     }
   }
 
-  async processMessage(message: string, whatsappId: string, sender: string) {
+  async processMessage(
+    message: string,
+    whatsappId: string,
+    sender: string,
+    messageId: string,
+  ) {
+    const lockKey = `processing:${messageId}`
+    const isProcessing = await this.cacheManager.get(lockKey)
+
+    if (isProcessing) {
+      console.log(
+        `⚠️ Mensagem duplicada detectada (ID: ${messageId}). Ignorando...`,
+      )
+      return
+    }
+
+    await this.cacheManager.set(lockKey, true, 30000)
     const cleanNumber = whatsappId.split('@')[0]
 
     const user = await this.userRepository.findByPhone(cleanNumber)

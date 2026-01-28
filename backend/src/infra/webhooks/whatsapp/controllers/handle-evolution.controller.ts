@@ -11,47 +11,39 @@ export class HandleEvolutionController {
   async handleWebhook(@Body() body: any) {
     try {
       if (body.event === 'messages.upsert') {
-        const message = body.data.message.conversation
-        const pushName = body.data.pushName
-
         const data = body.data
         const key = data.key
 
-        if (key.fromMe) {
-          console.error('⚠️ Mensagem do bot ignorada')
-          return { success: true, message: 'Message from bot ignored' }
-        }
+        if (key.fromMe) return { success: true }
 
-        if (!message) {
-          console.error('⚠️ Mensagem sem texto')
-          return { success: true, message: 'No text content' }
-        }
+        const message =
+          data.message.conversation || data.message.extendedTextMessage?.text
+        const messageId = key.id
+
+        if (!message) return { success: true }
 
         const whatsappId = key.remoteJid
         const sender = data.pushName || 'Usuário'
 
-        // Chamar o service para processar
-        const response = await this.whatsappService.processMessage(
-          message,
-          whatsappId,
-          sender,
-        )
+        this.whatsappService
+          .processMessage(message, whatsappId, sender, messageId)
+          .then(async (response) => {
+            if (response) {
+              await this.whatsappService.sendMessage(whatsappId, response)
+              console.log(`📤 Resposta enviada para ${whatsappId}`)
+            }
+          })
+          .catch((err) => {
+            console.error('❌ Erro no processamento assíncrono:', err)
+          })
 
-        if (!response) {
-          console.error('⚠️ Nenhuma resposta gerada')
-          return { success: true, message: 'No response generated' }
-        }
-
-        await this.whatsappService.sendMessage(whatsappId, response)
-
-        console.log('📤 Resposta gerada:', response)
-
-        return { success: true, response }
+        return { success: true, status: 'Processing' }
       }
-      return { success: true, message: 'Event ignored' }
+
+      return { success: true }
     } catch (error: unknown) {
       console.error('Error handling webhook:', error)
-      return { status: 'error', message: (error as Error).message }
+      return { status: 'error' }
     }
   }
 }
