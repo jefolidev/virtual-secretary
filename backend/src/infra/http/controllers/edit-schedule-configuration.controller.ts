@@ -42,7 +42,6 @@ export class EditScheduleConfigurationController {
 
     const professional = await this.professionalRepository.findByUserId(userId)
 
-    console.log(userId)
 
     if (!professional) {
       throw new NotFoundException()
