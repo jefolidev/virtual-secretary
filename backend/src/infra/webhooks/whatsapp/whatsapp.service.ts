@@ -1,8 +1,10 @@
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
+import { AppointmentModalityType } from '@/domain/scheduling/enterprise/entities/appointment'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { Env } from '@/infra/env/env'
 import { EnvEvolution } from '@/infra/env/evolution/env-evolution'
+import { SessionService } from '@/infra/sessions/session.service'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
@@ -15,7 +17,7 @@ import {
 } from '../openai/types/conversations-flow'
 import { openAiFunctions } from '../openai/types/openai-functions'
 import { CreateClientBodyDTO } from './dto/create-client.dto'
-import { AppointmentModalityType } from '@/domain/scheduling/enterprise/entities/appointment'
+import { ConversationFlow } from '@/infra/flow/types'
 
 @Injectable()
 export class WhatsappService {
@@ -32,6 +34,8 @@ export class WhatsappService {
     private readonly userRepository: UserRepository,
     private readonly appointmentRepository: AppointmentsRepository,
 
+    private readonly sessionService: SessionService,
+
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {
@@ -40,6 +44,10 @@ export class WhatsappService {
     this.assistantId = this.configService.get('ASSISTANT_ID')
     this.apiUrl = this.configService.get<string>('EVOLUTION_API_URL')
   }
+
+  //  async createSession(clientId: string) {
+  //    return this.sessionService.getOrCreateSession(clientId)
+  //  }
 
   private async getConversation(conversationId: string) {
     const conversation = await this.cacheManager.get<ConversationContext>(
@@ -284,7 +292,7 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
         )
       case 'list_client_appointments':
         return `Claro, ${user.name}, vou buscar seus agendamentos. (Lógica a ser implementada)`
-      case 'list_professionals':
+      case ConversationFlow.LIST_PROFESSIONAL:
         if (!context || context.flow !== 'list_professionals') {
           context = {
             flow: 'list_professionals',
@@ -300,7 +308,7 @@ Quando o usuário solicitar a lista de profissionais, forneça as informações 
           context,
         )
 
-      case 'general_chat':
+      case ConversationFlow.GENERAL_CHAT:
       default:
         return this.handleGeneralChat(message, user)
     }
