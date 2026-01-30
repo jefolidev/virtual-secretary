@@ -51,7 +51,9 @@ model User {
 
   notifications Notification[]
 
-  messages Message[]
+  messages     Message[]
+  flowSessions FlowSession[]
+  sessions     Session[]
 
   @@map("users")
 }
@@ -77,11 +79,26 @@ model Appointment {
   client       Client       @relation(fields: [clientId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
 
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime?     @updatedAt @map("updated_at")
-  transactions Transaction[]
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime?            @updatedAt @map("updated_at")
+  transactions         Transaction[]
+  appointmentHistories AppointmentHistory[]
 
   @@map("appointments")
+}
+
+model AppointmentHistory {
+  id                    String            @id @default(uuid())
+  appointmentId         String            @map("appointment_id")
+  action                AppointmentAction @map("changed_field")
+  previousStartDateTime String?           @map("previous_start_date_time")
+  newStartDateTime      String?           @map("new_start_date_time")
+
+  changedAt DateTime @default(now()) @map("changed_at")
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+
+  @@map("appointment_history")
 }
 
 model Professional {
@@ -169,18 +186,6 @@ model Client {
   @@map("clients")
 }
 
-model Message {
-  id      String  @id @default(uuid())
-  text    String
-  fromMe  Boolean
-  userId  String  @map("user_id")
-  contact User    @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("messages")
-}
-
 model Address {
   id           String  @id @default(uuid())
   addressLine1 String  @map("address_line_1")
@@ -233,6 +238,92 @@ model Notification {
   recipient User @relation(fields: [recipientId], references: [id])
 
   @@map("notifications")
+}
+
+model Message {
+  id             String     @id @default(uuid())
+  sender         SenderEnum @map("sender")
+  text           String
+  intentDetected String?    @map("intent_detected")
+  userId         String     @map("user_id")
+  contact        User       @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("messages")
+}
+
+model Session {
+  id          String                    @id @default(uuid())
+  userId      String?                   @map("user_id")
+  currentFlow String?                   @map("current_flow")
+  currentStep String?                   @map("current_step")
+  contextData Json?                     @map("context_data")
+  status      ConversationSessionStatus @default(ACTIVE)
+
+  startedAt         DateTime? @default(now()) @map("started_at")
+  endedAt           DateTime? @map("ended_at")
+  lastInteractionAt DateTime? @map("last_interaction_at")
+
+  user         User?          @relation(fields: [userId], references: [id])
+  createdAt    DateTime      @default(now()) @map("created_at")
+  intentLogs   IntentLog[]
+  flowSessions FlowSession[]
+
+  @@map("sessions")
+}
+
+model FlowSession {
+  id          String     @id @default(uuid())
+  userId      String     @map("user_id")
+  sessionId   String     @map("session_id")
+  currentFlow String?    @map("current_flow")
+  currentStep String?    @map("current_step")
+  context     String
+  status      FlowStatus
+
+  user      User      @relation(fields: [userId], references: [id])
+  session   Session   @relation(fields: [sessionId], references: [id])
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  @@map("flow_sessions")
+}
+
+model IntentLog {
+  id            String @id @default(uuid())
+  sessionId     String @map("session_id")
+  clientMessage String @map("client_message")
+  extractedData Json   @map("extracted_data")
+
+  session   Session  @relation(fields: [sessionId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("intent_log")
+}
+
+enum ConversationSessionStatus {
+  ACTIVE
+  FINISHED
+  EXPIRED
+}
+
+enum SenderEnum {
+  USER
+  BOT
+}
+
+enum FlowStatus {
+  ACTIVE
+  FINISHED
+  CANCELLED
+  EXPIRED
+}
+
+enum AppointmentAction {
+  CREATE
+  RESCHEDULE
+  CANCEL
 }
 
 enum Role {
