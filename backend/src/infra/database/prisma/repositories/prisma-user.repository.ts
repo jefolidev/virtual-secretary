@@ -165,8 +165,6 @@ export class PrismaUserRepository implements UserRepository {
     })
   }
 
-  // ...existing code...
-
   async createClientByWhatsapp(data: {
     name: string
     email: string
