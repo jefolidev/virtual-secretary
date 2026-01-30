@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import cookieParser from 'cookie-parser'
+import { json, urlencoded } from 'express'
 import { AppModule } from './app.module'
 import { EnvService } from './env/env.service'
 
@@ -21,6 +22,9 @@ async function bootstrap() {
   })
 
   app.use(cookieParser())
+
+  app.use(json({ limit: '50mb' }))
+  app.use(urlencoded({ limit: '50mb', extended: true }))
 
   try {
     await app.listen(port, '0.0.0.0')
