@@ -1,6 +1,7 @@
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { Injectable } from '@nestjs/common'
 import { AppointmentFlowService } from './flows/appointment-flow.service'
+import { GeneralFlowService } from './flows/general-flow.service'
 import { RegistrationFlowService } from './flows/registration-flow.service'
 import {
   ConversationFlow,
@@ -13,6 +14,7 @@ export class FlowService {
   constructor(
     private readonly appointmentFlowService: AppointmentFlowService,
     private readonly registrationFlowService: RegistrationFlowService,
+    private readonly generalFlowService: GeneralFlowService,
   ) {}
 
   private async continueFlow(
@@ -81,7 +83,7 @@ export class FlowService {
         return 'Vamos cancelar seu agendamento. Qual sessão?'
 
       default:
-        return 'Posso ajudar com agendar, remarcar ou cancelar uma sessão.'
+        return this.generalFlowService.handle()
     }
   }
 
@@ -96,8 +98,6 @@ export class FlowService {
         console.log('Continuing registration flow for unregistered user')
         return this.continueFlow(session, message, aiIntent)
       }
-
-      console.log('Starting registration flow for unregistered user')
 
       const registrationSession: ConversationSession<'registration'> = {
         ...session,
