@@ -35,24 +35,28 @@ export interface FlowContextMap {
 }
 
 export interface AppointmentContext {
-  professionalName?: string
-  modality?: 'ONLINE' | 'IN_PERSON'
-  startDateTime?: Date
-  clientId?: string
+  data: Partial<{
+    professionalName?: string
+    modality?: 'ONLINE' | 'IN_PERSON'
+    startDateTime?: Date
+    clientId?: string
 
-  paymentStatus?: 'PAID' | 'PENDING' | 'CANCELLED'
+    paymentStatus?: 'PAID' | 'PENDING' | 'CANCELLED'
+  }>
 }
 
 export enum AppointmentFlowSteps {
   START = 'START',
   ASK_SCHEDULE_DATA = 'ASK_SCHEDULE_DATA',
+  COLLECT_DATA = 'COLLECT_DATA',
   ASK_PROFESSIONAL = 'ASK_PROFESSIONAL',
   ASK_DATE_TIME = 'ASK_DATE_TIME',
   ASK_MODALITY = 'ASK_MODALITY',
   CONFIRM_APPOINTMENT = 'CONFIRM_APPOINTMENT',
   APPOINTMENT_CONFIRMED = 'APPOINTMENT_CONFIRMED',
   DECLINE_APPOINTMENT = 'DECLINE_APPOINTMENT',
-  FINISH = 'FINISH',
+  CANCELED = 'CANCELED',
+  CHANGE_DATA = 'CHANGE_DATA',
 }
 
 export interface RegistrationContext {

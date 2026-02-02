@@ -46,6 +46,10 @@ export class FlowService {
     intent: ConversationFlow,
     message: string,
   ) {
+    console.log(
+      `Session: ${JSON.stringify(session)}, Intent: ${intent}\n\n mensagem: "${message}"`,
+    )
+
     switch (intent) {
       case ConversationFlow.REGISTRATION:
         const registrationSession: ConversationSession<'registration'> = {
@@ -68,6 +72,7 @@ export class FlowService {
           currentFlow: 'appointment',
           currentStep: 'START',
           contextData: {
+            data: {},
             whatsappNumber: session.contextData?.whatsappNumber || '',
           },
         }

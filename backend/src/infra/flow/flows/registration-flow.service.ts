@@ -12,45 +12,10 @@ import {
   RegistrationFlowSteps,
 } from '../types'
 import { FlowServiceUtil } from '../types/class'
-
-export interface RegistrationData {
-  name: string
-  email: string
-  cpf: string
-  birthDate: string
-  gender: string
-  cep: string
-  number: string
-  complement?: string
-  periodPreference: string[]
-  extraPreferences?: string
-  whatsappNumber?: string
-}
+import { agreedResponses, declineResponses } from './../utils/responses'
 
 @Injectable()
 export class RegistrationFlowService extends FlowServiceUtil<'registration'> {
-  agreedResponses = [
-    'sim',
-    'confirm',
-    'confirmar',
-    'claro',
-    'positivo',
-    'otimo',
-    'afirmativo',
-    'excelente',
-  ]
-
-  declineResponses = [
-    'não',
-    'nao',
-    'cancelar',
-    'negativo',
-    'não quero',
-    'não desejo',
-    'não confirmar',
-    'recusar',
-  ]
-
   constructor(
     prisma: PrismaService,
 
@@ -100,13 +65,13 @@ export class RegistrationFlowService extends FlowServiceUtil<'registration'> {
     userResponse: string,
     session: ConversationSession<'registration'>,
   ) {
-    if (this.declineResponses.includes(userResponse.toLowerCase())) {
+    if (declineResponses.includes(userResponse.toLowerCase())) {
       session.currentStep = RegistrationFlowSteps.FINISHED
       await this.updateSession(session)
       return `Tudo bem! Se mudar de ideia, estarei aqui para ajudar.`
     }
 
-    if (this.agreedResponses.includes(userResponse.toLowerCase())) {
+    if (agreedResponses.includes(userResponse.toLowerCase())) {
       session.currentStep = RegistrationFlowSteps.COLLECT_DATA
       await this.updateSession(session)
       return `Ótimo! Por criar sua conta, me informe todos os seus dados: 

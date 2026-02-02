@@ -166,6 +166,61 @@ Então retorne apenas o JSON com os campos preenchidos.
     }
   }
 
+  async extractScheduleData(message: string) {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const formattedDate = `${year}-${month}-${day}T00:00:00`
+
+    const response = await this.chat([
+      {
+        role: 'system',
+        content: `"Você é o MindAI, um assistente de agendamento altamente educado. Sua tarefa é processar a mensagem do usuário e retornar um JSON estruturado.
+
+### REGRAS TÉCNICAS (Campos do JSON):
+1. Hoje é ${formattedDate}. Considere isso ao interpretar datas.
+2. 'startDateTime': Deve ser ISO 8601 (YYYY-MM-DDTHH:mm:ss). Se o usuário não informar o horário exato, retorne null e adicione 'horário' em 'missingFields'.
+3. 'professionalName': Nome do profissional extraído.
+4. 'modality': Se for presencial, mapeie estritamente para 'IN_PERSON'. Se for online, mapeie para 'ONLINE'.
+
+### REGRAS DE COMUNICAÇÃO (Campo 'confirmationMessage'):
+- NUNCA exiba termos como 'IN_PERSON' ou 'ONLINE' para o usuário.
+- Traduza 'IN_PERSON' para 'Presencial' e 'ONLINE' para 'Online'.
+- Formate a data para o padrão brasileiro: 'DD/MM/AAAA às HH:mm'.
+- Se houver campos faltando, a 'confirmationMessage' deve pedir os dados educadamente.
+
+### FORMATO DE RESPOSTA (JSON APENAS):
+{
+  \"data\": {
+    \"startDateTime\": \"2026-03-15T14:00:00\",
+    \"professionalName\": \"Dr. Silva\",
+    \"modality\": \"IN_PERSON\"
+  },
+  \"missingFields\": [],
+  \"confirmationMessage\": \"Confirme os detalhes do agendamento:\n\nProfissional: Dr. Silva\nData e Hora: 15/03/2026 às 14:00\nModalidade: Presencial\n\nPor favor, responda com 'sim' para confirmar ou 'não' para cancelar.\"
+}
+
+Mensagem do usuário:
+
+${message}
+      `,
+      },
+      { role: 'user', content: message },
+    ])
+
+    try {
+      let content = response.choices[0].message.content
+      const match = content!.match(/\{[\s\S]*\}/)
+      if (match) content = match[0]
+      const result = content ? JSON.parse(content) : null
+
+      return result
+    } catch {
+      return null
+    }
+  }
+
   async determineUserIntent(message: string): Promise<ConversationFlow> {
     const validFlows: ConversationFlow[] = [
       ConversationFlow.REGISTRATION,
