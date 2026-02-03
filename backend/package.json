@@ -52,6 +52,7 @@
     "cpf-cnpj-validator": "^1.0.3",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
+    "googleapis": "^171.1.0",
     "ioredis": "^5.9.2",
     "openai": "^6.16.0",
     "passport": "^0.7.0",
