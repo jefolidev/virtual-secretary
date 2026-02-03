@@ -6,6 +6,7 @@ import { AddressRepository } from '@/domain/scheduling/application/repositories/
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { CancellationPolicyRepository } from '@/domain/scheduling/application/repositories/cancellation-policy.repository'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
+import { GoogleCalendarTokenRepository } from '@/domain/scheduling/application/repositories/google-calendar-token.repository'
 import { ScheduleConfigurationRepository } from '@/domain/scheduling/application/repositories/schedule-configuration.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { CacheModule } from '@nestjs/cache-manager'
@@ -22,6 +23,7 @@ import { PrismaClientRepository } from './prisma/repositories/prisma-client.repo
 import { PrismaNotificationsRepository } from './prisma/repositories/prisma-notification.repository'
 import { PrismaProfessionalRepository } from './prisma/repositories/prisma-professional.repository'
 
+import { PrismaGoogleCalendarTokenRepository } from './prisma/repositories/prisma-google-calendar-token.repository'
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository'
@@ -80,6 +82,10 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
       provide: NotificationsRepository,
       useClass: PrismaNotificationsRepository,
     },
+    {
+      provide: GoogleCalendarTokenRepository,
+      useClass: PrismaGoogleCalendarTokenRepository,
+    },
   ],
   exports: [
     CacheModule,
@@ -93,6 +99,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
     ScheduleConfigurationRepository,
     NotificationsRepository,
     UserRepository,
+    GoogleCalendarTokenRepository,
   ],
 })
 export class DatabaseModule {}
