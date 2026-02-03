@@ -6,7 +6,7 @@ import { Body, Controller, Post } from '@nestjs/common'
 import { OpenAiService } from '../../openai/openai.service'
 import { WhatsappService } from '../whatsapp.service'
 
-@Controller('webhooks/whatsapp')
+@Controller() // Agora só precisa do path relativo, o /webhooks/whatsapp vem do RouterModule
 export class HandleEvolutionController {
   constructor(
     private readonly sessionsService: SessionService,
