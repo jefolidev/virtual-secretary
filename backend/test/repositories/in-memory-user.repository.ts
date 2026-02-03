@@ -6,6 +6,20 @@ import { User } from '@/domain/scheduling/enterprise/entities/user'
 export class InMemoryUserRepository implements UserRepository {
   public items: User[] = []
 
+  private generateRandomPassword(): string {
+    const length = 16
+    const charset =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*'
+    let password = ''
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length)
+      password += charset[randomIndex]
+    }
+
+    return password
+  }
+
   async getThreadId(
     whatsappNumber: string,
   ): Promise<string | null | undefined> {
@@ -25,6 +39,69 @@ export class InMemoryUserRepository implements UserRepository {
       (item) =>
         item.professionalId !== undefined &&
         item.professionalId.equals(new UniqueEntityId(professionalId)),
+    )
+
+    if (!user) {
+      return null
+    }
+
+    return user
+  }
+
+  async findManyClientUsers(): Promise<User[] | null> {
+    const clientUsers = this.items.filter(
+      (user) => user.clientId !== null && user.clientId !== undefined,
+    )
+
+    return clientUsers.length > 0 ? clientUsers : null
+  }
+  async findManyProfessionalUsers(): Promise<User[] | null> {
+    const professionalUsers = this.items.filter(
+      (user) =>
+        user.professionalId !== null && user.professionalId !== undefined,
+    )
+
+    return professionalUsers.length > 0 ? professionalUsers : null
+  }
+
+  async createClientByWhatsapp(data: {
+    name: string
+    email: string
+    whatsappNumber: string
+    cpf: string
+    gender: 'MALE' | 'FEMALE'
+    birthDate: Date
+    complement: string | null
+    cep: string
+    number: string
+    extraPreferences: string
+  }): Promise<User> {
+    const user = User.create(
+      {
+        name: data.name,
+        email: data.email,
+        whatsappNumber: data.whatsappNumber,
+        cpf: data.cpf,
+        gender: data.gender,
+        birthDate: data.birthDate,
+        role: 'CLIENT',
+        password: this.generateRandomPassword(),
+      },
+      new UniqueEntityId(),
+    )
+
+    this.items.push(user)
+
+    DomainEvents.dispatchEventsForAggregate(user.id)
+
+    return user
+  }
+
+  async findByClientId(clientId: string): Promise<User | null> {
+    const user = this.items.find(
+      (item) =>
+        item.clientId !== undefined &&
+        item.clientId.equals(new UniqueEntityId(clientId)),
     )
 
     if (!user) {
