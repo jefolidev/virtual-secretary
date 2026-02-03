@@ -15,6 +15,9 @@ export const envSchema = z.object({
   AUTHENTICATION_API_KEY: z.string(),
   EVOLUTION_API_URL: z.string().optional().default('http://localhost:8080'),
   EVOLUTION_INSTANCE_ID: z.string().optional().default('MindAI'),
+  GOOGLE_CALENDAR_CLIENT_ID: z.string(),
+  GOOGLE_CALENDAR_SECRET: z.string(),
+  API_URI: z.string().optional().default('http://localhost:'),
 })
 
 export type Env = z.infer<typeof envSchema>
