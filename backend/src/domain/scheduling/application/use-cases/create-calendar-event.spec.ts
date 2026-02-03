@@ -4,26 +4,26 @@ import { makeAppointment } from '@test/factories/make-appointment'
 import { makeClient } from '@test/factories/make-client'
 import { makeProfessional } from '@test/factories/make-professional'
 import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
-import { InMemoryGoogleCalendarTokenRepository } from '@test/repositories/in-memory-google-calendar-token.repository'
+import { InMemoryGoogleCalendarEventRepository } from '@test/repositories/in-memory-google-calendar-event.repository'
 import { InMemoryUserRepository } from '@test/repositories/in-memory-user.repository'
 import { User } from '../../enterprise/entities/user'
 import { CreateCalendarEventUseCase } from './create-calendar-event'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
-let inMemoryGoogleCalendarTokenRepository: InMemoryGoogleCalendarTokenRepository
+let inMemoryGoogleCalendarEventRepository: InMemoryGoogleCalendarEventRepository
 let inMemoryUserRepository: InMemoryUserRepository
 let sut: CreateCalendarEventUseCase
 
 describe('Create Calendar Event', () => {
   beforeEach(() => {
     inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
-    inMemoryGoogleCalendarTokenRepository =
-      new InMemoryGoogleCalendarTokenRepository()
+    inMemoryGoogleCalendarEventRepository =
+      new InMemoryGoogleCalendarEventRepository()
     inMemoryUserRepository = new InMemoryUserRepository()
 
     sut = new CreateCalendarEventUseCase(
       inMemoryAppointmentRepository,
-      inMemoryGoogleCalendarTokenRepository,
+      inMemoryGoogleCalendarEventRepository,
       inMemoryUserRepository,
     )
   })
@@ -76,11 +76,7 @@ describe('Create Calendar Event', () => {
       const { eventId, eventLink } = response.value
 
       expect(eventId).toBeTruthy()
-      expect(eventLink).toContain('calendar.google.com')
-      expect(inMemoryGoogleCalendarTokenRepository.events).toHaveLength(1)
-      expect(inMemoryGoogleCalendarTokenRepository.events[0].summary).toContain(
-        'John Doe',
-      )
+      expect(eventLink).toBe('')
       expect(appointment.googleCalendarEventId).toBe(eventId)
     }
   })

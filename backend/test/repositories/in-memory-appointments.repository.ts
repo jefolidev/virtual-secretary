@@ -17,7 +17,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   }
 
   async findMany(
-    params: PaginationParams = { page: 1 }
+    params: PaginationParams = { page: 1 },
   ): Promise<Appointment[]> {
     const { page } = params
     const appointments = await this.items.slice((page - 1) * 10, page * 10)
@@ -27,7 +27,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   async findManyByDate(
     startDate: Date,
     endDate: Date,
-    params: PaginationParams = { page: 1 }
+    params: PaginationParams = { page: 1 },
   ): Promise<Appointment[]> {
     const { page } = params
     const appointment = await this.items
@@ -44,7 +44,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
 
   async findById(id: string): Promise<Appointment | null> {
     const appointment = await this.items.find((appointment) =>
-      appointment.id.equals(new UniqueEntityId(id))
+      appointment.id.equals(new UniqueEntityId(id)),
     )
 
     return appointment ?? null
@@ -53,7 +53,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   async findOverlapping(
     professionalId: string,
     startDate: Date,
-    endDate: Date
+    endDate: Date,
   ): Promise<Appointment[]> {
     const blockingStatuses = [
       'SCHEDULED',
@@ -75,11 +75,11 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   }
 
   async findByProfessionalId(
-    professionalId: string
+    professionalId: string,
   ): Promise<Appointment | null> {
     const appointment = this.items.find((appointment) => {
       return appointment.professionalId.equals(
-        new UniqueEntityId(professionalId)
+        new UniqueEntityId(professionalId),
       )
     })
 
@@ -88,13 +88,13 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
 
   async findManyByProfessionalId(
     professionalId: string,
-    params: PaginationParams = { page: 1 }
+    params: PaginationParams = { page: 1 },
   ): Promise<Appointment[]> {
     const { page } = params
     const appointment = await this.items
       .filter((appointment) => {
         return appointment.professionalId.equals(
-          new UniqueEntityId(professionalId)
+          new UniqueEntityId(professionalId),
         )
       })
       .slice((page - 1) * 10, page * 10)
@@ -104,7 +104,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
 
   async findManyByClientId(
     clientId: string,
-    params: PaginationParams = { page: 1 }
+    params: PaginationParams = { page: 1 },
   ): Promise<Appointment[]> {
     const { page } = params
     const appointment = await this.items
@@ -118,7 +118,7 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
 
   async findManyByStatus(
     status: AppointmentStatusType,
-    params: PaginationParams = { page: 1 }
+    params: PaginationParams = { page: 1 },
   ): Promise<Appointment[]> {
     const { page } = params
     const appointment = await this.items
@@ -132,11 +132,26 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
 
   async save(appointment: Appointment): Promise<void> {
     const itemIndex = await this.items.findIndex(
-      (item) => item.id === appointment.id
+      (item) => item.id === appointment.id,
     )
 
     this.items[itemIndex] = appointment
 
     DomainEvents.dispatchEventsForAggregate(appointment.id)
+  }
+
+  async scheduleFromRawData(data: any): Promise<void> {
+    // Mock implementation for testing
+    // This method is not used in the calendar event tests
+  }
+
+  async findByGoogleEventId(
+    googleEventId: string,
+  ): Promise<Appointment | null> {
+    const appointment = this.items.find(
+      (appointment) => appointment.googleCalendarEventId === googleEventId,
+    )
+
+    return appointment ?? null
   }
 }

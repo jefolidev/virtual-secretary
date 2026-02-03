@@ -1,4 +1,3 @@
-import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
 import { GoogleCalendarEvent } from '@/domain/scheduling/enterprise/entities/google-calendar-event'
 
@@ -52,20 +51,11 @@ export class InMemoryGoogleCalendarEventRepository implements GoogleCalendarEven
     appointmentId: string,
     calendarEvent: GoogleCalendarEvent,
   ): Promise<{ id: string; htmlLink: string }> {
-    const event = GoogleCalendarEvent.create({
-      appointmentId: new UniqueEntityId(appointmentId),
-      professionalId: calendarEvent.professionalId,
-      googleEventLink: calendarEvent.googleEventLink,
-      summary: calendarEvent.summary,
-      description: calendarEvent.description,
-      startDateTime: calendarEvent.startDateTime,
-      endDateTime: calendarEvent.endDateTime,
-      syncStatus: calendarEvent.syncStatus,
-      lastSyncedAt: calendarEvent.lastSyncedAt,
-    })
-
-    this.items.push(event)
-    return { id: event.id.toString(), htmlLink: event.googleEventLink }
+    this.items.push(calendarEvent)
+    return {
+      id: calendarEvent.id.toString(),
+      htmlLink: calendarEvent.googleEventLink,
+    }
   }
 
   async delete(id: string): Promise<void> {

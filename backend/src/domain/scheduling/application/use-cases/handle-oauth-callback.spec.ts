@@ -25,18 +25,17 @@ describe('Handle OAuth Callback', () => {
 
     if (response.isRight()) {
       expect(response.value.message).toBe('Tokens saved successfully')
+      expect(inMemoryGoogleCalendarTokenRepository.items).toHaveLength(1)
       expect(
-        inMemoryGoogleCalendarTokenRepository.tokens.has(professionalId),
-      ).toBe(true)
-
-      const savedToken =
-        inMemoryGoogleCalendarTokenRepository.tokens.get(professionalId)
-      expect(savedToken?.code).toBe(code)
-      expect(savedToken?.email).toBe(`professional-${professionalId}@gmail.com`)
+        inMemoryGoogleCalendarTokenRepository.items[0].professionalId,
+      ).toBe(professionalId)
+      expect(
+        inMemoryGoogleCalendarTokenRepository.items[0].accessToken,
+      ).toContain(code)
     }
   })
 
-  it('should save email associated with google account', async () => {
+  it('should save access token and refresh token', async () => {
     const professionalId = 'professional-456'
     const code = 'oauth-code-xyz789'
 
@@ -47,9 +46,9 @@ describe('Handle OAuth Callback', () => {
 
     expect(response.isRight()).toBe(true)
 
-    const savedToken =
-      inMemoryGoogleCalendarTokenRepository.tokens.get(professionalId)
-    expect(savedToken?.email).toContain('@gmail.com')
+    const savedToken = inMemoryGoogleCalendarTokenRepository.items[0]
+    expect(savedToken.accessToken).toBeTruthy()
+    expect(savedToken.refreshToken).toBeTruthy()
   })
 
   it('should be able to save tokens for multiple professionals', async () => {
@@ -63,12 +62,12 @@ describe('Handle OAuth Callback', () => {
       professionalId: 'professional-2',
     })
 
-    expect(inMemoryGoogleCalendarTokenRepository.tokens.size).toBe(2)
-    expect(
-      inMemoryGoogleCalendarTokenRepository.tokens.has('professional-1'),
-    ).toBe(true)
-    expect(
-      inMemoryGoogleCalendarTokenRepository.tokens.has('professional-2'),
-    ).toBe(true)
+    expect(inMemoryGoogleCalendarTokenRepository.items).toHaveLength(2)
+    expect(inMemoryGoogleCalendarTokenRepository.items[0].professionalId).toBe(
+      'professional-1',
+    )
+    expect(inMemoryGoogleCalendarTokenRepository.items[1].professionalId).toBe(
+      'professional-2',
+    )
   })
 })
