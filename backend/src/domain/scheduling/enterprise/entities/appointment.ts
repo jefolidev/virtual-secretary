@@ -32,7 +32,10 @@ export interface AppointmentProps {
   agreedPrice: number
   status: AppointmentStatusType
   paymentStatus: PaymentStatus
-  googleMeetLink?: string
+
+  googleMeetLink?: string | null
+  googleCalendarEventId?: string | null
+
   rescheduleDateTime?: { start: Date; end: Date }
   isPaid: boolean
   startedAt?: Date | null
@@ -50,6 +53,15 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
   get professionalId() {
     return this.props.professionalId
+  }
+
+  get googleCalendarEventId() {
+    return this.props.googleCalendarEventId
+  }
+
+  set googleCalendarEventId(googleCalendarEventId: string | null | undefined) {
+    this.props.googleCalendarEventId = googleCalendarEventId
+    this.touch()
   }
 
   get currentTransactionId() {
@@ -354,6 +366,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
       | 'totalElapsedMs'
       | 'currentTransactionId'
       | 'paymentExpiresAt'
+      | 'googleCalendarEventId'
     >,
     id?: UniqueEntityId,
   ) {
@@ -363,7 +376,9 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
         status: props.status ?? 'SCHEDULED',
         paymentStatus: 'PENDING',
         isPaid: props.isPaid ?? false,
+        googleMeetLink: props.googleMeetLink ?? null,
         startedAt: props.startedAt ?? null,
+        googleCalendarEventId: props.googleCalendarEventId ?? null,
         currentTransactionId: props.currentTransactionId ?? null,
         paymentExpiresAt: props.paymentExpiresAt ?? null,
         totalElapsedMs: props.totalElapsedMs ?? null,
