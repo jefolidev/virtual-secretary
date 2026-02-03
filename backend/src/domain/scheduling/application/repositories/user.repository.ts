@@ -1,13 +1,16 @@
 import { User } from '../../enterprise/entities/user'
 
-
 export abstract class UserRepository {
   abstract findByEmail(email: string): Promise<User | null>
   abstract findByPhone(whatsappNumber: string): Promise<User | null>
   abstract findByCpf(cpf: string): Promise<User | null>
   abstract findById(id: string): Promise<User | null>
+
+  abstract findByClientId(clientId: string): Promise<User | null>
   abstract findByProfessionalId(professionalId: string): Promise<User | null>
+  abstract findManyClientUsers(): Promise<User[] | null>
   abstract findManyProfessionalUsers(): Promise<User[] | null>
+
   abstract getThreadId(
     whatsappNumber: string,
   ): Promise<string | null | undefined>

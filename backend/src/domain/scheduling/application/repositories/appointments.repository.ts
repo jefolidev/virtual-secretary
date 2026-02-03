@@ -20,6 +20,9 @@ export abstract class AppointmentsRepository {
   }): Promise<void>
   abstract findMany(params?: PaginationParams): Promise<Appointment[]>
   abstract findById(id: string): Promise<Appointment | null>
+  abstract findByGoogleEventId(
+    googleEventId: string,
+  ): Promise<Appointment | null>
   abstract findOverlapping(
     profissionalId: string,
     startDate: Date,
