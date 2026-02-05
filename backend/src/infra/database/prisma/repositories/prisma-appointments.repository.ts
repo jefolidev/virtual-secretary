@@ -134,6 +134,20 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     })
   }
 
+  async findByGoogleEventId(
+    googleEventId: string,
+  ): Promise<Appointment | null> {
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { calendarEvent: { googleEventId } },
+    })
+
+    if (!appointment) {
+      return null
+    }
+
+    return PrismaAppointmentMapper.toDomain(appointment)
+  }
+
   async findMany(params: { page: number }): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
       take: 10,
