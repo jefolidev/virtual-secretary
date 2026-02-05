@@ -5,7 +5,9 @@ import { Injectable } from '@nestjs/common'
 import { GoogleCalendarEvent } from '../../enterprise/entities/google-calendar-event'
 import { AppointmentsRepository } from '../repositories/appointments.repository'
 import { GoogleCalendarEventRepository } from '../repositories/google-calendar-event.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
 import { UserRepository } from '../repositories/user.repository'
+import { GoogleCalendarTokenRepository } from '../repositories/google-calendar-token.repository'
 
 export interface CreateCalendarEventUseCaseRequest {
   appointmentId: string
@@ -20,7 +22,9 @@ export type CreateCalendarEventUseCaseResponse = Either<
 export class CreateCalendarEventUseCase {
   constructor(
     private readonly appointmentRepository: AppointmentsRepository,
+    private readonly professionalRepository: ProfessionalRepository,
     private readonly googleCalendarEventRepository: GoogleCalendarEventRepository,
+    private readonly googleCalendarTokenRepository: GoogleCalendarTokenRepository,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -31,6 +35,28 @@ export class CreateCalendarEventUseCase {
 
     if (!appointment) {
       return left(new NotFoundError('Appointment not found'))
+    }
+
+    // 2. Verificar se profissional tem Google Calendar conectado
+    const hasGoogleConnected =
+      await this.googleCalendarTokenRepository.hasTokens(
+        appointment.professionalId.toString(),
+      )
+
+    if (!hasGoogleConnected) {
+      return left(
+        new Error(
+          `Professional ${appointment.professionalId.toString()} has not connected Google Calendar`,
+        ),
+      )
+    }
+
+    const professional = await this.professionalRepository.findById(
+      appointment.professionalId.toString(),
+    )
+
+    if (!professional) {
+      return left(new NotFoundError('Professional not found'))
     }
 
     const user = await this.userRepository.findByClientId(
@@ -52,7 +78,18 @@ export class CreateCalendarEventUseCase {
       syncStatus: 'PENDING',
     })
 
-    await this.googleCalendarEventRepository.create(appointmentId, event)
+    const repositoryEvent = await this.googleCalendarEventRepository.create(
+      appointmentId,
+      event,
+    )
+
+    event.googleEventLink = repositoryEvent.htmlLink
+
+    await this.googleCalendarEventRepository.updateEvent(
+      appointment.professionalId.toString(),
+      event.id.toString(),
+      { googleEventLink: event.googleEventLink, syncStatus: 'SYNCED' },
+    )
 
     appointment.googleCalendarEventId = event.id.toString()
 
