@@ -1,19 +1,24 @@
-import { Controller, Get, Query } from '@nestjs/common'
-import { GoogleCalendarService } from '../calendar.service'
+import { GetAuthUrlUseCase } from '@/domain/scheduling/application/use-cases/get-google-auth-url'
+import { BadRequestException, Controller, Get, Param } from '@nestjs/common'
 
 @Controller('auth')
 export class GetAuthUrlController {
-  constructor(private readonly calendarService: GoogleCalendarService) {}
+  constructor(private readonly getAuthUrlUseCase: GetAuthUrlUseCase) {}
 
-  @Get('url')
-  handle(@Query('professionalId') professionalId: string) {
+  @Get('url/:professionalId')
+  async handle(@Param('professionalId') professionalId: string) {
     if (!professionalId) {
-      return { error: 'professionalId is required' }
+      throw new BadRequestException('professionalId is required')
+    }
+
+    const result = await this.getAuthUrlUseCase.execute({ professionalId })
+
+    if (result.isLeft()) {
+      throw new BadRequestException('Failed to generate auth URL')
     }
 
     return {
-      url: this.calendarService.getAuthUrl(professionalId),
-      message: 'Redirect user to this URL to authorize Google Calendar',
+      url: result.value.authUrl,
     }
   }
 }
