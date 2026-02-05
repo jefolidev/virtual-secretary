@@ -3,6 +3,7 @@ import { Professional } from '@/domain/scheduling/enterprise/entities/profession
 import { NotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import {
   CancellationPolicy as PrismaCancellationPolicy,
+  CalendarEvent as PrismaGoogleCalendarEvent,
   NotificationSettings as PrismaNotificationSettings,
   Professional as PrismaProfessional,
   ScheduleConfiguration as PrismaScheduleConfiguration,
@@ -11,6 +12,7 @@ import {
 
 type ProfessionalWithNotificationSettings = PrismaProfessional & {
   notificationSettings?: PrismaNotificationSettings | null
+  googleCalendarEvent?: PrismaGoogleCalendarEvent | null
 }
 
 type UserProfessionalWithSettings = PrismaUser & {
@@ -48,6 +50,7 @@ export class PrismaProfessionalMapper {
           : null,
         sessionPrice: Number(raw.sessionPrice),
         notificationSettings,
+        googleCalendarEvent: null,
         createdAt: raw.createdAt,
         updatedAt: raw.updatedAt || null,
       },
