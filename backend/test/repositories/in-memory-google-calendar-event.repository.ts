@@ -88,4 +88,11 @@ export class InMemoryGoogleCalendarEventRepository implements GoogleCalendarEven
       htmlLink: `https://calendar.google.com/event?eid=${eventId}`,
     }
   }
+
+  async hasTokens(professionalId: string): Promise<boolean> {
+    const hasToken = this.items.some(
+      (item) => item.professionalId.toString() === professionalId,
+    )
+    return hasToken
+  }
 }
