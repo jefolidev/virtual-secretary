@@ -5,6 +5,7 @@ import { PassportModule } from '@nestjs/passport'
 import { CryptographyModule } from '../cryptography/cryptography.module'
 import { EnvModule } from '../env/env.module'
 import { EnvService } from './../env/env.service'
+import { GoogleAuthGuard } from './google-auth.strategy'
 import { JwtAuthGuard } from './jwt-auth.guard'
 import { JwtStrategy } from './jwt.strategy'
 
@@ -32,6 +33,7 @@ import { JwtStrategy } from './jwt.strategy'
   providers: [
     JwtStrategy,
     EnvService,
+    GoogleAuthGuard,
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
