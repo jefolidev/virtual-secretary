@@ -1,5 +1,5 @@
-import { PaginationParams } from '@/core/repositories/pagination-params';
-import { GoogleCalendarEvent } from '../../enterprise/entities/google-calendar-event';
+import { PaginationParams } from '@/core/repositories/pagination-params'
+import { GoogleCalendarEvent } from '../../enterprise/entities/google-calendar-event'
 
 export abstract class GoogleCalendarEventRepository {
   abstract findByAppointmentId(
@@ -10,7 +10,7 @@ export abstract class GoogleCalendarEventRepository {
   ): Promise<GoogleCalendarEvent | null>
   abstract findManyByProfessionalId(
     professionalId: string,
-    page?: PaginationParams
+    page?: PaginationParams,
   ): Promise<GoogleCalendarEvent[] | null>
   abstract create(
     appointmentId: string,
@@ -22,4 +22,5 @@ export abstract class GoogleCalendarEventRepository {
     data: Partial<GoogleCalendarEvent>,
   ): Promise<{ id: string; htmlLink: string }>
   abstract delete(id: string): Promise<void>
+
 }
