@@ -9,7 +9,7 @@ export interface HandleOAuthCallbackUseCaseRequest {
 
 export type HandleOAuthCallbackUseCaseResponse = Either<
   null,
-  { message: string }
+  { googleAccountEmail: string }
 >
 
 @Injectable()
@@ -20,11 +20,13 @@ export class HandleOAuthCallbackUseCase {
     code,
     professionalId,
   }: HandleOAuthCallbackUseCaseRequest): Promise<HandleOAuthCallbackUseCaseResponse> {
-    const tokens = await this.tokenRepository.saveTokensFromCode(
+    const googleAccountEmail = await this.tokenRepository.saveTokensFromCode(
       professionalId,
       code,
     )
 
-    return right({ message: 'Tokens saved successfully' })
+    return right({
+      googleAccountEmail,
+    })
   }
 }

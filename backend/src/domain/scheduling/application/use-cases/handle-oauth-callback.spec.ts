@@ -24,7 +24,10 @@ describe('Handle OAuth Callback', () => {
     expect(response.isRight()).toBe(true)
 
     if (response.isRight()) {
-      expect(response.value.message).toBe('Tokens saved successfully')
+      expect(response.value.message).toBe(
+        'Google Calendar connected successfully',
+      )
+      expect(response.value.googleAccountEmail).toContain('@gmail.com')
       expect(inMemoryGoogleCalendarTokenRepository.items).toHaveLength(1)
       expect(
         inMemoryGoogleCalendarTokenRepository.items[0].professionalId,
