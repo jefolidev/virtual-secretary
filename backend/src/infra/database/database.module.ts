@@ -23,6 +23,8 @@ import { PrismaClientRepository } from './prisma/repositories/prisma-client.repo
 import { PrismaNotificationsRepository } from './prisma/repositories/prisma-notification.repository'
 import { PrismaProfessionalRepository } from './prisma/repositories/prisma-professional.repository'
 
+import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
+import { PrismaCalendarEventRepository } from './prisma/repositories/prisma-calendar-event.repository'
 import { PrismaGoogleCalendarTokenRepository } from './prisma/repositories/prisma-google-calendar-token.repository'
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
@@ -86,6 +88,10 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
       provide: GoogleCalendarTokenRepository,
       useClass: PrismaGoogleCalendarTokenRepository,
     },
+    {
+      provide: GoogleCalendarEventRepository,
+      useClass: PrismaCalendarEventRepository,
+    },
   ],
   exports: [
     CacheModule,
@@ -100,6 +106,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
     NotificationsRepository,
     UserRepository,
     GoogleCalendarTokenRepository,
+    GoogleCalendarEventRepository,
   ],
 })
 export class DatabaseModule {}
