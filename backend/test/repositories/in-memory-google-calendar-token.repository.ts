@@ -11,14 +11,19 @@ export class InMemoryGoogleCalendarTokenRepository implements GoogleCalendarToke
   async saveTokensFromCode(
     professionalId: string,
     code: string,
-  ): Promise<void> {
+  ): Promise<string> {
+    const googleAccountEmail = `professional-${professionalId}@gmail.com`
+
     const token: GoogleCalendarToken = GoogleCalendarToken.create({
       professionalId,
       accessToken: `access-token-for-${code}`,
       refreshToken: `refresh-token-for-${code}`,
       expiresAt: new Date(Date.now() + 3600 * 1000),
+      googleAccountEmail,
     })
 
     await this.items.push(token)
+
+    return googleAccountEmail
   }
 }
