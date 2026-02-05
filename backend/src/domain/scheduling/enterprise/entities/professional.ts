@@ -1,6 +1,7 @@
 import { AggregateRoot } from '@/core/entities/aggregate'
 import type { Optional } from '@/core/entities/types/optional'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { GoogleCalendarEvent } from './google-calendar-event'
 import { NotificationSettings } from './value-objects/notification-settings'
 
 export interface ProfessionalProps {
@@ -9,6 +10,7 @@ export interface ProfessionalProps {
   notificationSettings?: NotificationSettings
   cancellationPolicyId?: UniqueEntityId
   scheduleConfigurationId?: UniqueEntityId
+  googleCalendarEvent: GoogleCalendarEvent | null
   sessionPrice: number
   createdAt: Date
   updatedAt?: Date | null
@@ -33,7 +35,7 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
   }
 
   set notificationSettings(
-    notificationSettings: NotificationSettings | undefined
+    notificationSettings: NotificationSettings | undefined,
   ) {
     this.props.notificationSettings = notificationSettings
     this.touch()
@@ -44,7 +46,7 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
   }
 
   set scheduleConfigurationId(
-    scheduleConfigurationId: UniqueEntityId | undefined
+    scheduleConfigurationId: UniqueEntityId | undefined,
   ) {
     this.props.scheduleConfigurationId = scheduleConfigurationId
     this.touch()
@@ -75,6 +77,15 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     return this.props.updatedAt ?? this.props.createdAt
   }
 
+  get googleCalendarEvent() {
+    return this.props.googleCalendarEvent
+  }
+
+  set googleCalendarEvent(googleCalendarEvent: GoogleCalendarEvent | null) {
+    this.props.googleCalendarEvent = googleCalendarEvent
+    this.touch()
+  }
+
   private touch() {
     this.props.updatedAt = new Date()
   }
@@ -86,18 +97,20 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
       | 'cancellationPolicyId'
       | 'scheduleConfigurationId'
       | 'notificationSettings'
+      | 'googleCalendarEvent'
     >,
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const professional = new Professional(
       {
         ...props,
+        googleCalendarEvent: props.googleCalendarEvent || null,
         cancellationPolicyId: props.cancellationPolicyId ?? undefined,
         scheduleConfigurationId: props.scheduleConfigurationId ?? undefined,
         notificationSettings: props.notificationSettings,
         createdAt: props.createdAt ?? new Date(),
       },
-      id
+      id,
     )
 
     return professional
