@@ -1,7 +1,10 @@
 import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
 import { GoogleCalendarEvent } from '@/domain/scheduling/enterprise/entities/google-calendar-event'
 import { Injectable } from '@nestjs/common'
-import { PrismaCalendarEventMapper } from '../../mappers/prisma-calendar-event-mapper'
+import {
+  PrismaCalendarEventMapper,
+  PrismaCalendarEventWithAppointment,
+} from '../../mappers/prisma-calendar-event-mapper'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
@@ -22,7 +25,9 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
       return null
     }
 
-    return PrismaCalendarEventMapper.toDomain(calendarEvent)
+    return PrismaCalendarEventMapper.toDomain(
+      calendarEvent as PrismaCalendarEventWithAppointment,
+    )
   }
 
   async findByGoogleEventId(
@@ -39,7 +44,9 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
       return null
     }
 
-    return PrismaCalendarEventMapper.toDomain(calendarEvent)
+    return PrismaCalendarEventMapper.toDomain(
+      calendarEvent as PrismaCalendarEventWithAppointment,
+    )
   }
 
   async findManyByProfessionalId(
