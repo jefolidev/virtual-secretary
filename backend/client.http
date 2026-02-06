@@ -31,7 +31,7 @@ Content-Type: application/json
 
 {
   "name": "Jeferson Franco de Oliveira",
-  "email": "professional2@email.com",
+  "email": "professional1@email.com",
   "password": "Abc12345",
   "cpf": "71264124368",
   "role": "PROFESSIONAL",
@@ -309,7 +309,7 @@ Authorization: Bearer {{authToken}}
 
 # @name get_google_auth_url
 # Step 1: Get Google OAuth URL for professional
-GET {{baseUrl}}/webhooks/google/auth/url/9668426a-bf3b-491e-ab6e-6e8a3cc1d9e9
+GET {{baseUrl}}/webhooks/calendar/auth/url/9668426a-bf3b-491e-ab6e-6e8a3cc1d9e9
 Content-Type: application/json
 
 ###
@@ -317,14 +317,22 @@ Content-Type: application/json
 # @name google_oauth_callback
 # Step 2: OAuth callback (normally handled by browser redirect)
 # Copy the 'code' and 'state' from the redirect URL after authorizing in Google
-GET {{baseUrl}}/webhooks/google/oauth/callback?code=4/0ASc3gC3zoe-k1aJuxl9K-WBm95B3VwHIETV5yZx_Pklt-Wkef4HK0yI-3R_gLE7apbJaZQ&state={"professionalId":"9668426a-bf3b-491e-ab6e-6e8a3cc1d9e9","nonce":"903009302cae3772f2c74c43adb671fd"}
+GET {{baseUrl}}/webhooks/calendar/oauth/callback?code=4/0ASc3gC3zoe-k1aJuxl9K-WBm95B3VwHIETV5yZx_Pklt-Wkef4HK0yI-3R_gLE7apbJaZQ&state={"professionalId":"9668426a-bf3b-491e-ab6e-6e8a3cc1d9e9","nonce":"903009302cae3772f2c74c43adb671fd"}
 Content-Type: application/json
+
+###
+
+# @name check_professional_has_google
+# Check if professional has Google Calendar connected
+GET {{baseUrl}}/professionals?page=1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
 
 ###
 
 # @name create_calendar_event
 # Step 3: Create a calendar event for an appointment
-POST {{baseUrl}}/webhooks/google/events
+POST {{baseUrl}}/webhooks/calendar/events
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -336,15 +344,22 @@ Authorization: Bearer {{authToken}}
 
 # @name get_professional_events
 # Step 4: Get all calendar events for a professional
-GET {{baseUrl}}/webhooks/google/events/9668426a-bf3b-491e-ab6e-6e8a3cc1d9e9?page=1
+GET {{baseUrl}}/webhooks/calendar/events/9668426a-bf3b-491e-ab6e-6e8a3cc1d9e9?page=1
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 ###
 
+# @name check_google_connection
+# Check if professional has Google Calendar connected
+GET {{baseUrl}}/webhooks/calendar/connected/9668426a-bf3b-491e-ab6e-6e8a3cc1d9e9
+Content-Type: application/json
+
+###
+
 # @name edit_calendar_event
 # Update an existing calendar event
-PATCH {{baseUrl}}/webhooks/google/events/EVENT_ID_HERE
+PATCH {{baseUrl}}/webhooks/calendar/events/EVENT_ID_HERE
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
@@ -360,6 +375,18 @@ Authorization: Bearer {{authToken}}
 
 # @name delete_calendar_event
 # Delete a calendar event
-DELETE {{baseUrl}}/webhooks/google/events/EVENT_ID_HERE
+DELETE {{baseUrl}}/webhooks/calendar/events/EVENT_ID_HERE
 Content-Type: application/json
 Authorization: Bearer {{authToken}}
+
+###
+
+# @name google_auth_login
+# Login with Google - Opens OAuth flow (open in browser)
+GET {{baseUrl}}/webhooks/calendar/google/auth/google
+
+###
+
+# @name google_auth_callback
+# Google OAuth callback (automatic redirect from Google)
+GET {{baseUrl}}/webhooks/calendar/google/auth/callback
