@@ -1,6 +1,6 @@
 import type { UserLoginData } from '@/api/endpoints/auth'
+import { googleCalendarService } from '@/api/endpoints/google-calendar'
 import { Button } from '@/components/ui/button'
-import { googleCalendarService } from '@/services/google/endpoints'
 import { Loader2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
