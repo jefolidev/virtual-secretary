@@ -1,5 +1,6 @@
 import { App } from '@/app'
 import { useAuth } from '@/contexts/auth-context'
+import { GoogleAuthSuccessPage } from '@/pages/auth/google/success'
 import { LoginPage } from '@/pages/login'
 import { OAuthCallbackPage } from '@/pages/oauth-callback'
 import { ScheduleCalendarPage } from '@/pages/schedule/calendar'
@@ -81,6 +82,10 @@ export const router = createBrowserRouter([
       {
         path: 'oauth-callback',
         element: <OAuthCallbackPage />,
+      },
+      {
+        path: '/auth/google/success',
+        element: <GoogleAuthSuccessPage />,
       },
       {
         element: <RequireAuth />,
