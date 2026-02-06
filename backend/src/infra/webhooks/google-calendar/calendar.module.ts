@@ -5,6 +5,7 @@ import { CreateCalendarEventUseCase } from '@/domain/scheduling/application/use-
 import { FetchProfessionalEventsUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional-events'
 import { GetAuthUrlUseCase } from '@/domain/scheduling/application/use-cases/get-google-auth-url'
 import { HandleOAuthCallbackUseCase } from '@/domain/scheduling/application/use-cases/handle-oauth-callback'
+import { GoogleAuthStrategy } from '@/infra/auth/google-auth.strategy'
 import { DatabaseModule } from '@/infra/database/database.module'
 import { Module } from '@nestjs/common'
 import { CheckGoogleConnectionController } from './controllers/check-google-connection.controller'
@@ -12,9 +13,10 @@ import { GetAuthUrlController } from './controllers/get-auth-url.controller'
 import { GetEventsController } from './controllers/get-events.controller'
 import { GoogleAuthController } from './controllers/google-auth.controller'
 import { HandleOAuthCallbackController } from './controllers/handle-oauth-callback.controller'
+import { CryptographyModule } from '@/infra/cryptography/cryptography.module'
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, CryptographyModule],
   controllers: [
     GetAuthUrlController,
     GetEventsController,
@@ -30,6 +32,7 @@ import { HandleOAuthCallbackController } from './controllers/handle-oauth-callba
     CheckGoogleCalendarConnectionUseCase,
     AuthenticateWithGoogleUseCase,
     OnAppointmentCreated,
+    GoogleAuthStrategy,
   ],
   exports: [],
 })
