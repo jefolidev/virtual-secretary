@@ -4,11 +4,7 @@ import {
   transformSignupDataToRegisterData,
   type RegisterResponse,
 } from '@/services/auth'
-import type {
-  DayOfWeek,
-  NotificationType,
-  WorkingDaysList,
-} from '@/types/user'
+import type { DayOfWeek, NotificationType, WorkingDaysList } from '@/types/user'
 import {
   createContext,
   useCallback,
@@ -16,6 +12,7 @@ import {
   useEffect,
   useState,
 } from 'react'
+import { toast } from 'sonner'
 
 export interface WorkingDaysResponse {
   currentItems: DayOfWeek[]
@@ -148,6 +145,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<void>
+  handleLoginWithGoogle: () => Promise<void>
   signup: (data: SignupData) => Promise<RegisterResponse>
   logout: () => void
   checkAuth: () => Promise<void>
@@ -176,6 +174,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
+
+  const handleLoginWithGoogle = async () => {
+    try {
+      const result = await authServices.loginWithGoogle()
+
+      localStorage.setItem('access_token', result.token)
+
+      await checkAuth()
+
+      toast.success('Login realizado com sucesso!')
+    } catch (error) {
+      console.error('Erro no login com Google:', error)
+      toast.error('Erro no login com Google. Por favor, tente novamente.')
+    }
+  }
 
   const login = async (credentials: LoginCredentials) => {
     try {
@@ -244,6 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signup,
         logout,
         checkAuth,
+        handleLoginWithGoogle,
       }}
     >
       {children}
