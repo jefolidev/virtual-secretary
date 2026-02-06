@@ -27,6 +27,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { LogOut, Plus, Shield, Trash2, User } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { SyncButton } from './components/sync-button'
 
 export function AccountSettingsPage() {
   const { updateAccount, loading, clearError } = useUser()
@@ -211,9 +212,13 @@ export function AccountSettingsPage() {
 
             {/* Account Security Section */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="h-5 w-5" />
-                <h3 className="text-lg font-semibold">Segurança da Conta</h3>
+              <div className="flex justify-between">
+                <div className="flex items-center gap-2 mb-4">
+                  <Shield className="h-5 w-5" />
+                  <h3 className="text-lg font-semibold">Segurança da Conta</h3>
+                </div>
+
+                <SyncButton user={user!} />
               </div>
 
               <div className="grid gap-4">
