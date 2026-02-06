@@ -14,15 +14,20 @@ export interface GoogleUser {
 }
 
 @Injectable()
-export class GoogleAuthGuard extends PassportStrategy(GoogleStrategy) {
+export class GoogleAuthStrategy extends PassportStrategy(
+  GoogleStrategy,
+  'google',
+) {
   constructor(private readonly configService: ConfigService<Env, true>) {
     const url = configService.get('API_URI')
+    const port = configService.get('PORT') || 3333
+    const fullUrl = `${url}:${port}`
 
     super({
-      callbackURL: `${url}/auth/google/callback`,
+      callbackURL: `${fullUrl}/webhooks/google/auth/callback`,
       clientID: configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
       clientSecret: configService.get('GOOGLE_CALENDAR_SECRET'),
-      scope: ['profile', 'https://www.googleapis.com/auth/calendar'],
+      scope: ['profile', 'email', 'https://www.googleapis.com/auth/calendar'],
     })
   }
   async validate(
