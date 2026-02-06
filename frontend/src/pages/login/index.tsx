@@ -8,6 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Separator } from '@/components/ui/separator'
 import { useAuth } from '@/contexts/auth-context'
 import { ScreensEnum } from '@/types/screens'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -24,6 +25,7 @@ import {
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router'
+import { GoogleButton } from './components/google-button'
 import { loginFormSchema, type LoginFormSchema } from './schemas'
 
 export function LoginPage() {
@@ -112,10 +114,10 @@ export function LoginPage() {
                           fieldState.error
                             ? 'border-red-500 focus-visible:ring-red-500'
                             : field.value &&
-                              isValidEmail(field.value) &&
-                              !fieldState.error
-                            ? 'border-green-500 focus-visible:ring-green-500'
-                            : ''
+                                isValidEmail(field.value) &&
+                                !fieldState.error
+                              ? 'border-green-500 focus-visible:ring-green-500'
+                              : ''
                         }`}
                         placeholder="seu@email.com"
                         {...field}
@@ -148,8 +150,8 @@ export function LoginPage() {
                           fieldState.error
                             ? 'border-red-500 focus-visible:ring-red-500'
                             : field.value && !fieldState.error
-                            ? 'border-green-500 focus-visible:ring-green-500'
-                            : ''
+                              ? 'border-green-500 focus-visible:ring-green-500'
+                              : ''
                         }`}
                         type={showPassword ? 'text' : 'password'}
                         placeholder="••••••••"
@@ -261,6 +263,8 @@ export function LoginPage() {
             Cadastre-se
           </span>
         </p>
+        <Separator className="my-4" />
+        <GoogleButton />
       </div>
     </div>
   )
