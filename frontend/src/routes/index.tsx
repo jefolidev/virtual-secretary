@@ -1,6 +1,7 @@
 import { App } from '@/app'
 import { useAuth } from '@/contexts/auth-context'
 import { LoginPage } from '@/pages/login'
+import { OAuthCallbackPage } from '@/pages/oauth-callback'
 import { ScheduleCalendarPage } from '@/pages/schedule/calendar'
 import { SettingsPage } from '@/pages/settings'
 import { AccountSettingsPage } from '@/pages/settings/pages/account/index'
@@ -76,6 +77,10 @@ export const router = createBrowserRouter([
             <SignUpPage />
           </PublicOnly>
         ),
+      },
+      {
+        path: 'oauth-callback',
+        element: <OAuthCallbackPage />,
       },
       {
         element: <RequireAuth />,
