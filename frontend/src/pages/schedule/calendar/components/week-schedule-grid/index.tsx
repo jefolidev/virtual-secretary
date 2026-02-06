@@ -1,4 +1,4 @@
-import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
+import type { FetchProfessionalSchedulesSchema } from '@/api/schemas/fetch-professional-schedules.dto'
 import { useState } from 'react'
 import { calculateSlotHeight, generateTimeSlots } from '../../utils'
 import { AppointmentCard } from '../appointment-card'
