@@ -59,17 +59,18 @@ model User {
 }
 
 model Appointment {
-  id                 String     @id @default(uuid())
-  clientId           String     @map("client_id")
-  professionalId     String     @map("professional_id")
-  startDateTime      DateTime   @map("start_date_time")
-  endDateTime        DateTime   @map("end_date_time")
-  modality           Modalities
-  status             Status     @default(SCHEDULED)
-  googleMeetLink     String?    @map("google_meet_link")
-  rescheduleDateTime Json?      @map("reschedule_date_time")
-  startedAt          DateTime?  @map("started_at")
-  totalElapsedMs     BigInt?    @default(0) @map("total_elapsed_ms")
+  id                     String     @id @default(uuid())
+  clientId               String     @map("client_id")
+  professionalId         String     @map("professional_id")
+  startDateTime          DateTime   @map("start_date_time")
+  endDateTime            DateTime   @map("end_date_time")
+  modality               Modalities
+  status                 Status     @default(SCHEDULED)
+  syncWithGoogleCalendar Boolean    @default(false) @map("sync_with_google_calendar")
+  googleMeetLink         String?    @map("google_meet_link")
+  rescheduleDateTime     Json?      @map("reschedule_date_time")
+  startedAt              DateTime?  @map("started_at")
+  totalElapsedMs         BigInt?    @default(0) @map("total_elapsed_ms")
 
   agreedPrice          Decimal       @map("agreed_price") @db.Decimal(10, 2)
   paymentStatus        PaymentStatus @default(PENDING) @map("payment_status")
@@ -149,17 +150,18 @@ model GoogleCalendarToken {
 }
 
 model CalendarEvent {
-  id              String   @id @default(uuid())
-  appointmentId   String   @unique @map("appointment_id")
-  professionalId  String   @map("professional_id")
-  googleEventId   String   @map("google_event_id")
-  googleEventLink String   @map("google_event_link")
-  summary         String
-  description     String?
-  startDateTime   DateTime @map("start_date_time")
-  endDateTime     DateTime @map("end_date_time")
-  syncStatus      String   @default("SYNCED") @map("sync_status") // SYNCED, PENDING, ERROR
-  lastSyncedAt    DateTime @default(now()) @map("last_synced_at")
+  id              String  @id @default(uuid())
+  appointmentId   String  @unique @map("appointment_id")
+  professionalId  String  @map("professional_id")
+  googleEventId   String  @map("google_event_id")
+  googleEventLink String  @map("google_event_link")
+  googleMeetLink  String? @map("google_meet_link")
+  summary       String
+  description   String?
+  startDateTime DateTime @map("start_date_time")
+  endDateTime   DateTime @map("end_date_time")
+  syncStatus    String   @default("SYNCED") @map("sync_status") // SYNCED, PENDING, ERROR
+  lastSyncedAt  DateTime @default(now()) @map("last_synced_at")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")

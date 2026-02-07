@@ -15,11 +15,17 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService<Env, true>,
   ) {
-    const url = this.configService.get('API_URI')
+    const apiUri = this.configService.get('API_URI')
+    const port = this.configService.get('PORT') || 3333
+
+    // Remove trailing colon if exists
+    const baseUrl = apiUri.endsWith(':') ? apiUri.slice(0, -1) : apiUri
+    const redirectUri = `${baseUrl}:${port}/webhooks/google/oauth/callback`
+
+    console.log('Initializing OAuth2Client with redirect URI:', redirectUri)
 
     this.oauth2Client = new google.auth.OAuth2({
-      redirectUri: `${url}/auth/google/callback`,
-
+      redirectUri,
       clientId: this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
       clientSecret: this.configService.get('GOOGLE_CALENDAR_SECRET'),
     })
@@ -57,10 +63,16 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
     professionalId: string,
     code: string,
   ): Promise<string> {
-    const { tokens } = await this.oauth2Client.getToken(code)
+    let tokens
+    try {
+      const response = await this.oauth2Client.getToken(code)
+      tokens = response.tokens
 
-    if (!tokens.access_token || !tokens.refresh_token) {
-      throw new Error('Failed to obtain tokens from Google')
+      if (!tokens.access_token || !tokens.refresh_token) {
+        throw new Error('Failed to obtain tokens from Google')
+      }
+    } catch (error) {
+      throw error
     }
 
     // Set credentials BEFORE making API calls
@@ -108,5 +120,13 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
     })
 
     return googleAccountEmail
+  }
+
+  async hasTokens(professionalId: string): Promise<boolean> {
+    const token = await this.prisma.googleCalendarToken.findUnique({
+      where: { professionalId },
+    })
+
+    return !!token
   }
 }

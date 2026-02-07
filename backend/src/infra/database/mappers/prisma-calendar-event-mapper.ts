@@ -8,7 +8,7 @@ import {
   CalendarEvent as PrismaCalendarEvent,
 } from '@prisma/client'
 
-type PrismaCalendarEventWithAppointment = PrismaCalendarEvent & {
+export type PrismaCalendarEventWithAppointment = PrismaCalendarEvent & {
   appointment: PrismaAppointment
 }
 
@@ -43,6 +43,7 @@ export class PrismaCalendarEventMapper {
       description: calendarEvent.description || '',
       updatedAt: calendarEvent.updatedAt || undefined || null,
       googleEventLink: calendarEvent.googleEventLink,
+      googleMeetLink: calendarEvent.googleMeetLink || null,
       summary: calendarEvent.summary,
       startDateTime: calendarEvent.startDateTime,
       endDateTime: calendarEvent.endDateTime,

@@ -1,4 +1,4 @@
-import { Either, right } from '@/core/either'
+import { Either, left, right } from '@/core/either'
 import { Injectable } from '@nestjs/common'
 import { GoogleCalendarTokenRepository } from '../repositories/google-calendar-token.repository'
 
@@ -8,7 +8,7 @@ export interface HandleOAuthCallbackUseCaseRequest {
 }
 
 export type HandleOAuthCallbackUseCaseResponse = Either<
-  null,
+  string,
   { googleAccountEmail: string }
 >
 
@@ -20,13 +20,19 @@ export class HandleOAuthCallbackUseCase {
     code,
     professionalId,
   }: HandleOAuthCallbackUseCaseRequest): Promise<HandleOAuthCallbackUseCaseResponse> {
-    const googleAccountEmail = await this.tokenRepository.saveTokensFromCode(
-      professionalId,
-      code,
-    )
+    try {
+      const googleAccountEmail = await this.tokenRepository.saveTokensFromCode(
+        professionalId,
+        code,
+      )
 
-    return right({
-      googleAccountEmail,
-    })
+      return right({
+        googleAccountEmail,
+      })
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error'
+      return left(errorMessage)
+    }
   }
 }

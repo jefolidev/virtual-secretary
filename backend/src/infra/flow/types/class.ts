@@ -1,4 +1,4 @@
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
+import { PrismaService } from '../../../infra/database/prisma/prisma.service'
 import { ConversationSession, FlowContextMap } from '.'
 
 export class FlowServiceUtil<T extends keyof FlowContextMap> {

@@ -42,6 +42,7 @@ export class CreateProfessionalUseCase {
     const professional = await Professional.create({
       sessionPrice,
       notificationSettings,
+      googleCalendarEvent: null,
     })
 
     const cancellationPolicy = await CancellationPolicy.create(

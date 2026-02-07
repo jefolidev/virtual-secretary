@@ -8,8 +8,8 @@ import { PrismaService } from '../prisma.service'
 
 import { ProfessionalWithNotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/professional-with-notification-settings'
 import { UserProfessionalWithSettings } from '@/domain/scheduling/enterprise/entities/value-objects/user-professional-with-settings'
-import { PrismaUserProfessionalWithSettingsMapper } from '../../mappers/prisma-user-professional-with-settings'
 import { PrismaProfessionalWithNotificationSettingsMapper } from '../../mappers/prisma-professional-with-notification-settings-mapper'
+import { PrismaUserProfessionalWithSettingsMapper } from '../../mappers/prisma-user-professional-with-settings'
 
 @Injectable()
 export class PrismaProfessionalRepository implements ProfessionalRepository {
@@ -83,6 +83,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
         cancellationPolicy: true,
         scheduleConfiguration: true,
         organization: true,
+        googleCalendarTokens: true,
       },
     })
 
@@ -104,6 +105,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
         scheduleConfiguration: true,
         organization: true,
         notificationSettings: true,
+        googleCalendarTokens: true,
       },
     })
 
@@ -126,6 +128,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
         scheduleConfiguration: true,
         organization: true,
         notificationSettings: true,
+        googleCalendarTokens: true,
       },
     })
 
@@ -144,6 +147,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
         cancellationPolicy: true,
         scheduleConfiguration: true,
         organization: true,
+        googleCalendarTokens: true,
       },
     })
 

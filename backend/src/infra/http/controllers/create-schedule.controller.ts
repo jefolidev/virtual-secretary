@@ -28,7 +28,7 @@ const bodyValidationPipe = new ZodValidationPipe(createScheduleBodySchema)
 export class CreateScheduleController {
   constructor(
     private readonly createScheduleUseCase: CreateAppointmentUseCase,
-    private readonly clientRepository: ClientRepository
+    private readonly clientRepository: ClientRepository,
   ) {}
 
   @Post('/schedule')
@@ -36,9 +36,10 @@ export class CreateScheduleController {
   async handle(
     @Body(bodyValidationPipe)
     body: CreateScheduleBodySchema,
-    @CurrentUser() user: UserPayload
+    @CurrentUser() user: UserPayload,
   ) {
-    const { professionalId, modality, startDateTime } = body
+    const { professionalId, modality, startDateTime, syncWithGoogleCalendar } =
+      body
 
     const client = await this.clientRepository.findByUserId(user.sub)
 
@@ -51,6 +52,7 @@ export class CreateScheduleController {
       clientId: client.id.toString(),
       modality,
       startDateTime,
+      syncWithGoogleCalendar,
     })
 
     if (result.isLeft()) {

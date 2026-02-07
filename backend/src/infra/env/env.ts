@@ -18,6 +18,7 @@ export const envSchema = z.object({
   GOOGLE_CALENDAR_CLIENT_ID: z.string(),
   GOOGLE_CALENDAR_SECRET: z.string(),
   API_URI: z.string().optional().default('http://localhost:'),
+  FRONTEND_URL: z.string().optional().default('http://localhost:5173'),
 })
 
 export type Env = z.infer<typeof envSchema>

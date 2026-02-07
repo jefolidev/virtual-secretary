@@ -1,5 +1,5 @@
-import { OpenAiService } from '@/infra/webhooks/openai/openai.service'
 import { Injectable } from '@nestjs/common'
+import { OpenAiService } from '../../../infra/webhooks/openai/openai.service'
 
 @Injectable()
 export class GeneralFlowService {

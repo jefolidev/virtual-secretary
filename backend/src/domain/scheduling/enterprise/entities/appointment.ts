@@ -1,6 +1,7 @@
 import { AggregateRoot } from '@/core/entities/aggregate'
 import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { AppointmentCreatedEvent } from '../events/appointment-created-event'
 import { CanceledAppointmentEvent } from '../events/canceled-appointment'
 import { ConfirmedAppointmentEvent } from '../events/confirmed-appointment'
 import { ScheduledAppointmentEvent } from '../events/scheduled-appointment-event'
@@ -37,6 +38,7 @@ export interface AppointmentProps {
   googleCalendarEventId?: string | null
 
   rescheduleDateTime?: { start: Date; end: Date }
+  syncWithGoogleCalendar: boolean
   isPaid: boolean
   startedAt?: Date | null
   totalElapsedMs?: number | null
@@ -355,6 +357,14 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     return !!this.props.paymentId
   }
 
+  get syncWithGoogleCalendar() {
+    return this.props.syncWithGoogleCalendar || false
+  }
+
+  set syncWithGoogleCalendar(syncWithGoogleCalendar: boolean) {
+    this.props.syncWithGoogleCalendar = syncWithGoogleCalendar ?? false
+  }
+
   static create(
     props: Optional<
       AppointmentProps,
@@ -367,6 +377,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
       | 'currentTransactionId'
       | 'paymentExpiresAt'
       | 'googleCalendarEventId'
+      | 'syncWithGoogleCalendar'
     >,
     id?: UniqueEntityId,
   ) {
@@ -382,6 +393,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
         currentTransactionId: props.currentTransactionId ?? null,
         paymentExpiresAt: props.paymentExpiresAt ?? null,
         totalElapsedMs: props.totalElapsedMs ?? null,
+        syncWithGoogleCalendar: props.syncWithGoogleCalendar ?? false,
         createdAt: props.createdAt ?? new Date(),
       },
       id,
@@ -389,8 +401,10 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
     const isNewAppointment = !id
 
-    if (isNewAppointment)
+    if (isNewAppointment) {
       appointment.addDomainEvent(new ScheduledAppointmentEvent(appointment))
+      appointment.addDomainEvent(new AppointmentCreatedEvent(appointment))
+    }
 
     return appointment
   }

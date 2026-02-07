@@ -22,6 +22,16 @@ export class UserProfessionalWithSettingsPresenter {
         preferences: userProfessional.scheduleConfiguration,
         cancellationPolicy: userProfessional.cancellationPolicy,
       },
+      googleCalendarTokens: userProfessional.googleCalendarTokens
+        ? {
+            id: userProfessional.googleCalendarTokens.id.toString(),
+            googleAccountEmail:
+              userProfessional.googleCalendarTokens.googleAccountEmail,
+            scope: userProfessional.googleCalendarTokens.scope,
+            createdAt: userProfessional.googleCalendarTokens.createdAt,
+            updatedAt: userProfessional.googleCalendarTokens.updatedAt,
+          }
+        : null,
       createdAt: userProfessional.createdAt,
       updatedAt: userProfessional.updatedAt,
     }

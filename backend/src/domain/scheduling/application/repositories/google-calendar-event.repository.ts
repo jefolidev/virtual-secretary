@@ -15,12 +15,11 @@ export abstract class GoogleCalendarEventRepository {
   abstract create(
     appointmentId: string,
     calendarEvent: GoogleCalendarEvent,
-  ): Promise<{ id: string; htmlLink: string }>
+  ): Promise<{ id: string; htmlLink: string; meetLink?: string }>
   abstract updateEvent(
     professionalId: string,
     eventId: string,
     data: Partial<GoogleCalendarEvent>,
   ): Promise<{ id: string; htmlLink: string }>
   abstract delete(id: string): Promise<void>
-
 }

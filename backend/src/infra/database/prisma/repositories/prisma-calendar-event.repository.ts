@@ -1,6 +1,10 @@
 import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
 import { GoogleCalendarEvent } from '@/domain/scheduling/enterprise/entities/google-calendar-event'
-import { Injectable } from '@nestjs/common'
+import { Env } from '@/infra/env/env'
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import type { OAuth2Client } from 'google-auth-library'
+import { calendar_v3, google } from 'googleapis'
 import {
   PrismaCalendarEventMapper,
   PrismaCalendarEventWithAppointment,
@@ -9,7 +13,26 @@ import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class PrismaCalendarEventRepository implements GoogleCalendarEventRepository {
-  constructor(private prisma: PrismaService) {}
+  private oauth2Client: OAuth2Client
+  private calendar: calendar_v3.Calendar
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly configService: ConfigService<Env, true>,
+  ) {
+    const url = this.configService.get('API_URI')
+    const port = this.configService.get('PORT') || 3333
+    const fullUrl = `${url}:${port}`
+
+    this.oauth2Client = new google.auth.OAuth2({
+      redirectUri: `${fullUrl}/auth/google/callback`,
+
+      clientId: this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
+      clientSecret: this.configService.get('GOOGLE_CALENDAR_SECRET'),
+    })
+
+    this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client })
+  }
 
   async findByAppointmentId(
     appointmentId: string,
@@ -66,14 +89,82 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
   async create(
     appointmentId: string,
     calendarEvent: GoogleCalendarEvent,
-  ): Promise<{ id: string; htmlLink: string }> {
+  ): Promise<{ id: string; htmlLink: string; meetLink?: string }> {
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: appointmentId },
+    })
+
+    if (!appointment) {
+      throw new NotFoundException('Appointment not found')
+    }
+
+    const token = await this.prisma.googleCalendarToken.findUnique({
+      where: { professionalId: appointment.professionalId },
+    })
+
+    if (!token) {
+      throw new Error('Professional has not connected Google Calendar')
+    }
+
+    this.oauth2Client.setCredentials({
+      access_token: token.accessToken,
+      refresh_token: token.refreshToken,
+      token_type: token.tokenType,
+      expiry_date: Number(token.expiryDate),
+    })
+
+    const shouldCreateMeet = appointment.modality === 'ONLINE'
+
+    // Criar evento no Google Calendar
+    const googleEvent = await this.calendar.events.insert({
+      calendarId: 'primary',
+      conferenceDataVersion: shouldCreateMeet ? 1 : 0,
+      requestBody: {
+        summary: calendarEvent.summary,
+        description: calendarEvent.description,
+        start: {
+          dateTime: calendarEvent.startDateTime.toISOString(),
+          timeZone: 'America/Sao_Paulo',
+        },
+        end: {
+          dateTime: calendarEvent.endDateTime.toISOString(),
+          timeZone: 'America/Sao_Paulo',
+        },
+        ...(shouldCreateMeet && {
+          conferenceData: {
+            createRequest: {
+              requestId: `meet-${appointmentId}-${Date.now()}`,
+              conferenceSolutionKey: {
+                type: 'hangoutsMeet',
+              },
+            },
+          },
+        }),
+      },
+    })
+
+    // Extrair link do Google Meet
+    const meetLink = googleEvent.data.conferenceData?.entryPoints?.find(
+      (entry) => entry.entryPointType === 'video',
+    )?.uri
+
+    // Salvar no banco local
     const data = PrismaCalendarEventMapper.toPrisma(calendarEvent)
 
     const createdEvent = await this.prisma.calendarEvent.create({
-      data,
+      data: {
+        ...data,
+        googleEventId: googleEvent.data.id!,
+        googleEventLink: googleEvent.data.htmlLink!,
+        googleMeetLink: meetLink || null,
+      },
     })
 
-    return { id: createdEvent.id, htmlLink: createdEvent.googleEventLink }
+    return {
+      id: createdEvent.id,
+      htmlLink: createdEvent.googleEventLink,
+      meetLink: createdEvent.googleMeetLink || undefined,
+    }
   }
 
   async updateEvent(

@@ -21,6 +21,7 @@ export class PrismaAppointmentMapper {
       startDateTime: raw.startDateTime,
       status: raw.status,
       paymentStatus: raw.paymentStatus,
+      syncWithGoogleCalendar: raw.syncWithGoogleCalendar,
       startedAt: raw.startedAt,
       totalElapsedMs: raw.totalElapsedMs ? BigInt(raw.totalElapsedMs) : null,
       createdAt: raw.createdAt,

@@ -8,6 +8,7 @@ export interface GoogleCalendarEventProps {
   appointmentId: UniqueEntityId
   professionalId: UniqueEntityId
   googleEventLink: string
+  googleMeetLink?: string | null
   summary: string
   description?: string | null
   startDateTime: Date
@@ -33,6 +34,15 @@ export class GoogleCalendarEvent extends Entity<GoogleCalendarEventProps> {
 
   set googleEventLink(googleEventLink: string) {
     this.props.googleEventLink = googleEventLink
+    this.touch()
+  }
+
+  get googleMeetLink() {
+    return this.props.googleMeetLink || null || undefined
+  }
+
+  set googleMeetLink(googleMeetLink: string | null | undefined) {
+    this.props.googleMeetLink = googleMeetLink || null || undefined
     this.touch()
   }
 

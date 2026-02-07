@@ -6,4 +6,7 @@ export abstract class GoogleCalendarTokenRepository {
     professionalId: string,
     code: string,
   ): Promise<string>
+
+  abstract hasTokens(professionalId: string): Promise<boolean>
+
 }

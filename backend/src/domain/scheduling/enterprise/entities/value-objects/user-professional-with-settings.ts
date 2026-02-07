@@ -2,6 +2,7 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { ValueObject } from '@/core/entities/value-object'
 import { Organization } from '@/domain/organization/enterprise/entities/organization'
 import { CancellationPolicy } from '../cancellation-policy'
+import { GoogleCalendarToken } from '../google-calendar-token'
 import { ScheduleConfiguration } from '../schedule-configuration'
 
 export interface UserProfessionalWithSettingsProps {
@@ -11,6 +12,7 @@ export interface UserProfessionalWithSettingsProps {
   whatsappNumber: string
   sessionPrice: number
   organization: Organization | null
+  googleCalendarTokens: GoogleCalendarToken | undefined
   scheduleConfiguration: ScheduleConfiguration | undefined
   cancellationPolicy: CancellationPolicy | undefined
   createdAt: Date
@@ -48,6 +50,10 @@ export class UserProfessionalWithSettings extends ValueObject<UserProfessionalWi
 
   get cancellationPolicy() {
     return this.props.cancellationPolicy
+  }
+
+  get googleCalendarTokens() {
+    return this.props.googleCalendarTokens
   }
 
   get createdAt() {

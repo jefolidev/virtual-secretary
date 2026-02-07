@@ -4,7 +4,7 @@ import { GoogleCalendarToken } from '@/domain/scheduling/enterprise/entities/goo
 export class InMemoryGoogleCalendarTokenRepository implements GoogleCalendarTokenRepository {
   public items: GoogleCalendarToken[] = []
 
-  getAuthUrl(professionalId: string): string {
+  async getAuthUrl(professionalId: string): Promise<string> {
     return `https://accounts.google.com/o/oauth2/auth?client_id=fake&state=${professionalId}`
   }
 
@@ -25,5 +25,12 @@ export class InMemoryGoogleCalendarTokenRepository implements GoogleCalendarToke
     await this.items.push(token)
 
     return googleAccountEmail
+  }
+  async hasTokens(professionalId: string): Promise<boolean> {
+    const token = this.items.find(
+      (token) => token.professionalId === professionalId,
+    )
+
+    return !!token
   }
 }

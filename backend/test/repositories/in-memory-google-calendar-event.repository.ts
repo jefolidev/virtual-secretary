@@ -93,6 +93,7 @@ export class InMemoryGoogleCalendarEventRepository implements GoogleCalendarEven
     const hasToken = this.items.some(
       (item) => item.professionalId.toString() === professionalId,
     )
+    
     return hasToken
   }
 }

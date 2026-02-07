@@ -30,6 +30,13 @@ export class OnAppointmentScheduled implements EventHandler {
   private async sendNewAppointmentNotification({
     appointment,
   }: ScheduledAppointmentEvent) {
+    if (!appointment.syncWithGoogleCalendar) {
+      console.log(
+        `[OnAppointmentCreated] Skipping Google Calendar sync for appointment ${appointment.id.toString()}`,
+      )
+      return
+    }
+
     const professional = await this.professionalRepository.findById(
       appointment.professionalId.toString(),
     )

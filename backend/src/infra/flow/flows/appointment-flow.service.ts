@@ -6,12 +6,13 @@ import { Appointment } from '@/domain/scheduling/enterprise/entities/appointment
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { UserProfessionalWithSettings } from '@/domain/scheduling/enterprise/entities/value-objects/user-professional-with-settings'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
-import { OpenAiService } from '@/infra/webhooks/openai/openai.service'
 import { CreateAppointmentBodyDTO } from '@/infra/webhooks/whatsapp/dto/create-appointment.dto'
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
+import 'tsconfig-paths/register'
+import { OpenAiService } from '../../../infra/webhooks/openai/openai.service'
+import { PrismaService } from '../../database/prisma/prisma.service'
 import {
   AppointmentFlowSteps,
   ConversationFlow,

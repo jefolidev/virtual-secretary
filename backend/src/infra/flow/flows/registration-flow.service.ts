@@ -1,10 +1,10 @@
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
-import { PrismaService } from '@/infra/database/prisma/prisma.service'
 import { Env } from '@/infra/env/env'
-import { OpenAiService } from '@/infra/webhooks/openai/openai.service'
 import { CreateClientBodyDTO } from '@/infra/webhooks/whatsapp/dto/create-client.dto'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { PrismaService } from '../../../infra/database/prisma/prisma.service'
+import { OpenAiService } from '../../../infra/webhooks/openai/openai.service'
 import {
   ConversationFlow,
   ConversationSession,

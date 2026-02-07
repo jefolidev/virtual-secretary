@@ -1,11 +1,13 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Organization } from '@/domain/organization/enterprise/entities/organization'
 import { CancellationPolicy } from '@/domain/scheduling/enterprise/entities/cancellation-policy'
+import { GoogleCalendarToken } from '@/domain/scheduling/enterprise/entities/google-calendar-token'
 import { ScheduleConfiguration } from '@/domain/scheduling/enterprise/entities/schedule-configuration'
 import { UserProfessionalWithSettings } from '@/domain/scheduling/enterprise/entities/value-objects/user-professional-with-settings'
 import { WorkingDaysList } from '@/domain/scheduling/enterprise/entities/value-objects/working-days-list'
 import {
   CancellationPolicy as PrismaCancellationPolicy,
+  GoogleCalendarToken as PrismaGoogleCalendarTokens,
   Organization as PrismaOrganization,
   Professional as PrismaProfessional,
   ScheduleConfiguration as PrismaScheduleConfiguration,
@@ -16,6 +18,7 @@ type PrismaUserProfessionalWithSettings = PrismaProfessional & {
   user: PrismaUser | null
   organization: PrismaOrganization | null
   cancellationPolicy: PrismaCancellationPolicy | null
+  googleCalendarTokens: PrismaGoogleCalendarTokens | null
   scheduleConfiguration: PrismaScheduleConfiguration | null
 }
 
@@ -28,6 +31,7 @@ export class PrismaUserProfessionalWithSettingsMapper {
       organization: professional.organization,
       scheduleConfiguration: professional.scheduleConfiguration,
       cancellationPolicy: professional.cancellationPolicy,
+      googleCalendarTokens: professional.googleCalendarTokens,
       sessionPrice: professional.sessionPrice,
       createdAt: professional.createdAt,
       updatedAt: professional.updatedAt,
@@ -107,12 +111,30 @@ export class PrismaUserProfessionalWithSettingsMapper {
       )
     }
 
+    let googleCalendarTokens: GoogleCalendarToken | undefined = undefined
+
+    if (raw.googleCalendarTokens) {
+      googleCalendarTokens = GoogleCalendarToken.create(
+        {
+          professionalId: raw.id,
+          accessToken: raw.googleCalendarTokens.accessToken,
+          refreshToken: raw.googleCalendarTokens.refreshToken,
+          googleAccountEmail: raw.googleCalendarTokens.googleAccountEmail,
+          scope: raw.googleCalendarTokens.scope,
+          createdAt: raw.googleCalendarTokens.createdAt,
+          updatedAt: raw.googleCalendarTokens.updatedAt || null,
+        },
+        new UniqueEntityId(raw.googleCalendarTokens.id),
+      )
+    }
+
     return UserProfessionalWithSettings.create({
       id: new UniqueEntityId(raw.id),
       name: raw.user.name,
       email: raw.user.email,
       whatsappNumber: raw.user.whatsappNumber,
       cancellationPolicy,
+      googleCalendarTokens,
       scheduleConfiguration,
       organization,
       sessionPrice: Number(raw.sessionPrice),

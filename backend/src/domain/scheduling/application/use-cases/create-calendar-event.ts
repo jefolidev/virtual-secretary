@@ -5,9 +5,9 @@ import { Injectable } from '@nestjs/common'
 import { GoogleCalendarEvent } from '../../enterprise/entities/google-calendar-event'
 import { AppointmentsRepository } from '../repositories/appointments.repository'
 import { GoogleCalendarEventRepository } from '../repositories/google-calendar-event.repository'
+import { GoogleCalendarTokenRepository } from '../repositories/google-calendar-token.repository'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 import { UserRepository } from '../repositories/user.repository'
-import { GoogleCalendarTokenRepository } from '../repositories/google-calendar-token.repository'
 
 export interface CreateCalendarEventUseCaseRequest {
   appointmentId: string
@@ -67,13 +67,30 @@ export class CreateCalendarEventUseCase {
       return left(new NotFoundError('User not found'))
     }
 
+    const eventDescription = `
+Consulta agendada com ${user.name}
+
+⚠️ IMPORTANTE: 
+${
+  appointment.modality === 'ONLINE'
+    ? `
+- O link do Google Meet estará disponível apenas no dia ${appointment.startDateTime.toLocaleDateString('pt-BR')}
+- Acesso será liberado 15 minutos antes do horário agendado
+`
+    : ''
+}
+
+📅 Data: ${appointment.startDateTime.toLocaleString('pt-BR')}
+📍 Modalidade: ${appointment.modality === 'ONLINE' ? 'Online (Google Meet)' : 'Presencial'}
+`
+
     const event = GoogleCalendarEvent.create({
       professionalId: appointment.professionalId,
       summary: `Consulta com o(a) paciente ${user.name}.`,
       startDateTime: appointment.startDateTime,
       endDateTime: appointment.endDateTime,
       appointmentId: new UniqueEntityId(appointmentId),
-      description: `Consulta agendada para o(a) paciente ${user.name}.`,
+      description: eventDescription,
       googleEventLink: '',
       syncStatus: 'PENDING',
     })
@@ -88,6 +105,22 @@ export class CreateCalendarEventUseCase {
     await this.googleCalendarEventRepository.updateEvent(
       appointment.professionalId.toString(),
       event.id.toString(),
+      {
+        googleEventLink: event.googleEventLink,
+        syncStatus: 'SYNCED',
+        googleMeetLink: repositoryEvent.meetLink,
+      },
+    )
+
+    appointment.googleCalendarEventId = event.id.toString()
+
+    if (repositoryEvent.meetLink && appointment.modality === 'ONLINE') {
+      appointment.googleMeetLink = repositoryEvent.meetLink
+    }
+
+    await this.googleCalendarEventRepository.updateEvent(
+      appointment.professionalId.toString(),
+      event.id.toString(),
       { googleEventLink: event.googleEventLink, syncStatus: 'SYNCED' },
     )
 
@@ -98,6 +131,7 @@ export class CreateCalendarEventUseCase {
     return right({
       eventId: event.id.toString(),
       eventLink: event.googleEventLink,
+      meetLink: repositoryEvent.meetLink,
     })
   }
 }
