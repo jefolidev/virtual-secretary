@@ -57,12 +57,13 @@ export class AuthenticateController {
 
     const { accessToken } = result.value
 
-    res.cookie('access_token', accessToken, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'none',
-      maxAge: ONE_DAY_IN_MS, // 7 days
-    })
+    isProduction &&
+      res.cookie('access_token', accessToken, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'strict' : 'none',
+        maxAge: ONE_DAY_IN_MS,
+      })
 
     return { message: 'Authenticated successfully', access_token: accessToken }
   }
