@@ -19,10 +19,7 @@ export const envSchema = z.object({
   GOOGLE_CALENDAR_SECRET: z.string(),
   API_URI: z.string().optional().default('http://localhost:'),
   FRONTEND_URL: z.string().optional().default('http://localhost:5173'),
-  GOOGLE_REDIRECT_URI: z
-    .string()
-    .optional()
-    .default('http://localhost:3333/webhooks/google/oauth/callback'),
+  GOOGLE_REDIRECT_URI: z.string().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>
