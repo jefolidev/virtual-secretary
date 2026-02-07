@@ -23,7 +23,7 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
     // Remove trailing colon if exists
     const baseUrl = apiUri.endsWith(':') ? apiUri.slice(0, -1) : apiUri
 
-    const redirectUri = `${environment === 'production' ? fullUrl : baseUrl}:${port}/webhooks/google/oauth/callback`
+    const redirectUri = `${environment === 'production' ? apiUri : fullUrl}/webhooks/google/oauth/callback`
     console.log('Initializing OAuth2Client with redirect URI:', redirectUri)
 
     this.oauth2Client = new google.auth.OAuth2({
