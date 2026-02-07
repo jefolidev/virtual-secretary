@@ -1,4 +1,4 @@
-import type { FetchAddress } from '@/services/address/dto/fetch-address.dto'
+import type { FetchAddress } from '@/api/schemas/fetch-address.dto'
 import { formatPostalCode } from './format-cep'
 
 export function formatFullAddress(addressProps: FetchAddress) {
