@@ -1,3 +1,7 @@
+import type {
+  Appointment,
+  FetchProfessionalSchedulesSchema,
+} from '@/api/schemas/fetch-professional-schedules.dto'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,10 +18,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import type {
-  Appointment,
-  FetchProfessionalSchedulesSchema,
-} from '@/services/professional/dto/fetch-professional-schedules.dto'
 import { formatFullAddress } from '@/utils/format-address'
 import { formatPhoneNumber } from '@/utils/format-phone'
 import {
