@@ -1,4 +1,4 @@
-import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
+import type { FetchProfessionalSchedulesSchema } from '@/api/schemas/fetch-professional-schedules.dto'
 
 export type ViewMode = 'day' | 'week' | 'month'
 
