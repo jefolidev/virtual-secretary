@@ -26,7 +26,7 @@ export class GoogleAuthStrategy extends PassportStrategy(
     const environment = configService.get('NODE_ENV')
 
     super({
-      callbackURL: `${environment === 'production' ? fullUrl : url}/webhooks/google/auth/callback`,
+      callbackURL: `${environment === 'production' ? url : fullUrl}/webhooks/google/auth/callback`,
       clientID: configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
       clientSecret: configService.get('GOOGLE_CALENDAR_SECRET'),
       scope: ['profile', 'email', 'https://www.googleapis.com/auth/calendar'],
