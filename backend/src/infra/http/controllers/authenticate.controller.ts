@@ -25,14 +25,14 @@ type AuthenticateBodySchema = z.infer<typeof authenticateBodySchema>
 @Public()
 export class AuthenticateController {
   constructor(
-    private readonly authenticateStudentUseCase: AuthenticateStudentUseCase
+    private readonly authenticateStudentUseCase: AuthenticateStudentUseCase,
   ) {}
 
   @Post()
   @UsePipes(new ZodValidationPipe(authenticateBodySchema))
   async handle(
     @Body() body: AuthenticateBodySchema,
-    @Res({ passthrough: true }) res: Response
+    @Res({ passthrough: true }) res: Response,
   ) {
     const { email, password } = body
 
@@ -62,6 +62,6 @@ export class AuthenticateController {
       maxAge: ONE_DAY_IN_MS, // 7 days
     })
 
-    return { message: 'Authenticated successfully' }
+    return { message: 'Authenticated successfully', access_token: accessToken }
   }
 }
