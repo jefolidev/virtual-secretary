@@ -51,19 +51,19 @@ export const googleCalendarService = {
   /**
    * GET /webhooks/google/events/:id
    * Lista todos os eventos do Google Calendar de um profissional
-   */
-  async getCalendarEvents(
-    professionalId: string,
-    page: number = 1,
-  ): Promise<GetCalendarEventsResponse> {
-    const response = await api.get<GetCalendarEventsResponse>(
-      `${BASE_PATH}/events/${professionalId}`,
-      {
-        params: { page },
-      },
-    )
-    return response.data
-  },
+  //  */
+  // async getCalendarEvents(
+  //   professionalId: string,
+  //   page: number = 1,
+  // ): Promise<GetCalendarEventsResponse> {
+  //   const response = await api.get<GetCalendarEventsResponse>(
+  //     `${BASE_PATH}/events/${professionalId}`,
+  //     {
+  //       params: { page },
+  //     },
+  //   )
+  //   return response.data
+  // },
 
   /**
    * GET /webhooks/google/connected/:professionalId
