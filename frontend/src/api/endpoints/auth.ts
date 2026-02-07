@@ -1,8 +1,8 @@
+import { authToken } from '@/auth/auth-token'
 import type { RegisterResponse, RegisterUserData } from '@/services/auth'
 import { api } from '../axios'
 import type { LoginBodySchema } from '../schemas/login-schema'
 import { type GoogleAuthSuccessResponse } from './../schemas/google-auth'
-import { authToken } from '@/auth/auth-token'
 
 export interface UserLoginData {
   userId: string
@@ -42,7 +42,8 @@ export const authServices: AuthServicesEndPoints = {
    * Abre uma popup para login
    */
   loginWithGoogle(): Promise<GoogleAuthSuccessResponse> {
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3333'
+    const API_BASE_URL =
+      import.meta.env.VITE_BACKEND_API_URL || 'http://localhost:3333'
     return new Promise((resolve, reject) => {
       const width = 500
       const height = 600
