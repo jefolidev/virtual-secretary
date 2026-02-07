@@ -1,5 +1,5 @@
-import type { FetchProfessionalSchedulesSchema } from '@/services/professional/dto/fetch-professional-schedules.dto'
-import { professionalServices } from '@/services/professional/endpoints'
+import { professionalServices } from '@/api/endpoints/professionals'
+import type { FetchProfessionalSchedulesSchema } from '@/api/schemas/fetch-professional-schedules.dto'
 import { createContext, useCallback, useContext, useState } from 'react'
 import { useAuth } from './auth-context'
 
