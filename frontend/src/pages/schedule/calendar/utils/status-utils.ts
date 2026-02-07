@@ -1,11 +1,5 @@
-import type { Appointment } from '@/services/professional/dto/fetch-professional-schedules.dto'
-import {
-  Calendar,
-  CheckCircle,
-  RotateCcw,
-  UserX,
-  XCircle
-} from 'lucide-react'
+import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
+import { Calendar, CheckCircle, RotateCcw, UserX, XCircle } from 'lucide-react'
 
 // Função para obter cores dos status
 export const getStatusStyles = (status: Appointment['status']) => {
