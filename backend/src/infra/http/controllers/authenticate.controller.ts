@@ -53,12 +53,14 @@ export class AuthenticateController {
 
     const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24
 
+    const isProduction = process.env.NODE_ENV === 'production'
+
     const { accessToken } = result.value
 
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'none',
       maxAge: ONE_DAY_IN_MS, // 7 days
     })
 
