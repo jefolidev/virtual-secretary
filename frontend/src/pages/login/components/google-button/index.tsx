@@ -22,7 +22,7 @@ export function GoogleButton() {
   return (
     <div className="w-full">
       <Button
-        onClick={handleLoginWithGoogle}
+        onClick={loginGoogle}
         variant={'outline'}
         className="w-full rounded-full"
       >

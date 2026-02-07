@@ -29,8 +29,16 @@ export class GoogleAuthController {
   @Get('callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req: RequestWithUser, @Res() res: Response) {
+    console.log('=== Google Auth Callback ===')
     const googleUser = req.user
+    console.log('Google User:', {
+      email: googleUser.email,
+      firstName: googleUser.firstName,
+      lastName: googleUser.lastName,
+    })
+
     const frontendUrl = this.configService.get('FRONTEND_URL')
+    console.log('Frontend URL:', frontendUrl)
 
     const result = await this.authenticateWithGoogleUseCase.execute({
       email: googleUser.email,
@@ -40,10 +48,13 @@ export class GoogleAuthController {
     })
 
     if (result.isLeft()) {
+      console.log('Auth failed:', result.value.message)
       return res.redirect(
         `${frontendUrl}/login?error=${encodeURIComponent(result.value.message)}`,
       )
     }
+
+    console.log('Auth successful!')
 
     const ONE_DAY_IN_MS = 1000 * 60 * 60 * 24
 
@@ -63,12 +74,15 @@ export class GoogleAuthController {
       maxAge: ONE_DAY_IN_MS, // 7 days
     })
 
-    return res.redirect(
+    const redirectUrl =
       `${frontendUrl}/auth/google/success?` +
-        `token=${encodeURIComponent(accessToken)}` +
-        `&email=${encodeURIComponent(user.email)}` +
-        `&name=${encodeURIComponent(user.name)}` +
-        `&picture=${encodeURIComponent(user.picture)}`,
-    )
+      `token=${encodeURIComponent(accessToken)}` +
+      `&email=${encodeURIComponent(user.email)}` +
+      `&name=${encodeURIComponent(user.name)}` +
+      `&picture=${encodeURIComponent(user.picture)}`
+
+    console.log('Redirecting to:', redirectUrl)
+
+    return res.redirect(redirectUrl)
   }
 }

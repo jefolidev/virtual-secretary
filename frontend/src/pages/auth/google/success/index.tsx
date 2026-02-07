@@ -19,6 +19,8 @@ export function GoogleAuthSuccessPage() {
     console.log('Picture:', picture)
     console.log('Error:', error)
     console.log('Has opener:', !!window.opener)
+    console.log('Window opener value:', window.opener)
+    console.log('Is popup?', window.opener !== null)
 
     if (error) {
       setStatus(`Erro: ${error}`)
@@ -43,7 +45,7 @@ export function GoogleAuthSuccessPage() {
       setStatus('Login realizado com sucesso!')
       console.log('Sending postMessage to opener...')
 
-      if (window.opener) {
+      if (window.opener && !window.opener.closed) {
         const message = {
           type: 'GOOGLE_AUTH_SUCCESS',
           data: {
@@ -57,7 +59,12 @@ export function GoogleAuthSuccessPage() {
         console.log('Message:', message)
         console.log('Target origin:', window.location.origin)
 
-        window.opener.postMessage(message, window.location.origin)
+        try {
+          window.opener.postMessage(message, window.location.origin)
+          console.log('Message sent successfully!')
+        } catch (e) {
+          console.error('Failed to send message:', e)
+        }
 
         console.log('Closing popup in 1 second...')
         setTimeout(() => {
@@ -65,9 +72,23 @@ export function GoogleAuthSuccessPage() {
           window.close()
         }, 1000)
       } else {
+        console.log(
+          'No opener found or opener is closed. Saving token and redirecting...',
+        )
         localStorage.setItem('access_token', decodeURIComponent(token))
+
+        // Tenta fechar a janela (vai funcionar se for popup)
         setTimeout(() => {
-          window.location.href = '/'
+          const closed = window.close()
+          console.log('Tried to close window:', closed)
+
+          // Se não conseguiu fechar (não é popup), redireciona
+          setTimeout(() => {
+            if (!window.closed) {
+              console.log('Window still open, redirecting to home...')
+              window.location.href = '/'
+            }
+          }, 100)
         }, 1000)
       }
     } else {

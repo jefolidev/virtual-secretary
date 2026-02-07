@@ -241,12 +241,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await api.post('/auth/logout')
-
-      authToken.remove()
     } catch (error) {
       console.error('Erro no logout:', error)
     } finally {
+      // Limpa todos os dados
+      authToken.remove()
       setUser(null)
+
+      // Redireciona para login
+      window.location.href = '/login'
     }
   }
 
