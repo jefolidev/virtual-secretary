@@ -2,6 +2,7 @@ import type { RegisterResponse, RegisterUserData } from '@/services/auth'
 import { api } from '../axios'
 import type { LoginBodySchema } from '../schemas/login-schema'
 import { type GoogleAuthSuccessResponse } from './../schemas/google-auth'
+import { authToken } from '@/auth/auth-token'
 
 export interface UserLoginData {
   userId: string
@@ -62,11 +63,6 @@ export const authServices: AuthServicesEndPoints = {
 
       // Listener para mensagens da popup
       const messageListener = (event: MessageEvent) => {
-        console.log('=== Message received in parent ===')
-        console.log('Origin:', event.origin)
-        console.log('Expected origin:', window.location.origin)
-        console.log('Data:', event.data)
-
         // Verificar origem por segurança
         if (event.origin !== window.location.origin) {
           console.log('❌ Origin mismatch, ignoring')
@@ -106,7 +102,11 @@ export const authServices: AuthServicesEndPoints = {
     try {
       const response = await api.post('/login', { email, password })
 
-      return response.data
+      const { access_token } = response.data
+
+      authToken.set(access_token)
+
+      return access_token
     } catch (error) {
       console.error('Erro ao fazer login:', error)
       throw error

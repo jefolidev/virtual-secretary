@@ -14,6 +14,7 @@ export const googleCalendarService = {
     const response = await api.get<GetAuthUrlResponse>(
       `${BASE_PATH}/auth/url/${professionalId}`,
     )
+
     return response.data
   },
 

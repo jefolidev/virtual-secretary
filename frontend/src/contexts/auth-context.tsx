@@ -1,5 +1,6 @@
 import { api } from '@/api/axios'
 import { authServices, type UserLoginData } from '@/api/endpoints/auth'
+import { authToken } from '@/auth/auth-token'
 import {
   transformSignupDataToRegisterData,
   type RegisterResponse,
@@ -240,6 +241,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await api.post('/auth/logout')
+
+      authToken.remove()
     } catch (error) {
       console.error('Erro no logout:', error)
     } finally {
