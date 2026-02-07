@@ -24,8 +24,10 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
     const port = this.configService.get('PORT') || 3333
     const fullUrl = `${url}:${port}`
 
+    const environment = this.configService.get('NODE_ENV')
+
     this.oauth2Client = new google.auth.OAuth2({
-      redirectUri: `${fullUrl}/auth/google/callback`,
+      redirectUri: `${environment === 'production' ? fullUrl : url}/auth/google/callback`,
 
       clientId: this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
       clientSecret: this.configService.get('GOOGLE_CALENDAR_SECRET'),
