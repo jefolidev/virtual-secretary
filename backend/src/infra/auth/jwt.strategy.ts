@@ -12,37 +12,44 @@ const tokenPayloadSchema = z.object({
 
 export type UserPayload = z.infer<typeof tokenPayloadSchema>
 
-const extractTokenFromCookie = (request: Request): string | null => {
-  // Aqui você poderia usar a lógica do seu decorator
-  const token = request?.cookies?.['access_token']
-
-  if (!token) {
-    return null
+// Nova função: extrai token do cookie OU do header Authorization
+const extractTokenFromCookieOrHeader = (request: Request): string | null => {
+  // Tenta pegar do cookie primeiro
+  const cookieToken = request?.cookies?.['access_token']
+  if (cookieToken) {
+    return cookieToken
   }
 
-  // Adicionar validações extras se necessário
-  return token
+  // Se não encontrar no cookie, tenta pegar do header Authorization
+  const authHeader = request?.headers?.authorization
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7) // Remove "Bearer " do início
+  }
+
+  return null
 }
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     config: EnvService,
-    private readonly tokenInvalidator: TokenInvalidator
+    private readonly tokenInvalidator: TokenInvalidator,
   ) {
     const publicKey = config.get('JWT_PUBLIC_KEY')
 
     super({
-      jwtFromRequest: ExtractJwt.fromExtractors([extractTokenFromCookie]),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        extractTokenFromCookieOrHeader,
+      ]),
       ignoreExpiration: false,
       secretOrKey: Buffer.from(publicKey, 'base64'),
       algorithms: ['RS256'],
-      passReqToCallback: true, // Necessário para acessar o request e o token
+      passReqToCallback: true,
     })
   }
 
   async validate(request: Request, payload: UserPayload) {
-    const token = extractTokenFromCookie(request)
+    const token = extractTokenFromCookieOrHeader(request)
 
     if (!token) {
       throw new UnauthorizedException('Token não encontrado')
