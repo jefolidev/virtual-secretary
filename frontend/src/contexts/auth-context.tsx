@@ -180,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const result = await authServices.loginWithGoogle()
 
-      localStorage.setItem('access_token', result.token)
+      authToken.set(result.access_token)
 
       await checkAuth()
 
@@ -240,13 +240,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
+      setIsLoading(true)
+
+      // Chama o endpoint de logout no backend
       await api.post('/auth/logout')
     } catch (error) {
-      console.error('Erro no logout:', error)
+      console.error('Erro ao chamar logout no backend:', error)
+      // Continua com a limpeza local mesmo se o backend falhar
     } finally {
-      // Limpa todos os dados
+      // Limpa todos os dados localmente
       authToken.remove()
       setUser(null)
+      setIsLoading(false)
 
       // Redireciona para login
       window.location.href = '/login'

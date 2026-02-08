@@ -31,12 +31,25 @@ export const authToken = {
     localStorage.removeItem(TOKEN_KEY)
 
     // Remove todos os cookies relacionados
-    Cookies.remove(TOKEN_KEY)
-    Cookies.remove(TOKEN_KEY, { path: '/' })
-    Cookies.remove('user_data')
-    Cookies.remove('user_data', { path: '/' })
+    const cookiesToRemove = [TOKEN_KEY, 'user_data', 'authToken']
+    const domain = window.location.hostname
 
-    // Limpa outros dados do localStorage relacionados ao auth
+    cookiesToRemove.forEach((cookieName) => {
+      Cookies.remove(cookieName)
+      Cookies.remove(cookieName, { path: '/' })
+      Cookies.remove(cookieName, { path: '/', domain })
+      Cookies.remove(cookieName, { path: '/', domain: `.${domain}` })
+    })
+
+    // Limpa todos os cookies manualmente via document.cookie
+    document.cookie.split(';').forEach((cookie) => {
+      const name = cookie.split('=')[0].trim()
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`
+    })
+
+    // Limpa todo o localStorage e sessionStorage
     localStorage.clear()
+    sessionStorage.clear()
   },
 }
