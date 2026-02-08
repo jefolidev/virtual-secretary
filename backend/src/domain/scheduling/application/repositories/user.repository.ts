@@ -1,5 +1,10 @@
 import { User } from '../../enterprise/entities/user'
 
+export interface CookieClearOptions {
+  response: any
+  request: any
+}
+
 export abstract class UserRepository {
   abstract findByEmail(email: string): Promise<User | null>
   abstract findByPhone(whatsappNumber: string): Promise<User | null>
@@ -15,6 +20,7 @@ export abstract class UserRepository {
     whatsappNumber: string,
   ): Promise<string | null | undefined>
   abstract resetPassword(userId: string, password: string): Promise<void>
+  abstract clearAuthCookies(options: CookieClearOptions): void
   abstract create(user: User): Promise<void>
   abstract save(user: User): Promise<void>
   abstract createClientByWhatsapp(data: {

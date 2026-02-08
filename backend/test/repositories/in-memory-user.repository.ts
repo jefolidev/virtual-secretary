@@ -1,6 +1,9 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { DomainEvents } from '@/core/events/domain-events'
-import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
+import {
+  CookieClearOptions,
+  UserRepository,
+} from '@/domain/scheduling/application/repositories/user.repository'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 
 export class InMemoryUserRepository implements UserRepository {
@@ -18,6 +21,10 @@ export class InMemoryUserRepository implements UserRepository {
     }
 
     return password
+  }
+
+  clearAuthCookies({ response, request }: CookieClearOptions): void {
+    // Implementação mock para testes
   }
 
   async getThreadId(

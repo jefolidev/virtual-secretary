@@ -1,5 +1,8 @@
 import { HashGenerator } from '@/domain/scheduling/application/cryptography/hash-generator'
-import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
+import {
+  CookieClearOptions,
+  UserRepository,
+} from '@/domain/scheduling/application/repositories/user.repository'
 import { Address } from '@/domain/scheduling/enterprise/entities/address'
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
@@ -16,6 +19,22 @@ export class PrismaUserRepository implements UserRepository {
     private readonly prisma: PrismaService,
     private readonly hashGenerator: HashGenerator,
   ) {}
+
+  clearAuthCookies({ response, request }: CookieClearOptions): void {
+    const cookiesToClear = ['access_token', 'user_data', 'authToken']
+    const isProduction = process.env.NODE_ENV === 'production'
+
+    cookiesToClear.forEach((cookieName) => {
+      response.clearCookie(cookieName, { path: '/' })
+      response.clearCookie(cookieName, {
+        path: '/',
+        domain: request.hostname,
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'strict',
+      })
+    })
+  }
 
   async findManyProfessionalUsers(): Promise<User[]> {
     const users = await this.prisma.user.findMany({
