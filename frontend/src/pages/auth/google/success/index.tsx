@@ -1,3 +1,4 @@
+import { authToken } from '@/auth/auth-token'
 import { useEffect, useState } from 'react'
 
 export function GoogleAuthSuccessPage() {
@@ -11,114 +12,96 @@ export function GoogleAuthSuccessPage() {
     const picture = urlParams.get('picture')
     const error = urlParams.get('error')
 
-    console.log('=== Google Auth Success Page ===')
-    console.log('URL:', window.location.href)
-    console.log('Token:', token)
-    console.log('Email:', email)
-    console.log('Name:', name)
-    console.log('Picture:', picture)
-    console.log('Error:', error)
-    console.log('Has opener:', !!window.opener)
-    console.log('Window opener value:', window.opener)
-    console.log('Is popup?', window.opener !== null)
-
     if (error) {
-      setStatus(`Erro: ${error}`)
-      if (window.opener) {
-        window.opener.postMessage(
-          {
-            type: 'GOOGLE_AUTH_ERROR',
-            error: decodeURIComponent(error),
-          },
-          window.location.origin,
-        )
-        setTimeout(() => window.close(), 2000)
-      } else {
-        setTimeout(() => {
-          window.location.href = '/login'
-        }, 2000)
+      console.error('Authentication error:', error)
+      setStatus(`Erro na autenticação: ${error}`)
+
+      if (window.opener && !window.opener.closed) {
+        try {
+          window.opener.postMessage(
+            {
+              type: 'GOOGLE_AUTH_ERROR',
+              error,
+            },
+            window.location.origin,
+          )
+          console.log('Error message sent to opener')
+        } catch (err) {
+          console.error('Failed to send error message:', err)
+        }
       }
+
+      setTimeout(() => {
+        window.close()
+      }, 3000)
       return
     }
 
     if (token && email && name) {
-      setStatus('Login realizado com sucesso!')
-      console.log('Sending postMessage to opener...')
+      setStatus('Autenticação bem-sucedida! Fechando janela...')
 
+      // Salva o token
+      authToken.set(token)
+
+      // Verifica se foi aberto como popup
       if (window.opener && !window.opener.closed) {
-        const message = {
-          type: 'GOOGLE_AUTH_SUCCESS',
-          data: {
-            token: decodeURIComponent(token),
-            email: decodeURIComponent(email),
-            name: decodeURIComponent(name),
-            picture: picture ? decodeURIComponent(picture) : '',
-          },
-        }
-
-        console.log('Message:', message)
-        console.log('Target origin:', window.location.origin)
 
         try {
-          window.opener.postMessage(message, window.location.origin)
-          console.log('Message sent successfully!')
-        } catch (e) {
-          console.error('Failed to send message:', e)
-        }
-
-        console.log('Closing popup in 1 second...')
-        setTimeout(() => {
-          console.log('Closing now!')
-          window.close()
-        }, 1000)
-      } else {
-        console.log(
-          'No opener found or opener is closed. Saving token and redirecting...',
-        )
-        localStorage.setItem('access_token', decodeURIComponent(token))
-
-        // Tenta fechar a janela (vai funcionar se for popup)
-        setTimeout(() => {
-          const closed = window.close()
-          console.log('Tried to close window:', closed)
-
-          // Se não conseguiu fechar (não é popup), redireciona
-          setTimeout(() => {
-            if (!window.closed) {
-              console.log('Window still open, redirecting to home...')
-              window.location.href = '/'
-            }
-          }, 100)
-        }, 1000)
-      }
-    } else {
-      setStatus('Parâmetros inválidos')
-      setTimeout(() => {
-        if (window.opener) {
+          // Envia a estrutura que o código espera
           window.opener.postMessage(
             {
-              type: 'GOOGLE_AUTH_ERROR',
-              error: 'Invalid parameters',
+              type: 'GOOGLE_AUTH_SUCCESS',
+              data: {
+                access_token: token,
+                user: {
+                  email,
+                  name,
+                  picture: picture || '',
+                },
+              },
             },
             window.location.origin,
           )
+
+          // Fecha o popup após enviar a mensagem
+          setTimeout(() => {
+            window.close()
+          }, 500)
+        } catch (err) {
+          console.error('Failed to send message to opener:', err)
+          setTimeout(() => {
+            window.close()
+          }, 500)
+        }
+      } else {
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1000)
+      }
+    } else {
+      console.error('Missing auth data')
+      setStatus('Erro: dados de autenticação incompletos')
+
+      setTimeout(() => {
+        if (window.opener && !window.opener.closed) {
           window.close()
         } else {
           window.location.href = '/login'
         }
-      }, 2000)
+      }, 3000)
     }
   }, [])
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold mb-4">{status}</h1>
-        <p className="text-muted-foreground">
-          {window.opener
-            ? 'Esta janela será fechada automaticamente.'
-            : 'Você será redirecionado em instantes.'}
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-lg">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-16 w-16 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
+          <h2 className="text-2xl font-bold text-gray-900">
+            Autenticação Google
+          </h2>
+          <p className="mt-2 text-sm text-gray-600">{status}</p>
+        </div>
       </div>
     </div>
   )

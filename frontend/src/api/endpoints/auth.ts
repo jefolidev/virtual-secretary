@@ -66,7 +66,6 @@ export const authServices: AuthServicesEndPoints = {
       const messageListener = (event: MessageEvent) => {
         // Verificar origem por segurança
         if (event.origin !== window.location.origin) {
-          console.log('❌ Origin mismatch, ignoring')
           return
         }
 
