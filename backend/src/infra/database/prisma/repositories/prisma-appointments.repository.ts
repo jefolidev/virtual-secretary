@@ -25,11 +25,40 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
   async create(appointment: Appointment): Promise<void> {
     const data = PrismaAppointmentMapper.toPrisma(appointment)
 
-    await this.prisma.appointment.create({
-      data: {
-        ...data,
-        rescheduleDateTime: JSON.stringify(data.rescheduleDateTime),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT id FROM "professionals" WHERE id = ${data.professionalId} FOR UPDATE`
+
+      // Verifica sobreposição dentro da mesma transação
+      const overlapping = await tx.appointment.findFirst({
+        where: {
+          professionalId: data.professionalId,
+          OR: [
+            {
+              startDateTime: { lte: data.startDateTime },
+              endDateTime: { gt: data.startDateTime },
+            },
+            {
+              startDateTime: { lt: data.endDateTime },
+              endDateTime: { gte: data.endDateTime },
+            },
+            {
+              startDateTime: { gte: data.startDateTime },
+              endDateTime: { lte: data.endDateTime },
+            },
+          ],
+        },
+      })
+
+      if (overlapping) {
+        throw new BadRequestException('Este horário já está ocupado.')
+      }
+
+      await tx.appointment.create({
+        data: {
+          ...data,
+          rescheduleDateTime: JSON.stringify(data.rescheduleDateTime),
+        },
+      })
     })
 
     DomainEvents.dispatchEventsForAggregate(appointment.id)
