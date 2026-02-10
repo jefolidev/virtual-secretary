@@ -33,23 +33,40 @@ export class PrismaCalendarEventMapper {
       new UniqueEntityId(raw.id),
     )
   }
+  // Accept partial input and be defensive with undefined values
+  static toPrisma(
+    calendarEvent: Partial<GoogleCalendarEvent>,
+  ): Partial<PrismaCalendarEvent> {
+    const safeId = calendarEvent.id ? calendarEvent.id.toString() : undefined
+    const safeAppointmentId = calendarEvent.appointmentId
+      ? calendarEvent.appointmentId.toString()
+      : undefined
+    const safeProfessionalId = calendarEvent.professionalId
+      ? calendarEvent.professionalId.toString()
+      : undefined
 
-  static toPrisma(calendarEvent: GoogleCalendarEvent): PrismaCalendarEvent {
+    const parseDate = (d: any) => {
+      if (!d) return undefined
+      if (d instanceof Date) return d
+      if (typeof d === 'string') return new Date(d)
+      return undefined
+    }
+
     return {
-      id: calendarEvent.id.toString(),
-      appointmentId: calendarEvent.appointmentId.toString(),
-      professionalId: calendarEvent.professionalId.toString(),
-      googleEventId: calendarEvent.id.toString(),
-      description: calendarEvent.description || '',
-      updatedAt: calendarEvent.updatedAt || undefined || null,
-      googleEventLink: calendarEvent.googleEventLink,
-      googleMeetLink: calendarEvent.googleMeetLink || null,
-      summary: calendarEvent.summary,
-      startDateTime: calendarEvent.startDateTime,
-      endDateTime: calendarEvent.endDateTime,
-      syncStatus: calendarEvent.syncStatus,
-      lastSyncedAt: calendarEvent.lastSyncedAt,
-      createdAt: calendarEvent.createdAt,
+      id: safeId,
+      appointmentId: safeAppointmentId,
+      professionalId: safeProfessionalId,
+      googleEventId: (calendarEvent as any).googleEventId || undefined,
+      description: calendarEvent.description ?? undefined,
+      updatedAt: calendarEvent.updatedAt ?? undefined,
+      googleEventLink: calendarEvent.googleEventLink ?? undefined,
+      googleMeetLink: calendarEvent.googleMeetLink ?? undefined,
+      summary: calendarEvent.summary ?? undefined,
+      startDateTime: parseDate((calendarEvent as any).startDateTime),
+      endDateTime: parseDate((calendarEvent as any).endDateTime),
+      syncStatus: calendarEvent.syncStatus ?? undefined,
+      lastSyncedAt: calendarEvent.lastSyncedAt ?? undefined,
+      createdAt: calendarEvent.createdAt ?? undefined,
     }
   }
 }
