@@ -20,10 +20,14 @@ export class OnAppointmentCreated implements EventHandler {
   private async createGoogleCalendarEvent(event: AppointmentCreatedEvent) {
     const { appointment } = event
 
+    console.log(appointment)
+
     try {
       const result = await this.createCalendarEventUseCase.execute({
         appointmentId: appointment.id.toString(),
       })
+
+      console.log(result)
 
       if (result.isLeft()) {
         console.warn(
