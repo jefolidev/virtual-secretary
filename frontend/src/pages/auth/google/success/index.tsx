@@ -45,7 +45,6 @@ export function GoogleAuthSuccessPage() {
 
       // Verifica se foi aberto como popup
       if (window.opener && !window.opener.closed) {
-
         try {
           // Envia a estrutura que o código espera
           window.opener.postMessage(
