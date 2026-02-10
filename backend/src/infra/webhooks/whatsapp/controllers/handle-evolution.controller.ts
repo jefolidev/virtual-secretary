@@ -42,8 +42,6 @@ export class HandleEvolutionController {
         let session
 
         if (user) {
-          console.log('achou user')
-
           session = await this.sessionsService.getOrCreateSession(
             user.id.toString(),
           )
