@@ -64,7 +64,9 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
     })
   }
 
-  async findMany(params: { page: number }): Promise<Professional[]> {
+  async findMany(
+    params: { page?: number } = { page: 1 },
+  ): Promise<Professional[]> {
     const professionals = await this.prisma.professional.findMany({
       take: 10,
       skip: params.page ? (params.page - 1) * 10 : 0,
@@ -116,23 +118,40 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
     return PrismaProfessionalMapper.toDomain(professional)
   }
 
-  async findManyProfessionalsAndSettings(params: {
-    page: number
+  async findManyProfessionalsAndSettings(params?: {
+    page?: number
+    take?: number
   }): Promise<UserProfessionalWithSettings[] | null> {
-    const professionals = await this.prisma.professional.findMany({
-      take: 10,
-      skip: params.page ? (params.page - 1) * 10 : 0,
-      include: {
-        user: true,
-        cancellationPolicy: true,
-        scheduleConfiguration: true,
-        organization: true,
-        notificationSettings: true,
-        googleCalendarTokens: true,
-      },
-    })
+    let professionals
+    if (params?.take) {
+      professionals = await this.prisma.professional.findMany({
+        take: params.take,
+        skip: params.page ? (params.page - 1) * params.take : 0,
+        include: {
+          user: true,
+          cancellationPolicy: true,
+          scheduleConfiguration: true,
+          organization: true,
+          notificationSettings: true,
+          googleCalendarTokens: true,
+        },
+      })
+    } else {
+      professionals = await this.prisma.professional.findMany({
+        include: {
+          user: true,
+          cancellationPolicy: true,
+          scheduleConfiguration: true,
+          organization: true,
+          notificationSettings: true,
+          googleCalendarTokens: true,
+        },
+      })
+    }
 
-    return professionals.map(PrismaUserProfessionalWithSettingsMapper.toDomain)
+    return professionals
+      .filter((prof) => prof.user)
+      .map(PrismaUserProfessionalWithSettingsMapper.toDomain)
   }
 
   async findByProfessionalIdWithSettings(
