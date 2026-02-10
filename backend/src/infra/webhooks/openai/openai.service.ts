@@ -211,10 +211,77 @@ ${message}
 
     try {
       let content = response.choices[0].message.content
+      console.log(content)
       const match = content!.match(/\{[\s\S]*\}/)
       if (match) content = match[0]
       const result = content ? JSON.parse(content) : null
 
+      return result
+    } catch {
+      return null
+    }
+  }
+
+  async extractDateOnly(message: string) {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    const formattedDate = `${year}-${month}-${day}T00:00:00`
+
+    const response = await this.chat([
+      {
+        role: 'system',
+        content: `Você é um extrator que recebe uma mensagem do usuário e retorna apenas um JSON com o campo startDateTime no formato ISO 8601 (YYYY-MM-DDTHH:mm:ss) ou null se não houver data/horário presente. Considere que hoje é ${formattedDate} ao interpretar expressões relativas como "amanhã" ou "depois". Retorne apenas o JSON. Exemplo: { "startDateTime": "2026-03-15T14:00:00" } ou { "startDateTime": null }`,
+      },
+      { role: 'user', content: message },
+    ])
+
+    try {
+      let content = response.choices[0].message.content
+      const match = content!.match(/\{[\s\S]*\}/)
+      if (match) content = match[0]
+      const result = content ? JSON.parse(content) : null
+      return result
+    } catch {
+      return null
+    }
+  }
+
+  async extractProfessionalOnly(message: string) {
+    const response = await this.chat([
+      {
+        role: 'system',
+        content: `Você é um extrator que recebe uma mensagem do usuário e retorna um JSON com o campo professionalName contendo o nome do profissional extraído, ou null se não houver referência a profissional. Retorne apenas o JSON, por exemplo: { "professionalName": "Dr. Silva" }`,
+      },
+      { role: 'user', content: message },
+    ])
+
+    try {
+      let content = response.choices[0].message.content
+      const match = content!.match(/\{[\s\S]*\}/)
+      if (match) content = match[0]
+      const result = content ? JSON.parse(content) : null
+      return result
+    } catch {
+      return null
+    }
+  }
+
+  async extractModalityOnly(message: string) {
+    const response = await this.chat([
+      {
+        role: 'system',
+        content: `Você é um extrator que recebe uma mensagem do usuário e retorna um JSON com o campo modality contendo 'IN_PERSON' para presencial, 'ONLINE' para online, ou null se não for possível determinar. Retorne apenas o JSON, por exemplo: { "modality": "IN_PERSON" }`,
+      },
+      { role: 'user', content: message },
+    ])
+
+    try {
+      let content = response.choices[0].message.content
+      const match = content!.match(/\{[\s\S]*\}/)
+      if (match) content = match[0]
+      const result = content ? JSON.parse(content) : null
       return result
     } catch {
       return null
@@ -242,11 +309,12 @@ Você é um roteador de intenções. Analise a mensagem do usuário e classifiqu
 registration, schedule_appointment, reschedule, appointment_cancel, list_professional, list_client_appointments.
 
 - Se o usuário quer se cadastrar, responda 'registration'.
+- Se você identificar que o usuário está tentando marcar um horário, mesmo que não seja explícito, responda 'schedule_appointment'. Por exemplo, se o usuário disser "Quero uma consulta com o Dr. Silva", isso indica uma intenção de agendamento. Se ele mencionar um profissional, data ou horário, mesmo que de forma vaga, isso também indica intenção de agendamento. Se o atual contexto da conversa sugere que o próximo passo natural seria um agendamento, isso também é um forte indicativo. Se o atual contexto da conversa sugere que o usuário está buscando informações sobre um profissional específico, isso também pode indicar uma intenção de agendamento, pois muitas vezes os usuários procuram por um profissional com a intenção de marcar uma consulta.
 - Se o usuário quer marcar ou agendar, responda 'schedule_appointment'.
 - Se o usuário quer remarcar, responda 'reschedule'.
 - Se o usuário quer cancelar um agendamento, responda 'appointment_cancel'.
 - Se o usuário quer ver profissionais, responda 'list_professional'.
-- Se o usuário quer ver seus agendamentos, responda 'list_client_appointments'.
+- Se o usuário pedir algo como "ver meus agendamentos" ou "ver seus agendamentos", ou qualquer outra frase semelhante, responda 'list_client_appointment'. 
 - Se for algo geral, saudação ou dúvida, responda 'general_chat'.
 
 Responda APENAS com a categoria, sem explicações.
