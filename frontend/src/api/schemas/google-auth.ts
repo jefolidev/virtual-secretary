@@ -1,5 +1,5 @@
 export interface GoogleAuthSuccessResponse {
-  token: string
+  access_token: string
   email: string
   name: string
   picture: string
