@@ -37,7 +37,7 @@ export class CreateAppointmentUseCase {
     private appointmentsRepository: AppointmentsRepository,
     private clientsRepository: ClientRepository,
     private professionalRepository: ProfessionalRepository,
-    private scheduleConfigurationRepository: ScheduleConfigurationRepository
+    private scheduleConfigurationRepository: ScheduleConfigurationRepository,
   ) {}
 
   async execute({
@@ -46,7 +46,7 @@ export class CreateAppointmentUseCase {
     startDateTime,
     modality,
     googleMeetLink,
-    syncWithGoogleCalendar
+    syncWithGoogleCalendar,
   }: CreateAppointmentUseCaseProps): Promise<CreateAppointmentUseCaseResponse> {
     const client = await this.clientsRepository.findById(clientId.toString())
     if (!client) {
@@ -54,7 +54,7 @@ export class CreateAppointmentUseCase {
     }
 
     const professional = await this.professionalRepository.findById(
-      professionalId.toString()
+      professionalId.toString(),
     )
 
     if (!professional) {
@@ -63,18 +63,18 @@ export class CreateAppointmentUseCase {
 
     const professionalScheduleConfiguration =
       await this.scheduleConfigurationRepository.findByProfessionalId(
-        professionalId.toString()
+        professionalId.toString(),
       )
 
     if (!professionalScheduleConfiguration) {
       return left(
-        new NotFoundError('Professional schedule configuration not found')
+        new NotFoundError('Professional schedule configuration not found'),
       )
     }
 
     const scheduleDurationMinute =
       professionalScheduleConfiguration.sessionDurationMinutes
-      
+
     const scheduleDurationDiff = dayjs(startDateTime)
       .add(scheduleDurationMinute, 'minutes')
       .diff(dayjs(startDateTime), 'minute')
@@ -87,9 +87,8 @@ export class CreateAppointmentUseCase {
       await this.appointmentsRepository.findOverlapping(
         professionalId.toString(),
         startDateTime,
-        endScheduleTime
+        endScheduleTime,
       )
-      
 
     if (overlappingAppointments!.length > 0) {
       return left(new NoDisponibilityError('No disponibility'))
@@ -98,8 +97,8 @@ export class CreateAppointmentUseCase {
     if (scheduleDurationDiff < scheduleDurationMinute) {
       return left(
         new NoDisponibilityError(
-          `Schedule duration must be at least ${scheduleDurationMinute} minutes`
-        )
+          `Schedule duration must be at least ${scheduleDurationMinute} minutes`,
+        ),
       )
     }
 
@@ -108,14 +107,14 @@ export class CreateAppointmentUseCase {
     if (scheduleDiffInHours < 3) {
       return left(
         new NoDisponibilityError(
-          'You can only reschedule at least 3 hours in advance.'
-        )
+          'You can only reschedule at least 3 hours in advance.',
+        ),
       )
     }
 
     if (dayjs(endScheduleTime).isBefore(startDateTime)) {
       return left(
-        new BadRequestError('End date cannot be before than start date.')
+        new BadRequestError('End date cannot be before than start date.'),
       )
     }
 
@@ -127,10 +126,22 @@ export class CreateAppointmentUseCase {
       modality,
       googleMeetLink,
       agreedPrice: professional.sessionPrice,
-      syncWithGoogleCalendar
+      syncWithGoogleCalendar,
     })
 
-    await this.appointmentsRepository.create(appointment)
+    try {
+      await this.appointmentsRepository.create(appointment)
+    } catch (error: any) {
+      const msg = error && error.message ? error.message.toLowerCase() : ''
+      if (
+        msg.includes('ocup') ||
+        msg.includes('occupied') ||
+        msg.includes('horário')
+      ) {
+        return left(new NoDisponibilityError('No disponibility'))
+      }
+      throw error
+    }
 
     return right({ appointment })
   }
