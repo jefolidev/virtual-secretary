@@ -1,8 +1,11 @@
+import { NotAllowedError } from '@/core/errors/not-allowed-error'
+import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
-import { Appointment } from '@/domain/scheduling/enterprise/entities/appointment'
+import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
+import { NoDisponibilityError } from '@/domain/scheduling/application/use-cases/errors/no-disponibility-error'
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { UserProfessionalWithSettings } from '@/domain/scheduling/enterprise/entities/value-objects/user-professional-with-settings'
@@ -21,6 +24,7 @@ import {
 } from '../types'
 import { FlowServiceUtil } from '../types/class'
 import { agreedResponses, declineResponses } from '../utils/responses'
+import { GeneralFlowService } from './general-flow.service'
 
 @Injectable()
 export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
@@ -37,6 +41,8 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
     private readonly userRepository: UserRepository,
 
     private readonly openai: OpenAiService,
+    private readonly generalFlowService: GeneralFlowService,
+    private readonly scheduleAppointmentUseCase: CreateAppointmentUseCase,
   ) {
     super(prisma)
   }
@@ -64,23 +70,13 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
 
     const professional = professionals.find((professional) => {
       const normalizedProfName = normalizeString(professional.name)
-      const profNameWords = normalizedProfName.split(/\s+/)
 
-      // Verifica se todos os termos de busca estão presentes no nome do profissional
-      const match = searchTerms.every((term) =>
-        profNameWords.some(
-          (word) => word.includes(term) || term.includes(word),
-        ),
-      )
-
-      return match
+      return searchTerms.every((term) => normalizedProfName.includes(term))
     })
 
     if (!professional) {
       return null
     }
-
-    console.log(`Found professional: ${professional.name}`)
 
     const professionalSessionPrice = await this.prisma.professional.findFirst({
       where: { id: professional?.professionalId?.toString() },
@@ -112,22 +108,93 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
     return client
   }
 
+  private async listUserAppointments(
+    session: ConversationSession<'appointment'>,
+  ) {
+    await this.getClientByUserId(session.userId)
+
+    if (!this.client) {
+      return `Desculpe, não consegui identificar seu cadastro como cliente. Por favor, cadastre-se ou entre em contato com o suporte.`
+    }
+
+    const appointments = await this.appointmentRepository.findManyByClientId(
+      this.client.id.toString(),
+      { page: 1 },
+    )
+
+    if (!appointments || appointments.length === 0) {
+      return 'Você não possui agendamentos no momento.'
+    }
+
+    const lines: string[] = []
+
+    for (let i = 0; i < appointments.length; i++) {
+      const appt = appointments[i]
+
+      // Busca nome do profissional
+      let professionalName = 'Profissional'
+      try {
+        const profUser = await this.userRepository.findByProfessionalId(
+          appt.professionalId.toString(),
+        )
+        professionalName = profUser?.name || professionalName
+      } catch (e) {
+        // ignore
+      }
+
+      const start = dayjs(appt.startDateTime).locale('pt-br')
+      const formattedDate = start.format('DD/MM/YYYY (dddd) [às] HH:mm')
+      const modality = appt.modality === 'IN_PERSON' ? 'Presencial' : 'Online'
+      const status = appt.status
+      const meet = appt.googleMeetLink || '—'
+
+      lines.push(
+        `${i + 1}. ${formattedDate} — ${professionalName} — ${modality} — ${status}\nLink: ${meet}`,
+      )
+    }
+
+    return `Seus agendamentos:\n\n${lines.join('\n\n')}`
+  }
+
   async handle(
     session: ConversationSession<'appointment'>,
     aiIntent: ConversationFlow,
     message: string,
   ) {
     const data = session.contextData.data
+    console.log(aiIntent)
+
+    if (
+      aiIntent === ConversationFlow.LIST_PROFESSIONAL &&
+      /lista|listar|mostrar|ver|profissionais|profissional/i.test(message)
+    ) {
+      session.currentStep = AppointmentFlowSteps.LIST_PROFESSIONALS
+      await this.updateSession(session)
+    }
+
+    if (
+      aiIntent === ConversationFlow.LIST_CLIENT_APPOINTMENT ||
+      /meus agendamentos|ver meus agendamentos|meus agendamento|agendamentos/i.test(
+        message,
+      )
+    ) {
+      return await this.generalFlowService.listUserAppointments(session)
+    }
 
     switch (session.currentStep) {
       case AppointmentFlowSteps.START:
         return this.start(session)
 
+      case AppointmentFlowSteps.LIST_PROFESSIONALS:
+        session.currentStep = AppointmentFlowSteps.ASK_PROFESSIONAL
+        await this.updateSession(session)
+        return this.listProfessionals()
+
       case AppointmentFlowSteps.COLLECT_DATA:
-        await this.extractScheduleAppointmentData(message, session)
+        return await this.extractScheduleAppointmentData(message, session)
 
       case AppointmentFlowSteps.CONFIRM_APPOINTMENT:
-        return this.handleConfirmationResponse(session, message)
+        return await this.handleConfirmationResponse(session, message)
 
       case AppointmentFlowSteps.ASK_PROFESSIONAL:
         session.contextData.data.professionalName = message
@@ -136,8 +203,17 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
         return this.showConfirmation(session)
 
       case AppointmentFlowSteps.ASK_DATE_TIME:
-        // Extrai a data e horário da mensagem do usuário
-        await this.extractScheduleAppointmentData(message, session)
+        console.log('entrou aqui')
+        const extractResult = await this.extractScheduleAppointmentData(
+          message,
+          session,
+        )
+
+        if (typeof extractResult === 'string') {
+          // erro durante extração — retorna mensagem de erro para o usuário
+          return extractResult
+        }
+
         return this.showConfirmation(session)
 
       case AppointmentFlowSteps.ASK_MODALITY:
@@ -171,10 +247,12 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
         return `Desculpe, não entendi sua solicitação. Pode repetir?.`
     }
   }
+
   private async start(session: ConversationSession<'appointment'>) {
     const user = await this.prisma.user.findFirst({
       where: { id: session.userId },
     })
+
     session.currentStep = AppointmentFlowSteps.COLLECT_DATA
     await this.updateSession(session)
     return `Olá ${user?.name || 'usuário'}! Para agendarmos sua consulta, por favor, informe o nome do profissional com quem deseja marcar a consulta, a data, horário e a modalidade do atendimento (presencial ou online).
@@ -182,28 +260,127 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
               Por exemplo: "Quero agendar uma consulta com o Dr. Silva no dia 15 de março às 14h, atendimento presencial". Caso haja dúvidas quanto ao nome do profissional, você pode solicitar pedindo "olhar profissionais disponíveis" e verá a lista completa com nome do profissional e modalidade de atendimento.`
   }
 
+  async listProfessionals() {
+    const professionals =
+      await this.professionalRepository.findManyProfessionalsAndSettings()
+
+    if (!professionals || professionals.length === 0) {
+      return 'Não foi enconntrado nenhum profissional, entre em contato com o suporte.'
+    }
+
+    const professionalList = professionals.map((prof, idx) => ({
+      nome: prof.name,
+      email: prof.email,
+      organizacao: prof.organization?.name || null,
+    }))
+
+    const response = `Aqui estão os profissionais disponíveis:
+    ${professionalList
+      .map((prof, idx) => {
+        const name = prof.nome
+        const email = prof.email
+        const organization = prof.organizacao
+
+        return `
+      ${idx + 1}. *${name}*
+          Email: ${email}
+          ${organization ? `Organização: ${organization}\n` : ''}`
+      })
+      .join('')}
+Por favor, informe o nome completo do profissional com quem deseja agendar a consulta.`
+
+    return response
+  }
+
   private async extractScheduleAppointmentData(
     userResponse: string,
     session: ConversationSession<'appointment'>,
   ) {
     try {
-      const fields = (await this.openai.extractScheduleData(
+      const extracted = (await this.openai.extractScheduleData(
         userResponse,
-      )) as FieldsData<CreateAppointmentBodyDTO>
+      )) as FieldsData<CreateAppointmentBodyDTO> | null
 
-      // Normaliza startDateTime para Date se vier como string
-      if (
-        fields.data.startDateTime &&
-        typeof fields.data.startDateTime === 'string'
-      ) {
-        fields.data.startDateTime = new Date(fields.data.startDateTime)
+      console.log(userResponse, extracted)
+
+      let fields: FieldsData<CreateAppointmentBodyDTO> | null = extracted
+
+      if (!fields || !fields.data) {
+        console.log(
+          'extractScheduleData returned empty, trying fallbacks:',
+          fields,
+        )
+        await this.updateSession(session)
+
+        const fallbackFields = { data: {}, missingFields: [] } as any
+
+        try {
+          const dateOnly = await this.openai.extractDateOnly(userResponse)
+          if (dateOnly && dateOnly.startDateTime) {
+            fallbackFields.data.startDateTime = new Date(dateOnly.startDateTime)
+          }
+
+          const profOnly =
+            await this.openai.extractProfessionalOnly(userResponse)
+          if (profOnly && profOnly.professionalName) {
+            fallbackFields.data.professionalName = profOnly.professionalName
+          }
+
+          const modalityOnly =
+            await this.openai.extractModalityOnly(userResponse)
+          if (modalityOnly && modalityOnly.modality) {
+            fallbackFields.data.modality = modalityOnly.modality
+          }
+        } catch (e) {
+          console.error('fallback extractors failed:', e)
+        }
+
+        // Se os fallbacks não retornarem nada, pedir explicitamente a data/hora
+        if (Object.keys(fallbackFields.data).length === 0) {
+          return this.askDateTime(session)
+        }
+
+        fields = fallbackFields
       }
 
-      session.contextData.data = fields.data
-      session.contextData.missingFields = fields.missingFields
+      // fields já garantido não-nulo acima (se fosse nulo teríamos retornado askDateTime)
+      const parsedFields = fields as FieldsData<CreateAppointmentBodyDTO>
+
+      if (
+        parsedFields.data.startDateTime &&
+        typeof parsedFields.data.startDateTime === 'string'
+      ) {
+        parsedFields.data.startDateTime = new Date(
+          parsedFields.data.startDateTime,
+        )
+      }
+
+      session.contextData.data = {
+        ...(session.contextData.data || {}),
+        ...parsedFields.data,
+      }
+      session.contextData.missingFields = parsedFields.missingFields
 
       session.currentStep = AppointmentFlowSteps.CONFIRM_APPOINTMENT
       await this.updateSession(session)
+
+      if (
+        session.contextData.data.professionalName &&
+        session.contextData.data.modality &&
+        session.contextData.data.startDateTime
+      ) {
+        return this.showConfirmation(session)
+      }
+
+      if (
+        session.contextData.data.professionalName &&
+        session.contextData.data.modality &&
+        !session.contextData.data.startDateTime
+      ) {
+        session.currentStep = AppointmentFlowSteps.ASK_DATE_TIME
+        await this.updateSession(session)
+        return this.askDateTime(session)
+      }
     } catch (error) {
       console.error('Error extracting schedule data:', error)
       return `Desculpe, ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.`
@@ -263,6 +440,8 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
       if (this.professional) {
         return `Encontrei o(a) profissional *${this.professional.name}*, mas infelizmente ele(a) ainda não possui uma configuração de agenda disponível. Por favor, entre em contato com o suporte ou escolha outro profissional.`
       }
+
+      console.log(professionalName)
 
       return `Desculpe, não consegui encontrar nenhum profissional com o nome "${professionalName}". Por favor, verifique o nome e tente novamente ou peça para ver a lista de profissionais disponíveis.`
     }
@@ -339,8 +518,6 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
     userResponse: string,
     session: ConversationSession<'appointment'>,
   ) {
-    console.log(session)
-
     try {
       const { startDateTime, modality } = session.contextData.data
 
@@ -350,8 +527,6 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
         await this.finishSession(session)
         return `Desculpe, não consegui identificar seu cadastro como cliente. Por favor, entre em contato com o suporte para mais informações.`
       }
-
-      console.log(this.client)
 
       if (!this.professional || !this.professional.professionalId) {
         session.currentStep = AppointmentFlowSteps.ASK_PROFESSIONAL
@@ -370,23 +545,59 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
         return `Desculpe, o profissional ${this.professional.name} não possui uma configuração de agenda válida. Por favor, entre em contato com o suporte para mais informações.`
       }
 
-      const endDate = dayjs(startDateTime)
-        .add(professionalScheduleConfiguration.sessionDurationMinutes, 'minute')
-        .toDate()
+      const user = await this.userRepository.findByClientId(
+        this.client.id.toString(),
+      )
 
-      const appointment = Appointment.create({
-        clientId: this.client.id,
-        professionalId: this.professional.professionalId,
-        startDateTime: startDateTime!,
-        endDateTime: endDate,
-        modality: modality!,
-        agreedPrice: this.professionalSessionPrice!,
+      if (!user) {
+        await this.finishSession(session)
+        return `Desculpe, não consegui identificar seu cadastro como cliente. Por favor, entre em contato com o suporte para mais informações.`
+      }
+
+      const shouldSyncWithGoogleCalendar = this.prisma.professional.findUnique({
+        where: { id: this.professional.professionalId.toString() },
+        select: { googleCalendarTokens: true },
       })
 
-      await this.appointmentRepository.create(appointment)
+      const result = await this.scheduleAppointmentUseCase.execute({
+        clientId: this.client.id.toString(),
+        professionalId: this.professional.professionalId.toString(),
+        startDateTime: startDateTime!,
+        googleMeetLink: '',
+        modality: modality!,
+        syncWithGoogleCalendar:
+          shouldSyncWithGoogleCalendar.googleCalendarTokens.length > 0,
+      })
+
+      if (result.isLeft()) {
+        const error = result.value
+        // Mensagens amigáveis para o usuário no fluxo de conversa
+        if (error.constructor === NoDisponibilityError) {
+          session.currentStep = AppointmentFlowSteps.ASK_DATE_TIME
+          await this.updateSession(session)
+          return `Desculpe, este horário já está ocupado. Por favor, responda com outro horário (por exemplo "amanhã às 15h").`
+        }
+
+        if (error.constructor === NotFoundError) {
+          return `Desculpe, não foi possível concluir o agendamento: ${
+            (error as any).message
+          }. Por favor, tente novamente ou entre em contato com o suporte.`
+        }
+
+        if (error.constructor === NotAllowedError) {
+          return `Desculpe, você não tem permissão para realizar esta ação: ${
+            (error as any).message
+          }.`
+        }
+
+        return `Desculpe, ocorreu um erro ao processar seu agendamento: ${
+          (error as any)?.message ?? 'Erro desconhecido'
+        }. Por favor, tente novamente mais tarde.`
+      }
+
       await this.finishSession(session)
 
-      return `✅ *Agendamento confirmado com sucesso!*\n\n🩺 Profissional: ${this.professional.name}\n📅 Data e horário: ${dayjs(startDateTime).locale('pt-br').format('DD/MM/YYYY (dddd) [às] HH:mm')}\n🖥️ Modalidade: ${modality === 'IN_PERSON' ? 'Presencial' : 'Online'}\n💰 Valor: R$${this.professionalSessionPrice?.toFixed(2)}\n\nSe precisar de mais alguma coisa, estou à disposição!`
+      return `✅ *Agendamento confirmado com sucesso!*\n\n🩺 Profissional: ${this.professional.name}\n📅 Data e horário: ${dayjs(startDateTime).locale('pt-br').format('DD/MM/YYYY (dddd) [às] HH:mm')}\n🖥️ Modalidade: ${modality === 'IN_PERSON' ? 'Presencial' : 'Online'}\n💰 Valor: R$${this.professionalSessionPrice?.toFixed(2)}\n\nSe precisar de mais alguma coisa, estou à disposição! Envie "ver meus agendamentos" para ver seus agendamentos e conferir o link para a reunião no Google Meet.`
     } catch (error) {
       console.error('Error scheduling appointment:', error)
       return `Desculpe, ocorreu um erro ao agendar sua consulta. Por favor, tente novamente mais tarde.`
