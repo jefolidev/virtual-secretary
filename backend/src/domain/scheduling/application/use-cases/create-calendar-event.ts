@@ -37,6 +37,8 @@ export class CreateCalendarEventUseCase {
       return left(new NotFoundError('Appointment not found'))
     }
 
+    console.log(appointmentId)
+
     // 2. Verificar se profissional tem Google Calendar conectado
     const hasGoogleConnected =
       await this.googleCalendarTokenRepository.hasTokens(
@@ -84,16 +86,19 @@ ${
 📍 Modalidade: ${appointment.modality === 'ONLINE' ? 'Online (Google Meet)' : 'Presencial'}
 `
 
-    const event = GoogleCalendarEvent.create({
-      professionalId: appointment.professionalId,
-      summary: `Consulta com o(a) paciente ${user.name}.`,
-      startDateTime: appointment.startDateTime,
-      endDateTime: appointment.endDateTime,
-      appointmentId: new UniqueEntityId(appointmentId),
-      description: eventDescription,
-      googleEventLink: '',
-      syncStatus: 'PENDING',
-    })
+    const event = GoogleCalendarEvent.create(
+      {
+        professionalId: appointment.professionalId,
+        summary: `Consulta com o(a) paciente ${user.name}.`,
+        startDateTime: appointment.startDateTime,
+        endDateTime: appointment.endDateTime,
+        appointmentId: new UniqueEntityId(appointmentId),
+        description: eventDescription,
+        googleEventLink: '',
+        syncStatus: 'PENDING',
+      },
+      new UniqueEntityId(appointmentId),
+    )
 
     const repositoryEvent = await this.googleCalendarEventRepository.create(
       appointmentId,
@@ -120,16 +125,16 @@ ${
 
     await this.googleCalendarEventRepository.updateEvent(
       appointment.professionalId.toString(),
-      event.id.toString(),
+      repositoryEvent.id.toString(),
       { googleEventLink: event.googleEventLink, syncStatus: 'SYNCED' },
     )
 
-    appointment.googleCalendarEventId = event.id.toString()
+    appointment.googleCalendarEventId = repositoryEvent.id.toString()
 
     await this.appointmentRepository.save(appointment)
 
     return right({
-      eventId: event.id.toString(),
+      eventId: repositoryEvent.id.toString(),
       eventLink: event.googleEventLink,
       meetLink: repositoryEvent.meetLink,
     })
