@@ -1,3 +1,4 @@
+import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
 import { Module } from '@nestjs/common'
 import { DatabaseModule } from '../database/database.module'
 import { OpenAIModule } from '../webhooks/openai/openai.module'
@@ -19,6 +20,8 @@ import { RegistrationFlowService } from './flows/registration-flow.service'
     AppointmentFlowService,
     RegistrationFlowService,
     GeneralFlowService,
+
+    CreateAppointmentUseCase,
   ],
 })
 export class FlowModule {}
