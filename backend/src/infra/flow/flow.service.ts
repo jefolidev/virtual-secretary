@@ -66,6 +66,7 @@ export class FlowService {
           intent,
           message,
         )
+
       case ConversationFlow.SCHEDULE_APPOINTMENT:
         const appointmentSession: ConversationSession<'appointment'> = {
           ...session,
@@ -88,7 +89,7 @@ export class FlowService {
         return 'Vamos cancelar seu agendamento. Qual sessão?'
 
       default:
-        return this.generalFlowService.handle()
+        return this.generalFlowService.handle(message, session)
     }
   }
 
