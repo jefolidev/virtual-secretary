@@ -30,11 +30,6 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
       infer: true,
     })
 
-    console.log('=== GOOGLE OAUTH CONFIG ===')
-    console.log('NODE_ENV:', process.env.NODE_ENV)
-    console.log('GOOGLE_REDIRECT_URI from config:', redirectUri)
-    console.log('==========================')
-
     // `${environment === 'production' ? fullUrl : url}/auth/google/callback`
     this.oauth2Client = new google.auth.OAuth2({
       redirectUri:
@@ -127,6 +122,31 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
 
     const shouldCreateMeet = appointment.modality === 'ONLINE'
 
+    // Garantir que exista um registro local (ou atualizá-lo) antes de criar o evento
+    // Usamos upsert para reservar o `appointmentId` e o `id` do evento do domínio.
+    const placeholder = await this.prisma.calendarEvent.upsert({
+      where: { appointmentId: appointmentId },
+      create: {
+        // Use appointmentId as the CalendarEvent.id so both ids coincide
+        id: appointmentId,
+        appointmentId: appointmentId,
+        professionalId: appointment.professionalId,
+        googleEventId: '',
+        googleEventLink: '',
+        googleMeetLink: null,
+        summary: calendarEvent.summary || '',
+        description: calendarEvent.description || null,
+        startDateTime: calendarEvent.startDateTime,
+        endDateTime: calendarEvent.endDateTime || calendarEvent.startDateTime,
+        syncStatus: 'CREATING',
+        lastSyncedAt: new Date(),
+      },
+      update: {
+        syncStatus: 'CREATING',
+        lastSyncedAt: new Date(),
+      },
+    })
+
     // Criar evento no Google Calendar
     const googleEvent = await this.calendar.events.insert({
       calendarId: 'primary',
@@ -155,27 +175,30 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
       },
     })
 
-    // Extrair link do Google Meet
     const meetLink = googleEvent.data.conferenceData?.entryPoints?.find(
       (entry) => entry.entryPointType === 'video',
     )?.uri
 
-    // Salvar no banco local
-    const data = PrismaCalendarEventMapper.toPrisma(calendarEvent)
-
-    const createdEvent = await this.prisma.calendarEvent.create({
+    // Atualizar o registro local com os dados retornados pelo Google
+    const updated = await this.prisma.calendarEvent.update({
+      where: { id: placeholder.id },
       data: {
-        ...data,
-        googleEventId: googleEvent.data.id!,
-        googleEventLink: googleEvent.data.htmlLink!,
+        googleEventId: googleEvent.data.id || '',
+        googleEventLink: googleEvent.data.htmlLink || '',
         googleMeetLink: meetLink || null,
+        summary: calendarEvent.summary || '',
+        description: calendarEvent.description || null,
+        startDateTime: calendarEvent.startDateTime,
+        endDateTime: calendarEvent.endDateTime || calendarEvent.startDateTime,
+        syncStatus: 'PENDING',
+        lastSyncedAt: new Date(),
       },
     })
 
     return {
-      id: createdEvent.id,
-      htmlLink: createdEvent.googleEventLink,
-      meetLink: createdEvent.googleMeetLink || undefined,
+      id: updated.id,
+      htmlLink: updated.googleEventLink,
+      meetLink: updated.googleMeetLink || undefined,
     }
   }
 
@@ -188,24 +211,28 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
       data as GoogleCalendarEvent,
     )
 
-    const updatedEvent = await this.prisma.calendarEvent.updateMany({
-      where: { id: eventId, professionalId },
-      data: prismaData,
-    })
-
-    if (updatedEvent.count === 0) {
-      throw new Error('Calendar event not found or not authorized')
-    }
-
-    const event = await this.prisma.calendarEvent.findUnique({
+    // Buscar o evento primeiro para checar autorização e existência
+    const existing = await this.prisma.calendarEvent.findUnique({
       where: { id: eventId },
     })
 
-    if (!event) {
-      throw new Error('Calendar event not found after update')
+    console.log(eventId)
+    console.log('Existing event:', existing)
+
+    if (!existing) {
+      throw new Error('Calendar event not found')
     }
 
-    return { id: event.id, htmlLink: event.googleEventLink }
+    if (existing.professionalId !== professionalId) {
+      throw new Error('Calendar event not found or not authorized')
+    }
+
+    const updated = await this.prisma.calendarEvent.update({
+      where: { id: eventId },
+      data: prismaData,
+    })
+
+    return { id: updated.id, htmlLink: updated.googleEventLink }
   }
 
   async save(calendarEvent: GoogleCalendarEvent): Promise<void> {
