@@ -1,14 +1,13 @@
 import { FetchProfessionalUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional'
-import { PrismaUserProfessionalWithSettingsMapper } from '@/infra/database/mappers/prisma-user-professional-with-settings'
 import { PaginationQueryPipe } from '@/infra/http/pipes/pagination-query.pipe'
 import { BadRequestException, Controller, Get, Query } from '@nestjs/common'
+import { UserProfessionalWithSettingsPresenter } from '../presenters/user-profissional-with-settings-presenter'
 import { PageQueryParamSchema } from './dto/page-query.dto'
-import { UserProfessionalWithSettingsPresenter } from '../presenters/user-profissional-with-settings'
 
 @Controller('/professionals')
 export class FetchProfessionalController {
   constructor(
-    private readonly fetchProfessionalUseCase: FetchProfessionalUseCase
+    private readonly fetchProfessionalUseCase: FetchProfessionalUseCase,
   ) {}
 
   @Get()
