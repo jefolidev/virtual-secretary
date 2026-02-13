@@ -6,8 +6,8 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "email": "admin@email.com",
-  "password": "Abc12345"
+  "email": "jefoliveira279@gmail.com",
+  "password": "Jeferson279"
 }
 
 ###
@@ -18,9 +18,9 @@ Content-Type: application/json
 Authorization: Bearer {{authToken}}
 
 {
-  "email": "jeferson@professional.com.br",
-  "newPassword": "SenhaForte12345",
-  "newPasswordConfirmation": "SenhaForte12345"
+  "email": "jefoliveira279@gmail.com",
+  "newPassword": "Jeferson279",
+  "newPasswordConfirmation": "Jeferson279"
 }
 
 ###
@@ -117,6 +117,14 @@ Content-Type: application/json
   }
 }
 ### 
+
+# @name fetch_users_contacts
+GET {{baseUrl}}/contacts/users
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
 
 # @name create_organization
 POST {{baseUrl}}/organization
