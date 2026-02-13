@@ -1,3 +1,4 @@
+import { api } from '@/api/axios'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,9 +11,9 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Calendar, Filter, Search } from 'lucide-react'
-import { useState } from 'react'
-import { ClientCard, type ClientCardProps } from '../components/client-card'
-import { ControlBar } from '../components/control-bar'
+import { useEffect, useState } from 'react'
+import { ClientCard, type ClientCardProps } from './components/client-card'
+import { ControlBar } from './components/control-bar'
 
 const mockClient: ClientCardProps[] = [
   {
@@ -492,6 +493,25 @@ type FilterType = 'all' | 'registered' | 'unregistered' | 'online'
 type SortType = 'name' | 'recent' | 'appointments'
 
 export function ListClientsPage() {
+  const [clients, setClients] = useState([])
+
+  const handleFetchClients = async () => {
+    try {
+      // Simula uma chamada de API
+      const response = await api.get('/contacts/users')
+
+      console.log('Clientes buscados:', response.data)
+
+      setClients(response.data)
+    } catch (error) {
+      console.error('Erro ao buscar clientes:', error)
+    }
+  }
+
+  useEffect(() => {
+    handleFetchClients()
+  }, [])
+
   const [selectedPatient, setSelectedPatient] =
     useState<ClientCardProps | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
