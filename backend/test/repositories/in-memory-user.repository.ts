@@ -5,9 +5,27 @@ import {
   UserRepository,
 } from '@/domain/scheduling/application/repositories/user.repository'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
+import { UserClientWhatsappAppointments } from '@/domain/scheduling/enterprise/entities/value-objects/user-with-clients-and-appointments'
 
 export class InMemoryUserRepository implements UserRepository {
   public items: User[] = []
+
+  async findManyUsersWithWhatsApp(): Promise<
+    UserClientWhatsappAppointments[] | null
+  > {
+    const usersWithWhatsApp = this.items
+      .filter((user) => !!user.whatsappNumber)
+      .map((user) =>
+        UserClientWhatsappAppointments.create({
+          user,
+          client: null,
+          whatsappContact: null,
+          appointments: [],
+        }),
+      )
+
+    return usersWithWhatsApp.length > 0 ? usersWithWhatsApp : null
+  }
 
   private generateRandomPassword(): string {
     const length = 16
