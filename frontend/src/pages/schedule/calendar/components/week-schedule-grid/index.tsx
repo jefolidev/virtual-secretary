@@ -18,6 +18,9 @@ export function WeekScheduleGrid({
   const [modalOpen, setModalOpen] = useState(false)
 
   const timeSlots = generateTimeSlots(7, 22)
+  // Usar colunas responsivas para evitar overflow horizontal em telas pequenas
+  // cada coluna terá pelo menos 100px e crescerá igualmente
+  const dayColumnTemplate = `repeat(${weekDays.length}, minmax(100px, 1fr))`
 
   // --- CORREÇÃO DE TIPAGEM AQUI ---
   // Passamos 'schedules' diretamente. A função utils deve estar preparada
@@ -42,7 +45,7 @@ export function WeekScheduleGrid({
         <div className="w-16 sm:w-18"></div>
         <div
           className="flex-1 grid"
-          style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
+          style={{ gridTemplateColumns: dayColumnTemplate }}
         >
           {weekDays.map((date, index) => (
             <div
@@ -59,10 +62,7 @@ export function WeekScheduleGrid({
       </div>
 
       <div className="flex-1 flex overflow-hidden">
-        <div
-          className="flex overflow-y-auto w-full"
-          style={{ height: 'calc(100vh - 280px)' }}
-        >
+        <div className="flex overflow-auto w-full">
           {/* Coluna de Horas */}
           <div className="w-16 sm:w-18 shrink-0 bg-muted/5">
             {timeSlots.map((time, index) => (
@@ -97,7 +97,7 @@ export function WeekScheduleGrid({
 
             <div
               className="absolute inset-0 grid"
-              style={{ gridTemplateColumns: `repeat(${weekDays.length}, 1fr)` }}
+              style={{ gridTemplateColumns: dayColumnTemplate }}
             >
               {weekDays.map((date, dayIndex) => {
                 const daySchedules = schedules.filter((item) => {
@@ -140,19 +140,25 @@ export function WeekScheduleGrid({
                       const colIndex = collisions.findIndex(
                         (s) => s.appointments.id === apt.id,
                       )
-                      const width = 100 / collisions.length
+
+                      // Empilhar verticalmente: cada item ocupa a largura total
+                      // e é deslocado verticalmente pelo índice de colisão.
+                      const perItemHeight = Math.max(
+                        60,
+                        slotHeight / Math.max(1, collisions.length),
+                      )
+                      const stackedTop = slotTop + colIndex * perItemHeight
 
                       return (
                         <div
                           key={apt.id}
                           className="absolute p-0.5"
                           style={{
-                            top: `${slotTop}px`,
-                            left: `${colIndex * width}%`,
-                            width: `${width}%`,
-                            // Altura mínima para garantir que o card seja visível
-                            height: `${Math.max(60, slotHeight)}px`,
-                            zIndex: 10,
+                            top: `${stackedTop}px`,
+                            left: `0%`,
+                            width: `100%`,
+                            height: `${perItemHeight}px`,
+                            zIndex: 10 - colIndex,
                           }}
                         >
                           <AppointmentCard
