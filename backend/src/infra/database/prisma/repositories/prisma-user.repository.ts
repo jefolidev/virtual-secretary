@@ -6,11 +6,15 @@ import {
 import { Address } from '@/domain/scheduling/enterprise/entities/address'
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
+import { UserClientWhatsappAppointments } from '@/domain/scheduling/enterprise/entities/value-objects/user-with-clients-and-appointments'
+import { WhatsappContact } from '@/domain/scheduling/enterprise/entities/whatsapp-contact'
 import { Injectable } from '@nestjs/common'
 import cep from 'cep-promise'
 import { PrismaAddressMapper } from '../../mappers/prisma-address-mapper'
 import { PrismaClientMapper } from '../../mappers/prisma-client-mapper'
 import { PrismaUserMapper } from '../../mappers/prisma-user-mapper'
+import { PrismaUserWithWhatsappAndAppointmentMapper } from '../../mappers/prisma-user-with-whatsapp-and-appointment-mapper'
+import { PrismaWhatsappContactMapper } from '../../mappers/prisma-whatsapp-contact-mapper'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
@@ -19,6 +23,78 @@ export class PrismaUserRepository implements UserRepository {
     private readonly prisma: PrismaService,
     private readonly hashGenerator: HashGenerator,
   ) {}
+
+  async fetchWhatsappRegisteredAndUnlinked(): Promise<{
+    registred: UserClientWhatsappAppointments[]
+    unlinked: WhatsappContact[]
+  } | null> {
+    const registred = await this.prisma.user.findMany({
+      where: {
+        whatsappNumber: {
+          not: undefined,
+        },
+      },
+      include: {
+        client: {
+          include: {
+            appointments: true,
+          },
+        },
+        whatsappContact: true,
+      },
+    })
+
+    const contacts = await this.prisma.whatsappContact.findMany({
+      where: {
+        userId: null,
+        phone: {
+          not: undefined,
+        },
+      },
+    })
+
+    if (
+      (!registred || registred.length === 0) &&
+      (!contacts || contacts.length === 0)
+    ) {
+      return null
+    }
+
+    return {
+      registred: registred.map(
+        PrismaUserWithWhatsappAndAppointmentMapper.toDomain,
+      ),
+      unlinked: contacts.map(PrismaWhatsappContactMapper.toDomain),
+    }
+  }
+
+  async findManyUsersWithWhatsApp(): Promise<
+    UserClientWhatsappAppointments[] | null
+  > {
+    const users = await this.prisma.user.findMany({
+      where: {
+        whatsappNumber: {
+          not: undefined,
+        },
+      },
+      include: {
+        client: {
+          include: {
+            appointments: true,
+          },
+        },
+        whatsappContact: true,
+      },
+    })
+
+    if (!users || users.length === 0) {
+      return null
+    }
+
+    return users.map((user) =>
+      PrismaUserWithWhatsappAndAppointmentMapper.toDomain(user),
+    )
+  }
 
   clearAuthCookies({ response, request }: CookieClearOptions): void {
     const cookiesToClear = ['access_token', 'user_data', 'authToken']
