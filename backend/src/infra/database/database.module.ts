@@ -24,11 +24,13 @@ import { PrismaNotificationsRepository } from './prisma/repositories/prisma-noti
 import { PrismaProfessionalRepository } from './prisma/repositories/prisma-professional.repository'
 
 import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
+import { WhatsappContactRepository } from '@/domain/scheduling/application/repositories/whatsapp-contact.repository'
 import { PrismaCalendarEventRepository } from './prisma/repositories/prisma-calendar-event.repository'
 import { PrismaGoogleCalendarTokenRepository } from './prisma/repositories/prisma-google-calendar-token.repository'
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository'
+import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-whatsapp-conntact.repository'
 
 @Module({
   imports: [
@@ -92,6 +94,10 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
       provide: GoogleCalendarEventRepository,
       useClass: PrismaCalendarEventRepository,
     },
+    {
+      provide: WhatsappContactRepository,
+      useClass: PrismaWhatsappContactRepository,
+    },
   ],
   exports: [
     CacheModule,
@@ -107,6 +113,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
     UserRepository,
     GoogleCalendarTokenRepository,
     GoogleCalendarEventRepository,
+    WhatsappContactRepository,
   ],
 })
 export class DatabaseModule {}
