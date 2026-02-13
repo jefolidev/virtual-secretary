@@ -22,6 +22,7 @@ import { formatFullAddress } from '@/utils/format-address'
 import { formatPhoneNumber } from '@/utils/format-phone'
 import {
   Bell,
+  Camera,
   Clock,
   CreditCard,
   MapPin,
@@ -33,6 +34,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
+import { VideoCameraIcon } from '@phosphor-icons/react'
 
 interface AppointmentModalProps {
   schedule: FetchProfessionalSchedulesSchema | null
@@ -236,7 +238,7 @@ export function AppointmentModal({
             </div>
           </div>
           {/* Grid de colunas - Modalidade e Data/Hora */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-3 md:grid-cols-3 gap-6 items-center">
             {/* Modalidade */}
             <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
@@ -258,6 +260,27 @@ export function AppointmentModal({
               </div>
             </div>
 
+            {schedule?.appointments?.modality === 'ONLINE' && (
+              <div className="flex gap-2.5">
+                <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
+                  <VideoCameraIcon className="h-5 w-5 text-zinc-600" weight="bold"/>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">
+                    Link
+                  </p>
+                  <a
+                    href={schedule?.appointments?.googleMeetLink || ''}
+                    className="font-semibold text-xs text-blue-600 hover:text-blue-700"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Acessar reunião
+                  </a>
+                </div>
+              </div>
+            )}
+
             {/* Data e Horário */}
             <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
@@ -267,12 +290,12 @@ export function AppointmentModal({
                 <p className="text-xs text-muted-foreground uppercase font-medium">
                   Data/Horário
                 </p>
-                <p className="font-semibold">
+                <p className="font-semibold text-xs">
                   {new Date(
                     schedule?.appointments?.startDateTime,
                   ).toLocaleDateString('pt-BR')}
                 </p>
-                <p className="text-sm">
+                <p className="text-xs">
                   {new Date(
                     schedule?.appointments?.startDateTime,
                   ).toLocaleTimeString('pt-BR', {
