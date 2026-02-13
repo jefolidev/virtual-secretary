@@ -3,8 +3,7 @@ import { UserRepository } from '@/domain/scheduling/application/repositories/use
 import { PasswordDoesntMatchesError } from '@/domain/scheduling/application/use-cases/errors/password-does-not-matches'
 import { WrongCredentialsError } from '@/domain/scheduling/application/use-cases/errors/wrong-credentials-error'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
-import { CurrentUser } from '@/infra/auth/current-user-decorator'
-import { UserPayload } from '@/infra/auth/jwt.strategy'
+import { Public } from '@/infra/auth/public'
 import {
   BadRequestException,
   Body,
@@ -23,19 +22,19 @@ import {
 export class ForgotPasswordController {
   constructor(
     private readonly forgotPasswordUseCase: ForgotPasswordUseCase,
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {}
 
   @Post()
+  @Public()
   @HttpCode(201)
   async handle(
     @Body(new ZodValidationPipe(forgotPasswordBodySchema))
     body: ForgotPasswordBodySchema,
-    @CurrentUser() { sub: userId }: UserPayload
   ) {
-    const { newPassword, newPasswordConfirmation } = body
+    const { newPassword, newPasswordConfirmation, email } = body
 
-    const user = await this.userRepository.findById(userId)
+    const user = await this.userRepository.findByEmail(email)
 
     if (!user) {
       throw new NotFoundError('User not found')
