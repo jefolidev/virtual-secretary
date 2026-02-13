@@ -6,6 +6,7 @@ import {
 } from '@/domain/scheduling/application/repositories/user.repository'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { UserClientWhatsappAppointments } from '@/domain/scheduling/enterprise/entities/value-objects/user-with-clients-and-appointments'
+import { WhatsappContact } from '@/domain/scheduling/enterprise/entities/whatsapp-contact'
 
 export class InMemoryUserRepository implements UserRepository {
   public items: User[] = []
@@ -25,6 +26,63 @@ export class InMemoryUserRepository implements UserRepository {
       )
 
     return usersWithWhatsApp.length > 0 ? usersWithWhatsApp : null
+  }
+
+  async fetchWhatsappRegisteredAndUnlinked(options?: {
+    filter?: 'all' | 'clients' | 'registered' | 'unregistered'
+    order?: 'name' | 'recent' | 'oldest' | 'more_appointments'
+  }): Promise<{
+    registred: UserClientWhatsappAppointments[]
+    unlinked: WhatsappContact[]
+  } | null> {
+    const filter = options?.filter ?? 'all'
+    const order = options?.order ?? 'name'
+
+    let users: UserClientWhatsappAppointments[] = []
+    if (filter === 'all' || filter === 'clients' || filter === 'registered') {
+      const filtered = this.items.filter((user) => {
+        if (filter === 'clients')
+          return user.clientId !== null && user.clientId !== undefined
+        if (filter === 'registered')
+          return (
+            !!user.whatsappNumber &&
+            (user.professionalId === null || user.professionalId === undefined)
+          )
+        return !!user.whatsappNumber
+      })
+
+      users = filtered.map((user) =>
+        UserClientWhatsappAppointments.create({
+          user,
+          client: null,
+          whatsappContact: null,
+          appointments: [],
+        }),
+      )
+    }
+
+    const contacts: WhatsappContact[] = [] // In-memory repo doesn't store whatsapp contacts
+
+    if (users.length === 0 && contacts.length === 0) return null
+
+    if (users.length > 0) {
+      if (order === 'name') {
+        users.sort((a, b) =>
+          (a.user?.name || '').localeCompare(b.user?.name || ''),
+        )
+      } else if (order === 'more_appointments') {
+        users.sort((a, b) => {
+          const ac = a?.appointments ? a.appointments.length : 0
+          const bc = b?.appointments ? b.appointments.length : 0
+          return bc - ac
+        })
+      }
+    }
+
+    return {
+      registred: users,
+      unlinked: contacts,
+    }
   }
 
   private generateRandomPassword(): string {

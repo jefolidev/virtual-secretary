@@ -1,5 +1,5 @@
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
-import { Controller, Get } from '@nestjs/common'
+import { Controller, Get, Query } from '@nestjs/common'
 import { UserClientWhatsappPresenter } from '../presenters/user-client-whatsapp-presenter'
 import { WhatsappContactPresenter } from '../presenters/whatsapp-contact-presenter'
 
@@ -8,8 +8,14 @@ export class FetchUsersContactsController {
   constructor(private readonly userRepository: UserRepository) {}
 
   @Get('users')
-  async fetchAll() {
-    const users = await this.userRepository.fetchWhatsappRegisteredAndUnlinked()
+  async fetchAll(
+    @Query('filter') filter?: 'all' | 'registered' | 'unregistered',
+    @Query('order') order?: 'name' | 'recent' | 'more_appointments' | 'oldest',
+  ) {
+    const users = await this.userRepository.fetchWhatsappRegisteredAndUnlinked({
+      filter,
+      order,
+    })
 
     if (!users) return []
 

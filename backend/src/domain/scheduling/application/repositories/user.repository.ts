@@ -21,7 +21,11 @@ export abstract class UserRepository {
   abstract findManyUsersWithWhatsApp(): Promise<
     UserClientWhatsappAppointments[] | null
   >
-  abstract fetchWhatsappRegisteredAndUnlinked(): Promise<{
+  abstract fetchWhatsappRegisteredAndUnlinked(options?: {
+    filter?: 'all' | 'registered' | 'unregistered'
+    order?: 'name' | 'recent' | 'more_appointments' | 'oldest'
+    query?: string
+  }): Promise<{
     registred: UserClientWhatsappAppointments[]
     unlinked: WhatsappContact[]
   } | null>

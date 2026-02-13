@@ -24,49 +24,102 @@ export class PrismaUserRepository implements UserRepository {
     private readonly hashGenerator: HashGenerator,
   ) {}
 
-  async fetchWhatsappRegisteredAndUnlinked(): Promise<{
+  async fetchWhatsappRegisteredAndUnlinked(options?: {
+    filter?: 'all' | 'registered' | 'unregistered'
+    order?: 'name' | 'recent' | 'more_appointments'
+  }): Promise<{
     registred: UserClientWhatsappAppointments[]
     unlinked: WhatsappContact[]
   } | null> {
-    const registred = await this.prisma.user.findMany({
-      where: {
-        whatsappNumber: {
-          not: undefined,
+    const filter = options?.filter ?? 'all'
+    const order = options?.order ?? 'name'
+
+    let users: any[] = []
+    if (filter === 'all' || filter === 'registered') {
+      const where: any = {}
+
+      where.professionalId = { equals: null }
+
+      if (filter === 'registered') {
+        where.whatsappNumber = { not: undefined }
+        where.clientId = { not: undefined }
+      } else {
+        where.whatsappNumber = { not: undefined }
+      }
+
+      users = await this.prisma.user.findMany({
+        where,
+        include: {
+          client: {
+            include: {
+              appointments: true,
+            },
+          },
+          whatsappContact: true,
         },
-        professionalId: {
-          equals: null,
-        },
-      },
-      include: {
-        client: {
-          include: {
-            appointments: true,
+      })
+    }
+
+    // contacts (unlinked whatsapp contacts)
+    let contacts: any[] = []
+    // do not fetch contacts when ordering by most appointments
+    if (
+      (filter === 'all' || filter === 'unregistered') &&
+      order !== 'more_appointments'
+    ) {
+      contacts = await this.prisma.whatsappContact.findMany({
+        where: {
+          userId: null,
+          phone: {
+            not: undefined,
           },
         },
-        whatsappContact: true,
-      },
-    })
+      })
+    }
 
-    const contacts = await this.prisma.whatsappContact.findMany({
-      where: {
-        userId: null,
-        phone: {
-          not: undefined,
-        },
-      },
-    })
-
-    if (
-      (!registred || registred.length === 0) &&
-      (!contacts || contacts.length === 0)
-    ) {
+    if (users.length === 0 && contacts.length === 0) {
       return null
     }
 
+    // sort users according to `order`
+    if (users && users.length > 0) {
+      if (order === 'name') {
+        users.sort((a: any, b: any) =>
+          (a.name || '').localeCompare(b.name || ''),
+        )
+      } else if (order === 'recent') {
+        users.sort((a: any, b: any) => {
+          const at = a?.createdAt ? new Date(a.createdAt).getTime() : 0
+          const bt = b?.createdAt ? new Date(b.createdAt).getTime() : 0
+          return bt - at // most recent first by createdAt
+        })
+      } else if (order === 'more_appointments') {
+        users.sort((a: any, b: any) => {
+          const ac = a?.client?.appointments ? a.client.appointments.length : 0
+          const bc = b?.client?.appointments ? b.client.appointments.length : 0
+          return bc - ac // most appointments first
+        })
+      }
+    }
+
+    if (contacts && contacts.length > 0) {
+      if (order === 'name') {
+        contacts.sort((a: any, b: any) =>
+          ((a.nickName || a.phone || '') as string).localeCompare(
+            (b.nickName || b.phone || '') as string,
+          ),
+        )
+      } else if (order === 'recent') {
+        contacts.sort((a: any, b: any) => {
+          const at = a?.createdAt ? new Date(a.createdAt).getTime() : 0
+          const bt = b?.createdAt ? new Date(b.createdAt).getTime() : 0
+          return bt - at
+        })
+      }
+    }
+
     return {
-      registred: registred.map(
-        PrismaUserWithWhatsappAndAppointmentMapper.toDomain,
-      ),
+      registred: users.map(PrismaUserWithWhatsappAndAppointmentMapper.toDomain),
       unlinked: contacts.map(PrismaWhatsappContactMapper.toDomain),
     }
   }
