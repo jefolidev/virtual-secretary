@@ -9,6 +9,7 @@ export interface UserProps {
   professionalId?: UniqueEntityId
   addressId?: UniqueEntityId
   threadId?: UniqueEntityId
+  whatsappContactId?: UniqueEntityId
   name: string
   email: string
   whatsappNumber: string
@@ -24,6 +25,15 @@ export interface UserProps {
 export class User extends Entity<UserProps> {
   get clientId() {
     return this.props.clientId ?? undefined
+  }
+
+  get whatsappContactId() {
+    return this.props.whatsappContactId ?? undefined
+  }
+  
+  set whatsappContactId(whatsappContactId: UniqueEntityId | undefined) {
+    this.props.whatsappContactId = whatsappContactId
+    this.touch()
   }
 
   set clientId(clientId: UniqueEntityId | undefined) {
