@@ -15,7 +15,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { ChevronLeft, ChevronRight, Filter, Users } from 'lucide-react'
+import {
+  ArrowUpRight,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  Users,
+} from 'lucide-react'
 import type { CalendarFilters, ViewMode } from '../../types'
 import { getWeekDays } from '../../utils'
 
@@ -27,7 +33,6 @@ interface CalendarToolbarProps {
   uniquePatients: string[]
   onDateNavigate: (direction: 'prev' | 'next') => void
   onGoToToday: () => void
-  onViewModeChange: (mode: ViewMode) => void
   onPatientChange: (patient: string) => void
   onFiltersChange: (filters: CalendarFilters) => void
 }
@@ -40,7 +45,6 @@ export function CalendarToolbar({
   uniquePatients,
   onDateNavigate,
   onGoToToday,
-  onViewModeChange,
   onPatientChange,
   onFiltersChange,
 }: CalendarToolbarProps) {
@@ -100,32 +104,17 @@ export function CalendarToolbar({
 
       {/* Controles direita */}
       <div className="flex items-center gap-2 flex-wrap shrink-0 min-w-0">
-        {/* Botões de visualização */}
+        {/* Exibição fixa: Semana */}
         <div className="flex rounded-md border">
-          <Button
-            variant={viewMode === 'day' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onViewModeChange('day')}
-            className="rounded-r-none"
+          <a
+            href="https://calendar.google.com"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            Dia
-          </Button>
-          <Button
-            variant={viewMode === 'week' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onViewModeChange('week')}
-            className="rounded-none"
-          >
-            Semana
-          </Button>
-          <Button
-            variant={viewMode === 'month' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onViewModeChange('month')}
-            className="rounded-l-none"
-          >
-            Mês
-          </Button>
+            <Button variant={'ghost'} size="sm" className="rounded-none">
+              <ArrowUpRight /> Ir para Google Agenda
+            </Button>
+          </a>
         </div>
 
         <Separator orientation="vertical" className="h-6" />
