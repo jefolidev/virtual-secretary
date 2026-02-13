@@ -1,4 +1,6 @@
 import { User } from '../../enterprise/entities/user'
+import { UserClientWhatsappAppointments } from '../../enterprise/entities/value-objects/user-with-clients-and-appointments'
+import { WhatsappContact } from '../../enterprise/entities/whatsapp-contact'
 
 export interface CookieClearOptions {
   response: any
@@ -15,6 +17,14 @@ export abstract class UserRepository {
   abstract findByProfessionalId(professionalId: string): Promise<User | null>
   abstract findManyClientUsers(): Promise<User[] | null>
   abstract findManyProfessionalUsers(): Promise<User[] | null>
+
+  abstract findManyUsersWithWhatsApp(): Promise<
+    UserClientWhatsappAppointments[] | null
+  >
+  abstract fetchWhatsappRegisteredAndUnlinked(): Promise<{
+    registred: UserClientWhatsappAppointments[]
+    unlinked: WhatsappContact[]
+  } | null>
 
   abstract getThreadId(
     whatsappNumber: string,
