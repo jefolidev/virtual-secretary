@@ -51,11 +51,30 @@ model User {
 
   notifications Notification[]
 
-  messages     Message[]
-  flowSessions FlowSession[]
-  sessions     Session[]
+  messages        Message[]
+  flowSessions    FlowSession[]
+  sessions        Session[]
+  whatsappContact WhatsappContact?
 
   @@map("users")
+}
+
+model WhatsappContact {
+  id            String    @id @default(uuid())
+  userId        String?   @unique @map("user_id")
+  nickName      String
+  phone         String    @unique
+  profilePicUrl String?   @map("profile_pic_url")
+  isOnline      Boolean   @default(false) @map("is_online")
+  isRegistred   Boolean   @default(false) @map("is_registred")
+  lastSeen      DateTime? @map("last_seen")
+  metadata      Json?     @map("metadata")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+  user      User?     @relation(fields: [userId], references: [id])
+
+  @@map("whatsapp_contacts")
 }
 
 model Appointment {
@@ -150,18 +169,18 @@ model GoogleCalendarToken {
 }
 
 model CalendarEvent {
-  id              String  @id @default(uuid())
-  appointmentId   String  @unique @map("appointment_id")
-  professionalId  String  @map("professional_id")
-  googleEventId   String  @map("google_event_id")
-  googleEventLink String  @map("google_event_link")
-  googleMeetLink  String? @map("google_meet_link")
-  summary       String
-  description   String?
-  startDateTime DateTime @map("start_date_time")
-  endDateTime   DateTime @map("end_date_time")
-  syncStatus    String   @default("SYNCED") @map("sync_status") // SYNCED, PENDING, ERROR
-  lastSyncedAt  DateTime @default(now()) @map("last_synced_at")
+  id              String   @id @default(uuid())
+  appointmentId   String   @unique @map("appointment_id")
+  professionalId  String   @map("professional_id")
+  googleEventId   String   @map("google_event_id")
+  googleEventLink String   @map("google_event_link")
+  googleMeetLink  String?  @map("google_meet_link")
+  summary         String
+  description     String?
+  startDateTime   DateTime @map("start_date_time")
+  endDateTime     DateTime @map("end_date_time")
+  syncStatus      String   @default("SYNCED") @map("sync_status") // SYNCED, PENDING, ERROR
+  lastSyncedAt    DateTime @default(now()) @map("last_synced_at")
 
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
