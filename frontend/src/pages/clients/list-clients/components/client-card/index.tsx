@@ -1,4 +1,3 @@
-import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
 import {
   Avatar,
   AvatarBadge,
@@ -22,48 +21,35 @@ import {
   User,
 } from 'lucide-react'
 import { useState } from 'react'
+import type { ClientRegistredContacts, ClientUnlinkedContacts } from '../..'
+import { isRegisteredContact } from '../../utils/is-user-registred'
 import { ClientDialogContent } from '../client-dialog-content'
 
 dayjs.extend(relativeTime)
 dayjs.locale('pt-br')
 
-export interface ClientCardProps {
-  data: {
-    name: string
-    email: string
-    phone: string
-    cpf: string
-
-    appointments: Appointment[]
-    lastActivity?: Date
-    createdAt?: string | Date
-
-    isOnline: boolean
-    isRegistered: boolean
-  }
+export type ClientCardProps = {
+  data: ClientRegistredContacts | ClientUnlinkedContacts
 }
-export function ClientCard({
-  data: {
-    name,
-    email,
-    phone,
-    cpf,
-    appointments,
-    lastActivity,
-    isOnline,
-    isRegistered,
-  },
-}: ClientCardProps) {
+export function ClientCard({ data }: ClientCardProps) {
+  const isRegistered = isRegisteredContact(data)
+
   const [open, setOpen] = useState(false)
+
   const now = new Date()
-  const upcoming = appointments
+  const upcoming = isRegistered ? data.appointments : []
+
+  const incomingAppointment = upcoming
     .filter((a) => new Date(a.startDateTime).getTime() > now.getTime())
     .sort(
       (a, b) =>
         new Date(a.startDateTime).getTime() -
         new Date(b.startDateTime).getTime(),
     )
-  const nextAppointment = upcoming.length > 0 ? upcoming[0] : null
+
+  const nextAppointment =
+    incomingAppointment.length > 0 ? incomingAppointment[0] : null
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -83,11 +69,13 @@ export function ClientCard({
                 />
                 <AvatarFallback>CN</AvatarFallback>
                 <AvatarBadge
-                  className={`bg-${isOnline ? 'green' : 'red'}-600 dark:bg-${isOnline ? 'green' : 'red'}-800`}
+                  className={`bg-${isRegistered && data.whatsappContact.isOnline ? 'green' : 'red'}-600 dark:bg-${isRegistered && data.whatsappContact.isOnline ? 'green' : 'red'}-800`}
                 />
               </Avatar>
 
-              <h1 className="font-medium text-lg">{name}</h1>
+              <h1 className="font-medium text-lg">
+                {isRegistered ? data.user.name : data.nickname}
+              </h1>
 
               <Badge variant={'outline'}>
                 {isRegistered ? (
@@ -105,23 +93,24 @@ export function ClientCard({
             >
               {isRegistered && (
                 <div className="flex gap-2 text-xs text-muted-foreground">
-                  <Mail width={13} height={13} /> {email}
+                  <Mail width={13} height={13} /> {data.user.email}
                 </div>
               )}
               <div className="flex gap-2 text-xs text-muted-foreground">
-                <Phone width={13} height={13} /> {phone}
+                <Phone width={13} height={13} />{' '}
+                {isRegistered ? data.user.whatsappNumber : data.whatsappNumber}
               </div>
               {!isRegistered && (
                 <div className="flex gap-2 text-xs text-muted-foreground">
                   <Clock width={13} height={13} />{' '}
-                  {lastActivity
-                    ? `Última atividade: ${dayjs(lastActivity).fromNow()}`
+                  {data.lastSeen
+                    ? `Última atividade: ${dayjs(data.lastSeen).fromNow()}`
                     : 'Sem atividade registrada'}
                 </div>
               )}
               {isRegistered && (
                 <div className="flex gap-2 text-xs text-muted-foreground">
-                  <File width={13} height={13} /> {cpf}
+                  <File width={13} height={13} /> {data.user.cpf}
                 </div>
               )}
             </div>
@@ -134,8 +123,8 @@ export function ClientCard({
             {isRegistered ? (
               <div className="flex flex-col gap-1">
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground my-1">
-                  <Calendar width={13} height={13} /> {appointments.length}{' '}
-                  agendamento{appointments.length !== 1 && 's'}
+                  <Calendar width={13} height={13} /> {data.appointments.length}{' '}
+                  agendamento{data.appointments.length !== 1 && 's'}
                 </div>
                 <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground my-1">
                   <Clock width={13} height={13} /> Próxima:{' '}
@@ -153,18 +142,7 @@ export function ClientCard({
         </div>
       </DialogTrigger>
 
-      <ClientDialogContent
-        data={{
-          name,
-          email,
-          phone,
-          cpf,
-          appointments,
-          lastActivity,
-          isOnline,
-          isRegistered,
-        }}
-      />
+      <ClientDialogContent data={data} />
     </Dialog>
   )
 }

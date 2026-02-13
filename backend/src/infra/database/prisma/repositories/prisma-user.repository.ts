@@ -33,6 +33,9 @@ export class PrismaUserRepository implements UserRepository {
         whatsappNumber: {
           not: undefined,
         },
+        professionalId: {
+          equals: null,
+        },
       },
       include: {
         client: {

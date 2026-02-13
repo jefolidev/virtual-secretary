@@ -10,6 +10,9 @@ export class UserClientWhatsappPresenter {
             id: registredUser.user.id.toString(),
             name: registredUser.user.name,
             email: registredUser.user.email,
+            cpf: registredUser.user.cpf,
+            whatsappNumber: registredUser.user.whatsappNumber,
+            createdAt: registredUser.user.createdAt,
           }
         : null,
       client: registredUser.client

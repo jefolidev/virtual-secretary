@@ -20,6 +20,8 @@ export class FetchUsersContactsController {
       WhatsappContactPresenter.toHTTP(unlinkedUser),
     )
 
+    console.log(presentedRegistredUsers, presentedUnlinkedUsers)
+
     return [...presentedRegistredUsers, ...presentedUnlinkedUsers]
   }
 }

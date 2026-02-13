@@ -15,31 +15,29 @@ import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Calendar, Clock, File, Mail, Phone, User } from 'lucide-react'
+import { isRegisteredContact } from '../../utils/is-user-registred'
 import type { ClientCardProps } from '../client-card'
 
 export function ClientDialogContent({ data }: ClientCardProps) {
-  const {
-    name,
-    email,
-    phone,
-    cpf,
-    appointments,
-    lastActivity,
-    createdAt,
-    isOnline,
-    isRegistered,
-  } = data
+  const isRegistered = isRegisteredContact(data)
+
   const now = new Date()
-  const upcoming = appointments
+  const upcoming = isRegistered ? data.appointments : []
+
+  const inCommingAppointment = upcoming
     .filter((a) => new Date(a.startDateTime).getTime() > now.getTime())
     .sort(
       (a, b) =>
         new Date(a.startDateTime).getTime() -
         new Date(b.startDateTime).getTime(),
     )
-  const nextAppointment = upcoming.length > 0 ? upcoming[0] : null
 
-  const past = appointments
+  const nextAppointment =
+    inCommingAppointment.length > 0 ? inCommingAppointment[0] : null
+
+  const past = isRegistered ? data.appointments : []
+
+  const pastAppointments = past
     .filter((a) => new Date(a.startDateTime).getTime() <= now.getTime())
     .sort(
       (a, b) =>
@@ -65,12 +63,14 @@ export function ClientDialogContent({ data }: ClientCardProps) {
             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
             <AvatarFallback>CN</AvatarFallback>
             <AvatarBadge
-              className={`bg-${isOnline ? 'green' : 'red'}-600 dark:bg-${isOnline ? 'green' : 'red'}-800`}
+              className={`bg-${isRegistered && data.whatsappContact.isOnline ? 'green' : 'red'}-600 dark:bg-${isRegistered && data.whatsappContact.isOnline ? 'green' : 'red'}-800`}
             />
           </Avatar>
 
           <div className="flex flex-col gap-2.5">
-            <DialogTitle>{name}</DialogTitle>
+            <DialogTitle>
+              {isRegistered ? data.user.name : data.nickname}
+            </DialogTitle>
             <Badge>
               {isRegistered ? 'Paciente cadastrado' : 'Paciente não cadastrado'}
             </Badge>
@@ -90,7 +90,9 @@ export function ClientDialogContent({ data }: ClientCardProps) {
               <Phone width={12} height={12} className="mt-0.5" />{' '}
               <span className="text-xs">Telefone</span>
             </div>
-            <span className="text-sm pl-6">{phone}</span>
+            <span className="text-sm pl-6">
+              {isRegistered ? data.user.phone : data.whatsappNumber}
+            </span>
           </div>
           {isRegistered && (
             <>
@@ -100,7 +102,7 @@ export function ClientDialogContent({ data }: ClientCardProps) {
                   <Mail width={12} height={12} className="mt-0.5" />{' '}
                   <span className="text-xs">Email</span>
                 </div>
-                <span className="text-sm pl-6">{email}</span>
+                <span className="text-sm pl-6">{data.user.email}</span>
               </div>
               <Separator />
               <div className="flex flex-col">
@@ -108,7 +110,7 @@ export function ClientDialogContent({ data }: ClientCardProps) {
                   <File width={12} height={12} className="mt-0.5" />{' '}
                   <span className="text-xs">CPF</span>
                 </div>
-                <span className="text-sm pl-6">{cpf}</span>
+                <span className="text-sm pl-6">{data.user.cpf}</span>
               </div>
             </>
           )}
@@ -127,8 +129,8 @@ export function ClientDialogContent({ data }: ClientCardProps) {
                   <span className="text-xs">Agendamentos</span>
                 </div>
                 <span className="text-sm pl-6">
-                  {appointments.length} agendamento
-                  {appointments.length !== 1 && 's'}
+                  {data.appointments.length} agendamento
+                  {data.appointments.length !== 1 && 's'}
                 </span>
               </div>
 
@@ -181,14 +183,20 @@ export function ClientDialogContent({ data }: ClientCardProps) {
                   <User width={12} height={12} className="mt-0.5" />{' '}
                   <span className="text-xs">Última atividade</span>
                 </div>
+                // ...existing code...
                 <span className="text-sm pl-6">
-                  {lastActivity
-                    ? `${dayjs(lastActivity).format('DD [de] MMMM [de] YYYY [às] HH:mm')}`
-                    : 'Sem atividade registrada'}
+                  {isRegistered && data.whatsappContact?.lastSeen
+                    ? `${dayjs(data.whatsappContact.lastSeen).format('DD [de] MMMM [de] YYYY [às] HH:mm')}`
+                    : 'Última atividade não disponível'}
                 </span>
                 <p className="text-xs pl-6 text-muted-foreground">
-                  {lastActivity ? dayjs(lastActivity).fromNow() : ''}
+                  {isRegistered && data.whatsappContact?.lastSeen
+                    ? dayjs(data.whatsappContact.lastSeen).fromNow()
+                    : data.whatsappContact.lastSeen
+                      ? dayjs(data.whatsappContact.lastSeen).fromNow()
+                      : ''}
                 </p>
+                // ...existing code...
               </div>
             </div>
           </>
@@ -205,12 +213,14 @@ export function ClientDialogContent({ data }: ClientCardProps) {
               <span className="text-xs">Cadastro</span>
             </div>
             <span className="text-sm pl-6">
-              {createdAt
-                ? `${dayjs(createdAt).format('DD [de] MMMM [de] YYYY [às] HH:mm')}`
+              {isRegistered
+                ? `${dayjs(data.whatsappContact.createdAt).format('DD [de] MMMM [de] YYYY [às] HH:mm')}`
                 : 'Data de cadastro não disponível'}
             </span>
             <p className="text-xs pl-6 text-muted-foreground">
-              {createdAt ? dayjs(createdAt).fromNow() : ''}
+              {isRegistered
+                ? dayjs(data.whatsappContact.createdAt).fromNow()
+                : ''}
             </p>
           </div>
         </div>
