@@ -1,6 +1,7 @@
 import { api } from '@/api/axios'
 import type { CreateCalendarEventRequest } from '../schemas/create-calendar-event.dto'
 import type { GetAuthUrlResponse } from '../schemas/get-auth-url.dto'
+import type { GetCalendarEventsResponse } from '../schemas/get-calendar-events.dto'
 import type { OAuthCallbackResponse } from '../schemas/oauth-callback.dto'
 
 const BASE_PATH = '/webhooks/google'
@@ -14,7 +15,6 @@ export const googleCalendarService = {
     const response = await api.get<GetAuthUrlResponse>(
       `${BASE_PATH}/auth/url/${professionalId}`,
     )
-
     return response.data
   },
 
@@ -52,19 +52,19 @@ export const googleCalendarService = {
   /**
    * GET /webhooks/google/events/:id
    * Lista todos os eventos do Google Calendar de um profissional
-  //  */
-  // async getCalendarEvents(
-  //   professionalId: string,
-  //   page: number = 1,
-  // ): Promise<GetCalendarEventsResponse> {
-  //   const response = await api.get<GetCalendarEventsResponse>(
-  //     `${BASE_PATH}/events/${professionalId}`,
-  //     {
-  //       params: { page },
-  //     },
-  //   )
-  //   return response.data
-  // },
+   */
+  async getCalendarEvents(
+    professionalId: string,
+    page: number = 1,
+  ): Promise<GetCalendarEventsResponse[]> {
+    const response = await api.get<GetCalendarEventsResponse[]>(
+      `${BASE_PATH}/events/${professionalId}`,
+      {
+        params: { page },
+      },
+    )
+    return response.data
+  },
 
   /**
    * GET /webhooks/google/connected/:professionalId
