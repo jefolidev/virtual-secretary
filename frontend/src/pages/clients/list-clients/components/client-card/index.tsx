@@ -7,6 +7,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { formatPhoneNumber } from '@/utils/format-phone'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -24,6 +25,7 @@ import { useState } from 'react'
 import type { ClientRegistredContacts, ClientUnlinkedContacts } from '../..'
 import { isRegisteredContact } from '../../utils/is-user-registred'
 import { ClientDialogContent } from '../client-dialog-content'
+import { formatCPF } from '@/utils/format-cpf'
 
 dayjs.extend(relativeTime)
 dayjs.locale('pt-br')
@@ -98,7 +100,9 @@ export function ClientCard({ data }: ClientCardProps) {
               )}
               <div className="flex gap-2 text-xs text-muted-foreground">
                 <Phone width={13} height={13} />{' '}
-                {isRegistered ? data.user.whatsappNumber : data.whatsappNumber}
+                {isRegistered
+                  ? formatPhoneNumber(data.user.whatsappNumber)
+                  : formatPhoneNumber(data.whatsappNumber)}
               </div>
               {!isRegistered && (
                 <div className="flex gap-2 text-xs text-muted-foreground">
@@ -110,7 +114,7 @@ export function ClientCard({ data }: ClientCardProps) {
               )}
               {isRegistered && (
                 <div className="flex gap-2 text-xs text-muted-foreground">
-                  <File width={13} height={13} /> {data.user.cpf}
+                  <File width={13} height={13} /> {formatCPF(data.user.cpf)}
                 </div>
               )}
             </div>

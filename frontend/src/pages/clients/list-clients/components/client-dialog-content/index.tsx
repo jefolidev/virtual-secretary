@@ -11,6 +11,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { formatCPF } from '@/utils/format-cpf'
+import { formatPhoneNumber } from '@/utils/format-phone'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -91,7 +93,9 @@ export function ClientDialogContent({ data }: ClientCardProps) {
               <span className="text-xs">Telefone</span>
             </div>
             <span className="text-sm pl-6">
-              {isRegistered ? data.user.phone : data.whatsappNumber}
+              {isRegistered
+                ? formatPhoneNumber(data.user.whatsappNumber)
+                : formatPhoneNumber(data.whatsappNumber)}
             </span>
           </div>
           {isRegistered && (
@@ -110,7 +114,7 @@ export function ClientDialogContent({ data }: ClientCardProps) {
                   <File width={12} height={12} className="mt-0.5" />{' '}
                   <span className="text-xs">CPF</span>
                 </div>
-                <span className="text-sm pl-6">{data.user.cpf}</span>
+                <span className="text-sm pl-6">{formatCPF(data.user.cpf)}</span>
               </div>
             </>
           )}
@@ -183,7 +187,6 @@ export function ClientDialogContent({ data }: ClientCardProps) {
                   <User width={12} height={12} className="mt-0.5" />{' '}
                   <span className="text-xs">Última atividade</span>
                 </div>
-                // ...existing code...
                 <span className="text-sm pl-6">
                   {isRegistered && data.whatsappContact?.lastSeen
                     ? `${dayjs(data.whatsappContact.lastSeen).format('DD [de] MMMM [de] YYYY [às] HH:mm')}`
@@ -196,7 +199,6 @@ export function ClientDialogContent({ data }: ClientCardProps) {
                       ? dayjs(data.whatsappContact.lastSeen).fromNow()
                       : ''}
                 </p>
-                // ...existing code...
               </div>
             </div>
           </>

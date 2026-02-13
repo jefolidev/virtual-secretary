@@ -60,104 +60,52 @@ export interface ClientUnlinkedContacts {
 type ClientContactsResponse = Array<
   ClientRegistredContacts | ClientUnlinkedContacts
 >
-type FilterType = 'all' | 'registered' | 'unregistered' | 'online'
+type FilterType = 'all' | 'registered' | 'unregistered'
 type SortType = 'name' | 'recent' | 'appointments'
 
 export function ListClientsPage() {
   const [clients, setClients] = useState<ClientContactsResponse>([])
+  const [filteredClients, setFilteredClients] =
+    useState<ClientContactsResponse>([])
+
+  const [filterType, setFilterType] = useState<FilterType>('all')
+  const [sortType, setSortType] = useState<SortType>('name')
+
+  const [searchedUser, setSearchedUser] = useState<string>('')
 
   const handleFetchClients = async () => {
     try {
-      const response = await api.get<ClientContactsResponse>('/contacts/users')
-
-      console.log('Clientes buscados:', response.data)
+      const response = await api.get<ClientContactsResponse>(
+        `/contacts/users?filter=${filterType}&order=${sortType}`,
+      )
 
       setClients(response.data)
+      setFilteredClients(response.data)
     } catch (error) {
       console.error('Erro ao buscar clientes:', error)
     }
   }
 
+  const handleSearch = (query: string) => {
+    setSearchedUser(query)
+
+    const filteredClients = clients.filter((client) => {
+      const name = isRegisteredContact(client)
+        ? client.user.name
+        : client.nickname
+
+      if (!name) return ''
+
+      return name.toLowerCase().includes(query.toLowerCase())
+    })
+    setFilteredClients(filteredClients)
+  }
+
   useEffect(() => {
     handleFetchClients()
-  }, [])
+  }, [filterType, sortType])
 
-  const [selectedPatient, setSelectedPatient] =
-    useState<ClientCardProps | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterType, setFilterType] = useState<FilterType>('all')
-  const [sortType, setSortType] = useState<SortType>('name')
-
-  const filteredClients = clients
-    .filter((user) => {
-      const query = searchQuery.trim().toLowerCase()
-
-      if (isRegisteredContact(user)) {
-        const { name, email, cpf } = user.user
-        const { phone, isRegistred, isOnline } = user.whatsappContact
-
-        if (query) {
-          const hay = `${name} ${email} ${phone} ${cpf}`.toLowerCase()
-          if (!hay.includes(query)) return false
-        }
-
-        if (filterType === 'registered' && !isRegistred) return false
-        if (filterType === 'unregistered' && isRegistred) return false
-        if (filterType === 'online' && !isOnline) return false
-
-        return true
-      } else {
-        const { nickname, whatsappNumber, isRegistred, isOnline } = user
-
-        if (query) {
-          const hay = `${nickname} ${whatsappNumber}`.toLowerCase()
-          if (!hay.includes(query)) return false
-        }
-
-        if (filterType === 'registered' && !isRegistred) return false
-        if (filterType === 'unregistered' && isRegistred) return false
-        if (filterType === 'online' && !isOnline) return false
-
-        return true
-      }
-    })
-    .sort((a, b) => {
-      if (isRegisteredContact(a) && isRegisteredContact(b)) {
-        if (sortType === 'name')
-          return a.user.name.localeCompare(
-            b.user.name || b.whatsappContact.nickName || '',
-            'pt-BR',
-            {
-              sensitivity: 'base',
-            },
-          )
-        if (sortType === 'recent') {
-          const ta = a.whatsappContact.lastSeen
-            ? new Date(a.whatsappContact.lastSeen).getTime()
-            : 0
-          const tb = b.whatsappContact.lastSeen
-            ? new Date(b.whatsappContact.lastSeen).getTime()
-            : 0
-          return tb - ta
-        }
-      } else if (!isRegisteredContact(a) && !isRegisteredContact(b)) {
-        if (sortType === 'name')
-          return (a.nickname || '').localeCompare(
-            b.nickname || b.whatsappNumber || '',
-            'pt-BR',
-            {
-              sensitivity: 'base',
-            },
-          )
-        if (sortType === 'recent') {
-          const ta = a.lastSeen ? new Date(a.lastSeen).getTime() : 0
-          const tb = b.lastSeen ? new Date(b.lastSeen).getTime() : 0
-          return tb - ta
-        }
-      }
-      // Default to no change in order if not comparable
-      return 0
-    })
 
   return (
     <div>
@@ -172,10 +120,16 @@ export function ListClientsPage() {
 
         <ControlBar
           stats={{
-            online: 1,
-            registered: 5,
-            unregistered: 9,
-            total: 14,
+            online: clients.filter(
+              (client) =>
+                isRegisteredContact(client) && client.whatsappContact.isOnline,
+            ).length,
+            registered: clients.filter((client) => isRegisteredContact(client))
+              .length,
+            unregistered: clients.filter(
+              (client) => !isRegisteredContact(client),
+            ).length,
+            total: clients.length,
           }}
         />
       </div>
@@ -188,8 +142,8 @@ export function ListClientsPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
               <Input
                 placeholder="Buscar por nome, email, telefone ou CPF..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                value={searchedUser}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-10 bg-white dark:bg-transparent"
               />
             </div>
@@ -207,7 +161,6 @@ export function ListClientsPage() {
                 <SelectItem value="all">Todos os Pacientes</SelectItem>
                 <SelectItem value="registered">Cadastrados</SelectItem>
                 <SelectItem value="unregistered">Não Cadastrados</SelectItem>
-                <SelectItem value="online">Online</SelectItem>
               </SelectContent>
             </Select>
 
@@ -279,7 +232,7 @@ export function ListClientsPage() {
       </div>
 
       <p className="pl-7 text-sm mb-2 text-foreground/50">
-        {filteredClients.length} pacientes encontrado
+        {clients.length} pacientes encontrado
       </p>
       <div
         className="grid gap-4 px-6"
