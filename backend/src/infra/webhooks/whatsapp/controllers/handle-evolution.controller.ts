@@ -1,4 +1,5 @@
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
+import { WhatsappContactRepository } from '@/domain/scheduling/application/repositories/whatsapp-contact.repository'
 import { Public } from '@/infra/auth/public'
 import { FlowService } from '@/infra/flow/flow.service'
 import { SessionService } from '@/infra/sessions/session.service'
@@ -14,6 +15,7 @@ export class HandleEvolutionController {
     private readonly flowService: FlowService,
     private readonly openAiService: OpenAiService,
     private readonly userRepository: UserRepository,
+    private readonly whatsappContactRepository: WhatsappContactRepository,
   ) {}
 
   @Public()
@@ -42,16 +44,24 @@ export class HandleEvolutionController {
         let session
 
         if (user) {
+          await this.whatsappContactRepository.linkToUser(
+            whatsappNumber,
+            user.id.toString(),
+          )
+
           session = await this.sessionsService.getOrCreateSession(
             user.id.toString(),
           )
         } else {
-          console.log('nao achou user')
+          const data = await this.whatsappContactRepository.upsertFromWebhook(body)
+
           session =
             await this.sessionsService.getOrCreateSessionByWhatsapp(
               whatsappNumber,
             )
         }
+
+        await this.whatsappContactRepository.upsertFromWebhook(body)
 
         const response = await this.flowService.execute(
           aiIntent,
