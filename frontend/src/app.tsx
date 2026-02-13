@@ -22,24 +22,18 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/contexts/auth-context'
-import { UserProvider } from '@/hooks/use-user'
 import { ThemeProvider, useTheme } from '@/hooks/use-theme'
+import { UserProvider } from '@/hooks/use-user'
 import {
-  Banknote,
   Bell,
-  Bot,
-  Building,
-  Calendar,
+  BookUser,
+  CalendarIcon,
   ChevronDown,
   ChevronRight,
   ChevronUp,
-  Clock,
-  CreditCard,
   DollarSign,
-  FileText,
-  LayoutDashboard,
+  File,
   LogOut,
-  MessageSquare,
   Moon,
   Settings,
   Star,
@@ -51,78 +45,46 @@ import { Link, Outlet, useLocation } from 'react-router'
 
 const menuItems = [
   {
-    title: 'Dashboard',
-    url: 'dashboard',
-    icon: LayoutDashboard,
-    description: 'Resumo do dia e alertas',
-  },
-  {
     title: 'Agenda',
-    icon: Calendar,
-    items: [
-      {
-        title: 'Calendário',
-        url: 'schedule/calendar',
-        icon: Calendar,
-      },
-      {
-        title: 'Bloqueios de Horário',
-        url: 'schedule/blocks',
-        icon: Clock,
-      },
-    ],
+    url: 'calendar',
+    icon: CalendarIcon,
+    description: 'Monitore e gerencie as suas consultas',
   },
   {
-    title: 'Minha Secretária (IA)',
-    url: 'ai-secretary',
-    icon: Bot,
-    description: 'Configure sua assistente virtual',
-  },
-  {
-    title: 'Pacientes',
+    title: 'Clientes',
+    url: 'clients',
     icon: Users,
     items: [
       {
-        title: 'Fichas/Prontuários',
-        url: 'patients/records',
-        icon: FileText,
+        title: 'Lista de Clientes',
+        url: 'clients/list',
+        icon: BookUser,
       },
       {
-        title: 'Avaliações (NPS)',
-        url: 'patients/evaluations',
-        icon: Star,
+        title: 'Histórico de Sessões',
+        url: 'clients/history',
+        icon: Users,
       },
     ],
   },
   {
     title: 'Financeiro',
     icon: DollarSign,
-    items: [
-      {
-        title: 'Recebimentos',
-        url: 'financial/receivables',
-        icon: CreditCard,
-      },
-      {
-        title: 'Dados Bancários',
-        url: 'financial/bank-data',
-        icon: Banknote,
-      },
-    ],
+    url: 'finance',
   },
   {
-    title: 'Configurações da Clínica',
-    icon: Building,
+    title: 'Relatórios',
+    icon: File,
     items: [
       {
-        title: 'Horários de Trabalho',
-        url: 'clinic-settings/schedules',
-        icon: Clock,
+        title: 'Satisfação',
+        url: 'analytics/satisfaction',
+        icon: Star,
       },
       {
-        title: 'Mensagens Automáticas',
-        url: 'clinic-settings/messages',
-        icon: MessageSquare,
+        title: 'Lucros',
+        url: 'analytics/profits',
+        icon: DollarSign,
       },
     ],
   },
@@ -132,6 +94,7 @@ function AppContent() {
   const location = useLocation()
   const { user, logout } = useAuth()
   const { theme, setTheme } = useTheme()
+
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
 
   // Estado persistente da sidebar
@@ -159,7 +122,7 @@ function AppContent() {
     setExpandedMenus((prev) =>
       prev.includes(menuTitle)
         ? prev.filter((item) => item !== menuTitle)
-        : [...prev, menuTitle]
+        : [...prev, menuTitle],
     )
   }
 
@@ -208,21 +171,8 @@ function AppContent() {
                 {menuItems.map((item) => (
                   <div key={item.title}>
                     {/* Item principal */}
-                    {item.url ? (
-                      // Item sem submenu - link direto
-                      <SidebarMenuItem>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={location.pathname === item.url}
-                        >
-                          <Link to={item.url}>
-                            <item.icon className="h-4 w-4" />
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ) : (
-                      // Item com submenu - expansível
+                    {item.items ? (
+                      // Item com submenu - expansível (exibe igual ao 'Clientes')
                       <>
                         <SidebarMenuItem>
                           <SidebarMenuButton
@@ -265,6 +215,19 @@ function AppContent() {
                           </div>
                         )}
                       </>
+                    ) : (
+                      // Item sem submenu - link direto
+                      <SidebarMenuItem>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={location.pathname === item.url}
+                        >
+                          <Link to={item.url ?? '#'}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
                     )}
                   </div>
                 ))}
@@ -363,7 +326,7 @@ function AppContent() {
             {(() => {
               // Busca por item principal direto
               const mainItem = menuItems.find(
-                (item) => item.url === location.pathname
+                (item) => item.url === location.pathname,
               )
               if (mainItem) return mainItem.title
 
@@ -371,7 +334,7 @@ function AppContent() {
               for (const item of menuItems) {
                 if (item.items) {
                   const subItem = item.items.find(
-                    (sub) => sub.url === location.pathname
+                    (sub) => sub.url === location.pathname,
                   )
                   if (subItem) return subItem.title
                 }
@@ -382,7 +345,7 @@ function AppContent() {
           </h1>
         </header>
 
-        <div className="flex-1 min-h-0">
+        <div className="flex-1 max-h-screen">
           <Outlet />
         </div>
       </SidebarInset>
