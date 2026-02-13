@@ -3,13 +3,13 @@ import { FetchProfessionalScheduleSettingsUseCase } from '@/domain/scheduling/ap
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
 import { Controller, Get, NotFoundException } from '@nestjs/common'
-import { UserProfessionalWithSettingsPresenter } from '../presenters/user-profissional-with-settings'
+import { UserProfessionalWithSettingsPresenter } from '../presenters/user-profissional-with-settings-presenter'
 
 @Controller('/professional')
 export class FetchProfessionalSettingsController {
   constructor(
     private readonly professionalRepository: ProfessionalRepository,
-    private readonly fetchProfessionalScheduleSettings: FetchProfessionalScheduleSettingsUseCase
+    private readonly fetchProfessionalScheduleSettings: FetchProfessionalScheduleSettingsUseCase,
   ) {}
 
   @Get('/settings')
@@ -23,7 +23,7 @@ export class FetchProfessionalSettingsController {
     // Get the professional with all settings to use with the presenter
     const professionalWithSettings =
       await this.professionalRepository.findByProfessionalIdWithSettings(
-        professional.id.toString()
+        professional.id.toString(),
       )
 
     if (!professionalWithSettings) {
@@ -31,7 +31,7 @@ export class FetchProfessionalSettingsController {
     }
 
     return UserProfessionalWithSettingsPresenter.toHTTP(
-      professionalWithSettings
+      professionalWithSettings,
     )
   }
 }
