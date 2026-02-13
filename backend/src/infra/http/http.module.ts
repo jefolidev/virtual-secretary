@@ -3,6 +3,7 @@ import { CreateOrganizationUseCase } from '@/domain/organization/application/use
 import { FetchOrganizationByIdUseCase } from '@/domain/organization/application/use-cases/fetch-organization-by-id'
 import { RemoveProfessionalFromOrganizationUseCase } from '@/domain/organization/application/use-cases/remove-professional-from-organization'
 import { UpdateOrganizationUseCase } from '@/domain/organization/application/use-cases/update-organization'
+import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CancelAppointmentUseCase } from '@/domain/scheduling/application/use-cases/cancel-appointment'
 import { ChangeProfessionalWorkDaysUseCase } from '@/domain/scheduling/application/use-cases/change-professional-work-days'
@@ -27,6 +28,7 @@ import { FetchProfessionalWithNotificationSettingsUseCase } from '@/domain/sched
 import { FetchProfessionalScheduleSettingsUseCase } from '@/domain/scheduling/application/use-cases/fetch-professional-schedule-settings'
 import { FetchScheduleByClientIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-client-id'
 import { FetchScheduleByProfessionalIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
+import { FetchUsersContactsUseCase } from '@/domain/scheduling/application/use-cases/fetch-users-contacts.use-case'
 import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases/forgot-password'
 import { LogoutUseCase } from '@/domain/scheduling/application/use-cases/logout'
 import { PauseAppointmentUseCase } from '@/domain/scheduling/application/use-cases/pause-appointment'
@@ -62,6 +64,7 @@ import { FetchOrganizationController } from './controllers/fetch-organizations.c
 import { FetchProfessionalWithNotificationSettingsController } from './controllers/fetch-professional-notification-settings.controller'
 import { FetchProfessionalSettingsController } from './controllers/fetch-professional-settings.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
+import { FetchUsersContactsController } from './controllers/fetch-users-contacts.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
 import { LogoutController } from './controllers/logout.controller'
 import { MeController } from './controllers/me.controller'
@@ -70,7 +73,6 @@ import { RemoveProfessionalFromOrganizationController } from './controllers/remo
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { StartAppointmentController } from './controllers/start-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
-import { ReadNotificationUseCase } from '@/domain/notifications/application/use-cases/read-notification'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -109,6 +111,7 @@ import { ReadNotificationUseCase } from '@/domain/notifications/application/use-
     RescheduleAppointmentController,
     StartAppointmentController,
     UpdateOrganizationController,
+    FetchUsersContactsController,
   ],
   providers: [
     AddProfessionalToOrganizationUseCase,
@@ -146,6 +149,11 @@ import { ReadNotificationUseCase } from '@/domain/notifications/application/use-
     RescheduleAppointmentUseCase,
     StartAppointmentUseCase,
     UpdateOrganizationUseCase,
+    FetchUsersContactsUseCase,
+    // {
+    //   provide: UserRepository,
+    //   useClass: InMemoryUserRepository,
+    // },
   ],
 })
 export class HttpModule {}
