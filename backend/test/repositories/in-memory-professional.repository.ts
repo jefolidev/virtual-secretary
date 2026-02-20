@@ -6,6 +6,12 @@ import { UserProfessionalWithSettings } from '@/domain/scheduling/enterprise/ent
 import type { ProfessionalRepository } from '../../src/domain/scheduling/application/repositories/professional.repository'
 
 export class InMemoryProfessionalRepository implements ProfessionalRepository {
+  public items: Professional[] = []
+
+  async create(professional: Professional): Promise<void> {
+    this.items.push(professional)
+  }
+
   async findByProfessionalIdWithSettings(
     professionalId: string,
   ): Promise<UserProfessionalWithSettings | null> {
@@ -18,14 +24,7 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
   async findManyProfessionalsAndSettings(
     params?: PaginationParams,
   ): Promise<UserProfessionalWithSettings[] | null> {
-    // This method should return an array of UserProfessionalWithSettings
-    // For testing purposes, we'll return an empty array
     return []
-  }
-  public items: Professional[] = []
-
-  async create(professional: Professional): Promise<void> {
-    this.items.push(professional)
   }
 
   async findMany(params?: PaginationParams): Promise<Professional[]> {
@@ -81,6 +80,8 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
     const professional = this.items.find(
       (item) => item.id.toString() === professionalId,
     )
+
+    console.log('[PROFESSIONNAL] ', JSON.stringify(professional))
 
     if (!professional) {
       throw new Error('Professional not found')

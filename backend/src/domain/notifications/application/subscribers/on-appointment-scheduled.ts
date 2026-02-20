@@ -30,16 +30,11 @@ export class OnAppointmentScheduled implements EventHandler {
   private async sendNewAppointmentNotification({
     appointment,
   }: ScheduledAppointmentEvent) {
-    if (!appointment.syncWithGoogleCalendar) {
-      console.log(
-        `[OnAppointmentCreated] Skipping Google Calendar sync for appointment ${appointment.id.toString()}`,
-      )
-      return
-    }
-
     const professional = await this.professionalRepository.findById(
       appointment.professionalId.toString(),
     )
+
+    console.log(JSON.stringify(professional?.notificationSettings))
 
     const user = await this.userRepository.findByProfessionalId(
       appointment.professionalId.toString(),
@@ -56,7 +51,7 @@ export class OnAppointmentScheduled implements EventHandler {
     )
 
     if (professional && client) {
-      const result = await this.sendNotification.execute({
+      await this.sendNotification.execute({
         recipientId: user.id?.toString(),
         title: `Nova consulta agendada`,
         content: `O paciente agendou uma consulta para ${dayjs(

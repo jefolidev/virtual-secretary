@@ -6,6 +6,7 @@ import type {
   Appointment,
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
+import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
 
 export class InMemoryAppointmentRepository implements AppointmentsRepository {
   public items: Appointment[] = []
@@ -89,9 +90,9 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   async findManyByProfessionalId(
     professionalId: string,
     params: PaginationParams = { page: 1 },
-  ): Promise<Appointment[]> {
+  ): Promise<AppointmentWithClient[]> {
     const { page } = params
-    const appointment = await this.items
+    const appointments = this.items
       .filter((appointment) => {
         return appointment.professionalId.equals(
           new UniqueEntityId(professionalId),
@@ -99,7 +100,10 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
       })
       .slice((page - 1) * 10, page * 10)
 
-    return appointment ?? []
+    // Mapear Appointment para AppointmentWithClient
+    return appointments.map((appointment) => {
+      return appointment as unknown as AppointmentWithClient
+    })
   }
 
   async findManyByClientId(

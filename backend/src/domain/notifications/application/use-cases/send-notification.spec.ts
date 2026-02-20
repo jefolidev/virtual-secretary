@@ -1,4 +1,5 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { NotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import { makeProfessional } from '@test/factories/make-professional'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
@@ -21,8 +22,18 @@ describe('Create Notification', () => {
   })
 
   it('should be able to send a notification', async () => {
+    const profissional = makeProfessional({
+      notificationSettings: NotificationSettings.create({
+        enabledTypes: ['WELCOME', 'PAYMENT_STATUS', 'CONFIRMED_LIST'],
+        reminderBeforeMinutes: 30,
+        dailySummaryTime: '18:00',
+      }),
+    })
+
+    await inMemoryProfessionalRepository.create(profissional)
+
     const result = await sut.execute({
-      recipientId: '1',
+      recipientId: profissional.id.toString(),
       title: 'Nova Notificacao',
       content: 'Conteudo da Notificacao',
       reminderType: 'CONFIRMED_LIST',
@@ -42,9 +53,21 @@ describe('Create Notification', () => {
       dailySummaryTime: '18:00',
     })
 
+    const user = User.create({
+      name: 'John Doe',
+      email: 'john.doe@example.com',
+      birthDate: new Date('1990-01-01'),
+      password: 'hashed-password',
+      cpf: '12345678900',
+      gender: 'MALE',
+      role: 'CLIENT',
+      whatsappNumber: '11999999999',
+    })
+
     const professional = makeProfessional(
       {
         notificationSettings,
+        userId: user.id,
       },
       new UniqueEntityId('profissional-id'),
     )
@@ -52,7 +75,7 @@ describe('Create Notification', () => {
     await inMemoryProfessionalRepository.create(professional)
 
     const result = await sut.execute({
-      recipientId: 'profissional-id',
+      recipientId: user.id.toString(),
       title: 'Nova Notificacao',
       content: 'Conteudo da Notificacao',
       reminderType: 'REMOVAL',

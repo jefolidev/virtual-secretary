@@ -41,14 +41,12 @@ export class SendNotificationUseCase {
     })
 
     const professional =
-      await this.professionalRepository.findByProfessionalIdWithNotificationSettings(
-        recipientId,
-      )
+      await this.professionalRepository.findByUserId(recipientId)
 
     if (professional) {
-      if (
-        !professional.notificationSettings?.enabledTypes.includes(reminderType)
-      ) {
+      const settings = (professional as any).notificationSettings
+
+      if (settings && !settings.enabledTypes.includes(reminderType)) {
         return right({})
       }
     }

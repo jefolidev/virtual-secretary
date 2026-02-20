@@ -53,8 +53,10 @@ export class HandleEvolutionController {
             user.id.toString(),
           )
         } else {
-          const data = await this.whatsappContactRepository.upsertFromWebhook(body)
+          const data =
+            await this.whatsappContactRepository.upsertFromWebhook(body)
 
+          console.log(data)
           session =
             await this.sessionsService.getOrCreateSessionByWhatsapp(
               whatsappNumber,

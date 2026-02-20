@@ -5,6 +5,8 @@ import { makeClient } from '@test/factories/make-client'
 import { makeProfessional } from '@test/factories/make-professional'
 import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
 import { InMemoryGoogleCalendarEventRepository } from '@test/repositories/in-memory-google-calendar-event.repository'
+import { InMemoryGoogleCalendarTokenRepository } from '@test/repositories/in-memory-google-calendar-token.repository'
+import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemoryUserRepository } from '@test/repositories/in-memory-user.repository'
 import { User } from '../../enterprise/entities/user'
 import { CreateCalendarEventUseCase } from './create-calendar-event'
@@ -12,6 +14,9 @@ import { CreateCalendarEventUseCase } from './create-calendar-event'
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
 let inMemoryGoogleCalendarEventRepository: InMemoryGoogleCalendarEventRepository
 let inMemoryUserRepository: InMemoryUserRepository
+let inMemoryProfessionalRepository: InMemoryProfessionalRepository
+let inMemoryGoogleCalendarTokenRepository: InMemoryGoogleCalendarTokenRepository
+
 let sut: CreateCalendarEventUseCase
 
 describe('Create Calendar Event', () => {
@@ -20,10 +25,15 @@ describe('Create Calendar Event', () => {
     inMemoryGoogleCalendarEventRepository =
       new InMemoryGoogleCalendarEventRepository()
     inMemoryUserRepository = new InMemoryUserRepository()
+    inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
+    inMemoryGoogleCalendarTokenRepository =
+      new InMemoryGoogleCalendarTokenRepository()
 
     sut = new CreateCalendarEventUseCase(
       inMemoryAppointmentRepository,
+      inMemoryProfessionalRepository,
       inMemoryGoogleCalendarEventRepository,
+      inMemoryGoogleCalendarTokenRepository,
       inMemoryUserRepository,
     )
   })
@@ -33,6 +43,13 @@ describe('Create Calendar Event', () => {
     const professional = makeProfessional(
       {},
       new UniqueEntityId('professional-id'),
+    )
+
+    await inMemoryProfessionalRepository.create(professional)
+
+    await inMemoryGoogleCalendarTokenRepository.saveTokensFromCode(
+      professional.id.toString(),
+      'fake-code',
     )
 
     const address = makeAddress()
@@ -98,6 +115,13 @@ describe('Create Calendar Event', () => {
     const professional = makeProfessional(
       {},
       new UniqueEntityId('professional-id'),
+    )
+
+    await inMemoryProfessionalRepository.create(professional)
+
+    await inMemoryGoogleCalendarTokenRepository.saveTokensFromCode(
+      professional.id.toString(),
+      'fake-code',
     )
 
     const appointment = makeAppointment(

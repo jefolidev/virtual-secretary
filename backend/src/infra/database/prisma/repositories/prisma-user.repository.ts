@@ -60,9 +60,7 @@ export class PrismaUserRepository implements UserRepository {
       })
     }
 
-    // contacts (unlinked whatsapp contacts)
     let contacts: any[] = []
-    // do not fetch contacts when ordering by most appointments
     if (
       (filter === 'all' || filter === 'unregistered') &&
       order !== 'more_appointments'
@@ -71,7 +69,10 @@ export class PrismaUserRepository implements UserRepository {
         where: {
           userId: null,
           phone: {
-            not: undefined,
+            not: {
+              not: undefined,
+              in: users.map((u) => u.whatsappNumber),
+            },
           },
         },
       })

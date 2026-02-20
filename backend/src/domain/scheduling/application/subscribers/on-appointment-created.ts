@@ -20,7 +20,13 @@ export class OnAppointmentCreated implements EventHandler {
   private async createGoogleCalendarEvent(event: AppointmentCreatedEvent) {
     const { appointment } = event
 
-    console.log(appointment)
+    if (!appointment.syncWithGoogleCalendar) {
+      console.log(
+        `[OnAppointmentCreated] Skipping Google Calendar sync for appointment ${appointment.id.toString()}`,
+      )
+
+      return
+    }
 
     try {
       const result = await this.createCalendarEventUseCase.execute({
