@@ -81,7 +81,6 @@ export class InMemoryProfessionalRepository implements ProfessionalRepository {
       (item) => item.id.toString() === professionalId,
     )
 
-    console.log('[PROFESSIONNAL] ', JSON.stringify(professional))
 
     if (!professional) {
       throw new Error('Professional not found')

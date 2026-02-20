@@ -4,10 +4,13 @@ import { AppointmentModalityType } from '@/domain/scheduling/enterprise/entities
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { Env } from '@/infra/env/env'
 import { EnvEvolution } from '@/infra/env/evolution/env-evolution'
+import { ConversationFlow } from '@/infra/flow/types'
 import { SessionService } from '@/infra/sessions/session.service'
+import { InjectQueue } from '@nestjs/bullmq'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
+import { Queue } from 'bullmq'
 import { Cache } from 'cache-manager'
 import dayjs from 'dayjs'
 import { OpenAiService } from '../openai/openai.service'
@@ -17,7 +20,6 @@ import {
 } from '../openai/types/conversations-flow'
 import { openAiFunctions } from '../openai/types/openai-functions'
 import { CreateClientBodyDTO } from './dto/create-client.dto'
-import { ConversationFlow } from '@/infra/flow/types'
 
 @Injectable()
 export class WhatsappService {
@@ -38,6 +40,8 @@ export class WhatsappService {
 
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    @InjectQueue('whatsapp-reminders')
+    private readonly remindersQueue: Queue,
   ) {
     this.apiKey = this.configService.get<string>('AUTHENTICATION_API_KEY')
     this.openaiApiKey = this.configService.get('OPENAI_API_KEY')
@@ -667,6 +671,167 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     )
   }
 
+  async handleConfirmAppointment(
+    message: string,
+    cleanNumber: string,
+    appointmentId: string,
+  ) {
+    const appointment = await this.appointmentRepository.findById(appointmentId)
+
+    if (!appointment) {
+      throw new BadRequestException('Agendamento não encontrado')
+    }
+
+    const intent = this.parseReply(message)
+
+    switch (intent) {
+      case 'confirm':
+        appointment.status = 'CONFIRMED'
+        await this.appointmentRepository.save(appointment)
+        await this.sendMessage(
+          cleanNumber,
+          `Consulta confirmada para ${dayjs(appointment.startDateTime).format('DD/MM/YYYY [às] HH:mm')}. Obrigado!`,
+        )
+        await this.clearPendingConfirmation(cleanNumber)
+        // schedule 2h and 30min reminders now that the appointment is confirmed
+        try {
+          const now = Date.now()
+          const startTime = new Date(appointment.startDateTime).getTime()
+          const delay2h = startTime - 2 * 60 * 60 * 1000 - now
+          if (delay2h > 0) {
+            try {
+              await this.remindersQueue.add(
+                'send-2h-reminder',
+                { appointmentId: appointment.id.toString() },
+                { delay: delay2h },
+              )
+            } catch (err) {
+              console.error(
+                `[WhatsappService] Error adding send-2h-reminder job for appointment ${appointment.id}:`,
+                err,
+              )
+            }
+          }
+
+          const delay30min = startTime - 30 * 60 * 1000 - now
+          if (delay30min > 0) {
+            try {
+              await this.remindersQueue.add(
+                'send-30min-reminder',
+                { appointmentId: appointment.id.toString() },
+                { delay: delay30min },
+              )
+            } catch (err) {
+              console.error(
+                `[WhatsappService] Error adding send-30min-reminder job for appointment ${appointment.id}:`,
+                err,
+              )
+            }
+          }
+        } catch (err) {
+          console.error(
+            '[WhatsappService] Error scheduling post-confirmation reminders:',
+            err,
+          )
+        }
+        break
+
+      case 'cancel':
+        appointment.status = 'CANCELLED'
+        await this.appointmentRepository.save(appointment)
+        await this.sendMessage(
+          cleanNumber,
+          `Consulta cancelada. Se desejar, posso ajudar a reagendar.`,
+        )
+        await this.clearPendingConfirmation(cleanNumber)
+        // clear any pending auto-cancel job
+        try {
+          const pendingJobId = await this.getPendingCancelJob(cleanNumber)
+          if (pendingJobId) {
+            const job = await this.remindersQueue.getJob(pendingJobId)
+            if (job) await job.remove()
+            await this.clearPendingCancelJob(cleanNumber)
+            // cleared pending auto-cancel job
+          }
+        } catch (err) {
+          console.error(
+            '[WhatsappService] Error clearing pending auto-cancel job after cancel:',
+            err,
+          )
+        }
+        break
+
+      default:
+        await this.sendMessage(
+          cleanNumber,
+          'Não entendi sua resposta. Responda com "confirmar" ou "cancelar".',
+        )
+    }
+  }
+
+  public parseReply(
+    message = '',
+  ): 'confirm' | 'cancel' | 'reschedule' | 'unknown' {
+    const normalize = (text: string) =>
+      text
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '')
+
+    const t = normalize(message)
+
+    if (/\b(confirmar|confirm|sim|s|1)\b/.test(t)) return 'confirm'
+    if (/\b(cancelar|cancela|nao|nao vou|nao consigo|nao deu|n|nao)\b/.test(t))
+      return 'cancel'
+    if (/\b(reagendar|remarcar|trocar|outro horario|outro horario)\b/.test(t))
+      return 'reschedule'
+
+    return 'unknown'
+  }
+
+  async markPendingConfirmation(
+    whatsappNumber: string,
+    appointmentId: string,
+    ttlHours = 12,
+  ) {
+    const key = `whatsapp-pending-confirmation-${whatsappNumber}`
+    await this.cacheManager.set(key, appointmentId, 1000 * 60 * 60 * ttlHours)
+  }
+
+  async setPendingCancelJob(
+    whatsappNumber: string,
+    jobId: string | number,
+    ttlHours = 12,
+  ) {
+    const key = `whatsapp-pending-confirmation-job-${whatsappNumber}`
+    await this.cacheManager.set(
+      key,
+      jobId.toString(),
+      1000 * 60 * 60 * ttlHours,
+    )
+  }
+
+  async getPendingCancelJob(whatsappNumber: string) {
+    const key = `whatsapp-pending-confirmation-job-${whatsappNumber}`
+    return (await this.cacheManager.get<string | null>(key)) || null
+  }
+
+  async clearPendingCancelJob(whatsappNumber: string) {
+    const key = `whatsapp-pending-confirmation-job-${whatsappNumber}`
+    await this.cacheManager.del(key)
+  }
+
+  async getPendingConfirmation(whatsappNumber: string) {
+    const key = `whatsapp-pending-confirmation-${whatsappNumber}`
+    return (await this.cacheManager.get<string | null>(key)) || null
+  }
+
+  async clearPendingConfirmation(whatsappNumber: string) {
+    const key = `whatsapp-pending-confirmation-${whatsappNumber}`
+    await this.cacheManager.del(key)
+  }
+
   async handleIncompleteConversation(conversationId: string) {
     const conversation = await this.getConversation(conversationId)
 
@@ -694,16 +859,15 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     const url = `${this.apiUrl}/message/sendText/${this.configService.get('EVOLUTION_INSTANCE_ID')}`
 
     try {
+      const payload = { number: to, text: text }
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           apikey: this.apiKey,
         },
-        body: JSON.stringify({
-          number: to,
-          text: text,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!response.ok) {
@@ -730,12 +894,7 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     const lockKey = `processing:${messageId}`
     const isProcessing = await this.cacheManager.get(lockKey)
 
-    if (isProcessing) {
-      console.log(
-        `⚠️ Mensagem duplicada detectada (ID: ${messageId}). Ignorando...`,
-      )
-      return
-    }
+    if (isProcessing) return
 
     await this.cacheManager.set(lockKey, true, 30000)
     const cleanNumber = whatsappId.split('@')[0]
@@ -743,6 +902,22 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     const user = await this.userRepository.findByPhone(cleanNumber)
 
     if (user) {
+      const replyIntent = this.parseReply(message)
+
+      if (
+        replyIntent === 'confirm' ||
+        replyIntent === 'cancel' ||
+        replyIntent === 'reschedule'
+      ) {
+        const pending = await this.getPendingConfirmation(user.whatsappNumber)
+        if (pending)
+          return this.handleConfirmAppointment(
+            message,
+            user.whatsappNumber,
+            pending,
+          )
+      }
+
       return this.handleRegisteredUserFlow(message, user)
     }
 

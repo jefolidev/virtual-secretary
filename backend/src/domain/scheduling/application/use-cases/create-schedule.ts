@@ -127,6 +127,7 @@ export class CreateAppointmentUseCase {
       googleMeetLink,
       agreedPrice: professional.sessionPrice,
       syncWithGoogleCalendar,
+      
     })
 
     try {

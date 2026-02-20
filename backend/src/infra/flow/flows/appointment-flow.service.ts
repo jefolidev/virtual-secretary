@@ -103,7 +103,6 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
   private async getClientByUserId(userId: string): Promise<Client | null> {
     const client = await this.clientRepository.findByUserId(userId)
     this.client = client
-    console.log(client)
 
     return client
   }
@@ -162,7 +161,6 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
     message: string,
   ) {
     const data = session.contextData.data
-    console.log(aiIntent)
 
     if (
       aiIntent === ConversationFlow.LIST_PROFESSIONAL &&
@@ -203,7 +201,6 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
         return this.showConfirmation(session)
 
       case AppointmentFlowSteps.ASK_DATE_TIME:
-        console.log('entrou aqui')
         const extractResult = await this.extractScheduleAppointmentData(
           message,
           session,
@@ -301,15 +298,9 @@ Por favor, informe o nome completo do profissional com quem deseja agendar a con
         userResponse,
       )) as FieldsData<CreateAppointmentBodyDTO> | null
 
-      console.log(userResponse, extracted)
-
       let fields: FieldsData<CreateAppointmentBodyDTO> | null = extracted
 
       if (!fields || !fields.data) {
-        console.log(
-          'extractScheduleData returned empty, trying fallbacks:',
-          fields,
-        )
         await this.updateSession(session)
 
         const fallbackFields = { data: {}, missingFields: [] } as any

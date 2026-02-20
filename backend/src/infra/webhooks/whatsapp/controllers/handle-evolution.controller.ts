@@ -39,6 +39,25 @@ export class HandleEvolutionController {
 
         const user = await this.userRepository.findByPhone(whatsappNumber)
 
+        // quick-reply handling for appointment confirmations
+        const replyIntent = this.whatsappService.parseReply(message)
+        if (
+          replyIntent === 'confirm' ||
+          replyIntent === 'cancel' ||
+          replyIntent === 'reschedule'
+        ) {
+          const pending =
+            await this.whatsappService.getPendingConfirmation(whatsappNumber)
+          if (pending) {
+            await this.whatsappService.handleConfirmAppointment(
+              message,
+              whatsappNumber,
+              pending,
+            )
+            return { success: true }
+          }
+        }
+
         const aiIntent = await this.openAiService.determineUserIntent(message)
 
         let session
@@ -56,7 +75,6 @@ export class HandleEvolutionController {
           const data =
             await this.whatsappContactRepository.upsertFromWebhook(body)
 
-          console.log(data)
           session =
             await this.sessionsService.getOrCreateSessionByWhatsapp(
               whatsappNumber,

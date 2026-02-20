@@ -7,12 +7,14 @@ import {
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
 import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
+import { InjectQueue } from '@nestjs/bullmq'
 import {
   BadRequestException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
+import { Queue } from 'bullmq'
 import dayjs from 'dayjs'
 import { PrismaAppointmentMapper } from '../../mappers/prisma-appointment-mapper'
 import { PrismaAppointmentWithClientMapper } from '../../mappers/prisma-appointment-with-client-mapper'
@@ -20,7 +22,10 @@ import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class PrismaAppointmentsRepository implements AppointmentsRepository {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @InjectQueue('whatsapp-reminders') private remindersQueue: Queue,
+  ) {}
 
   async create(appointment: Appointment): Promise<void> {
     const data = PrismaAppointmentMapper.toPrisma(appointment)
@@ -28,7 +33,6 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     await this.prisma.$transaction(async (tx) => {
       await tx.$queryRaw`SELECT id FROM "professionals" WHERE id = ${data.professionalId} FOR UPDATE`
 
-      // Verifica sobreposição dentro da mesma transação
       const overlapping = await tx.appointment.findFirst({
         where: {
           professionalId: data.professionalId,
@@ -52,6 +56,34 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       if (overlapping) {
         throw new BadRequestException('Este horário já está ocupado.')
       }
+
+      const consultationTime = new Date(data.startDateTime).getTime()
+
+      let delay24h = consultationTime - 24 * 60 * 60 * 1000 - Date.now()
+      if (delay24h <= 0) {
+        delay24h = 0
+      }
+
+      await this.remindersQueue.add(
+        'send-24h-reminder',
+        {
+          appointmentId: appointment.id.toString(),
+        },
+        {
+          delay: delay24h,
+        },
+      )
+
+      const delayTimeout = consultationTime - 12 * 60 * 60 * 1000 - Date.now()
+      await this.remindersQueue.add(
+        'auto-cancel-timeout',
+        {
+          appointmentId: appointment.id.toString(),
+        },
+        {
+          delay: delayTimeout,
+        },
+      )
 
       await tx.appointment.create({
         data: {
@@ -294,8 +326,6 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
         startDateTime: startDate,
         endDateTime: endDate,
       },
-      // take: 10,
-      // skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
     if (appointments.length === 0) {

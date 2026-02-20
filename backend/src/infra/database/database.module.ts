@@ -9,6 +9,7 @@ import { ClientRepository } from '@/domain/scheduling/application/repositories/c
 import { GoogleCalendarTokenRepository } from '@/domain/scheduling/application/repositories/google-calendar-token.repository'
 import { ScheduleConfigurationRepository } from '@/domain/scheduling/application/repositories/schedule-configuration.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
+import { BullModule } from '@nestjs/bullmq'
 import { CacheModule } from '@nestjs/cache-manager'
 import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
@@ -34,6 +35,7 @@ import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-wh
 
 @Module({
   imports: [
+    BullModule.registerQueue({ name: 'whatsapp-reminders' }),
     CryptographyModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
@@ -50,6 +52,7 @@ import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-wh
   ],
   providers: [
     PrismaService,
+
     {
       provide: AddressRepository,
       useClass: PrismaAddressRepository,

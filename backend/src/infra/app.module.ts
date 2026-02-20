@@ -1,5 +1,6 @@
+import { BullModule } from '@nestjs/bullmq'
 import { Module } from '@nestjs/common'
-import { ConfigModule } from '@nestjs/config'
+import { ConfigModule, ConfigService } from '@nestjs/config'
 import { AuthModule } from './auth/auth.module'
 import { envSchema } from './env/env'
 import { EnvModule } from './env/env.module'
@@ -11,6 +12,21 @@ import { WebhooksModule } from './webhooks/webhooks.module'
 
 @Module({
   imports: [
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_HOST', 'localhost'),
+          port: Number(configService.get<number>('REDIS_PORT', 6379)),
+        },
+      }),
+      inject: [ConfigService],
+    }),
+
+    BullModule.registerQueue({
+      name: 'whatsapp-reminders',
+    }),
+
     // Configuração principal (.env)
     ConfigModule.forRoot({
       isGlobal: true,

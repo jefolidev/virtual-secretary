@@ -108,7 +108,6 @@ describe('LogoutUseCase', () => {
     await inMemoryUserRepository.create(user)
 
     // Lista deve estar vazia inicialmente
-    console.log(fakeTokenInvalidator.getInvalidatedTokens())
 
     expect(fakeTokenInvalidator.getInvalidatedTokens()).toHaveLength(0)
 
