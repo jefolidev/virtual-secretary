@@ -4,6 +4,7 @@ import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { AppointmentCreatedEvent } from '../events/appointment-created-event'
 import { CanceledAppointmentEvent } from '../events/canceled-appointment'
 import { ConfirmedAppointmentEvent } from '../events/confirmed-appointment'
+import { FinishedAppointmentEvent } from '../events/finished-appointment'
 import { ScheduledAppointmentEvent } from '../events/scheduled-appointment-event'
 
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
@@ -15,6 +16,8 @@ export type AppointmentStatusType =
   | 'NO_SHOW'
   | 'IN_PROGRESS'
   | 'COMPLETED'
+  | 'AWAITING_SCORE'
+  | 'AWAITING_COMMENT'
 
 export type PaymentStatus =
   | 'PENDING'
@@ -241,6 +244,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.touch()
 
     this.addDomainEvent(new ConfirmedAppointmentEvent(this))
+    this.addDomainEvent(new FinishedAppointmentEvent(this))
   }
 
   public cancel() {
@@ -313,6 +317,8 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.props.status = 'COMPLETED'
     this.props.startedAt = null
     this.touch()
+
+    this.addDomainEvent(new FinishedAppointmentEvent(this))
   }
 
   private isCompletedOrInProgress(): boolean {

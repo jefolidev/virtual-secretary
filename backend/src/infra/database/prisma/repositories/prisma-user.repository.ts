@@ -82,7 +82,6 @@ export class PrismaUserRepository implements UserRepository {
       return null
     }
 
-    // sort users according to `order`
     if (users && users.length > 0) {
       if (order === 'name') {
         users.sort((a: any, b: any) =>
@@ -92,13 +91,13 @@ export class PrismaUserRepository implements UserRepository {
         users.sort((a: any, b: any) => {
           const at = a?.createdAt ? new Date(a.createdAt).getTime() : 0
           const bt = b?.createdAt ? new Date(b.createdAt).getTime() : 0
-          return bt - at // most recent first by createdAt
+          return bt - at
         })
       } else if (order === 'more_appointments') {
         users.sort((a: any, b: any) => {
           const ac = a?.client?.appointments ? a.client.appointments.length : 0
           const bc = b?.client?.appointments ? b.client.appointments.length : 0
-          return bc - ac // most appointments first
+          return bc - ac
         })
       }
     }
