@@ -4,7 +4,7 @@ import {
   Appointment as PrismaAppointment,
   Client as PrismaClient,
   Notification as PrismaNotification,
-  User as PrismaUser,
+  User as PrismaUser
 } from '@prisma/client'
 import { PrismaAddressMapper } from './prisma-address-mapper'
 import { PrismaAppointmentMapper } from './prisma-appointment-mapper'
@@ -12,7 +12,7 @@ import { PrismaNotificationMapper } from './prisma-notification-mapper'
 
 type PrismaAppointmentWithClient = PrismaAppointment & {
   client: PrismaClient & {
-    users:
+    user:
       | (PrismaUser & {
           address: PrismaAddress | null
           notifications: PrismaNotification[]
@@ -23,12 +23,20 @@ type PrismaAppointmentWithClient = PrismaAppointment & {
 
 export class PrismaAppointmentWithClientMapper {
   static toDomain(raw: PrismaAppointmentWithClient): AppointmentWithClient {
-    if (!raw.client.users) {
-      throw new Error('User data is missing for this appointment.')
+    if (!raw.client) {
+      throw new Error(`Client data is missing for appointment ${raw.id}.`)
     }
 
-    if (!raw.client.users.address) {
-      throw new Error('Address data is missing for this appointment.')
+    if (!raw.client.user) {
+      throw new Error(
+        `User data is missing for appointment ${raw.id} (client ${raw.client.id}).`,
+      )
+    }
+
+    if (!raw.client.user.address) {
+      throw new Error(
+        `Address data is missing for user ${raw.client.user.id} (client ${raw.client.id}, appointment ${raw.id}).`,
+      )
     }
 
     return AppointmentWithClient.create({
@@ -38,16 +46,16 @@ export class PrismaAppointmentWithClientMapper {
         periodPreference: raw.client.periodPreference,
       },
 
-      address: PrismaAddressMapper.toDomain(raw.client.users.address),
-      notification: raw.client.users.notifications.map(
+      address: PrismaAddressMapper.toDomain(raw.client.user.address),
+      notification: raw.client.user.notifications.map(
         PrismaNotificationMapper.toDomain,
       ),
 
-      name: raw.client.users.name,
-      whatsappNumber: raw.client.users.whatsappNumber,
-      email: raw.client.users.email,
-      cpf: raw.client.users.cpf,
-      gender: raw.client.users.gender,
+      name: raw.client.user.name,
+      whatsappNumber: raw.client.user.whatsappNumber,
+      email: raw.client.user.email,
+      cpf: raw.client.user.cpf,
+      gender: raw.client.user.gender,
     })
   }
 }

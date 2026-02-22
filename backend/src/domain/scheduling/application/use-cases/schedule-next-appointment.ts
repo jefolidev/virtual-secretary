@@ -27,7 +27,7 @@ export class ScheduleNextAppointmentUseCase {
     private appointmentsRepository: AppointmentsRepository,
     private clientRepository: ClientRepository,
     private professionalRepository: ProfessionalRepository,
-    private cancellationPolicy: CancellationPolicyRepository
+    private cancellationPolicy: CancellationPolicyRepository,
   ) {}
 
   async execute({
@@ -40,9 +40,8 @@ export class ScheduleNextAppointmentUseCase {
 
     if (!client) return left(new NotFoundError('Client not found'))
 
-    const professional = await this.professionalRepository.findById(
-      professionalId
-    )
+    const professional =
+      await this.professionalRepository.findById(professionalId)
 
     if (!professional) return left(new NotFoundError('Professional not found'))
 
@@ -51,14 +50,16 @@ export class ScheduleNextAppointmentUseCase {
 
     if (!professionalCancellationPolicy) {
       return left(
-        new NotFoundError('Cancellation policy not found for this professional')
+        new NotFoundError(
+          'Cancellation policy not found for this professional',
+        ),
       )
     }
 
     const clientAppointments =
       await this.appointmentsRepository.findManyByClientId(
         clientId.toString(),
-        { page: 1 }
+        { page: 1 },
       )
 
     if (clientAppointments.length === 0) {
@@ -66,12 +67,12 @@ export class ScheduleNextAppointmentUseCase {
     }
 
     const lastFinishedAppointment = clientAppointments.find(
-      (appointment) => appointment.status === 'COMPLETED'
+      (appointment) => appointment.status === 'COMPLETED',
     )
 
     if (!lastFinishedAppointment) {
       return left(
-        new NotFoundError('This client has no finished appointments.')
+        new NotFoundError('This client has no finished appointments.'),
       )
     }
 
@@ -79,16 +80,16 @@ export class ScheduleNextAppointmentUseCase {
       professionalCancellationPolicy.minDaysBeforeNextAppointment
     const nextAllowedDate = dayjs(lastFinishedAppointment.endDateTime).add(
       minDaysGap,
-      'day'
+      'day',
     )
 
     if (dayjs(startDateTime).isBefore(nextAllowedDate)) {
       return left(
         new NotAllowedError(
           `You can only schedule a new session after ${nextAllowedDate.format(
-            'DD/MM/YYYY'
-          )}`
-        )
+            'DD/MM/YYYY',
+          )}`,
+        ),
       )
     }
 
@@ -96,6 +97,7 @@ export class ScheduleNextAppointmentUseCase {
       clientId: new UniqueEntityId(clientId),
       professionalId: new UniqueEntityId(professionalId),
       startDateTime,
+      evaluation: undefined,
       endDateTime,
       modality: 'IN_PERSON',
       agreedPrice: 0,
@@ -106,7 +108,7 @@ export class ScheduleNextAppointmentUseCase {
       await this.appointmentsRepository.findOverlapping(
         appointment.professionalId.toString().toString(),
         startDateTime,
-        endDateTime
+        endDateTime,
       )
 
     if (overlappingAppointments.length > 0) {

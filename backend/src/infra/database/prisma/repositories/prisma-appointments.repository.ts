@@ -283,9 +283,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const appointments = await this.prisma.appointment.findMany({
       where: { professionalId },
       include: {
+        evaluation: true,
         client: {
           include: {
-            users: {
+            user: {
               include: {
                 address: true,
                 notifications: true,
@@ -298,7 +299,22 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       skip: params.page ? (params.page - 1) * 10 : 0,
     })
 
-    return appointments.map(PrismaAppointmentWithClientMapper.toDomain)
+    const appointmentsWithUser = appointments.filter(
+      (a) => a.client && a.client.user,
+    )
+
+    if (appointmentsWithUser.length !== appointments.length) {
+      const missingIds = appointments
+        .filter((a) => !a.client || !a.client.user)
+        .map((a) => a.id)
+      console.warn(
+        `PrismaAppointmentsRepository.findManyByProfessionalId: ${missingIds.length} appointment(s) missing client.user: ${missingIds.join(', ')}`,
+      )
+    }
+
+    return appointmentsWithUser.map((raw) =>
+      PrismaAppointmentWithClientMapper.toDomain(raw),
+    )
   }
 
   async findManyByClientId(

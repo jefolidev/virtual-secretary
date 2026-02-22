@@ -32,7 +32,7 @@ export class PrismaClientRepository implements ClientRepository {
         id,
       },
       include: {
-        users: true,
+        user: true,
       },
     })
 
@@ -46,12 +46,12 @@ export class PrismaClientRepository implements ClientRepository {
   async findByUserId(userId: string): Promise<Client | null> {
     const client = await this.prisma.client.findFirst({
       where: {
-        users: {
+        user: {
           id: userId,
         },
       },
       include: {
-        users: true,
+        user: true,
       },
     })
 

@@ -73,6 +73,7 @@ export class PrismaUserWithWhatsappAndAppointmentMapper {
           ? new UniqueEntityId(a.professionalId)
           : (undefined as any),
         startDateTime: a.startDateTime,
+        evaluation: undefined,
         endDateTime: a.endDateTime,
         modality: a.modality as any,
         agreedPrice: Number(a.agreedPrice) ?? 0,

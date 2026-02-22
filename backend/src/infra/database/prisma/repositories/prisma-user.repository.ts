@@ -1,7 +1,7 @@
 import { HashGenerator } from '@/domain/scheduling/application/cryptography/hash-generator'
 import {
-  CookieClearOptions,
-  UserRepository,
+    CookieClearOptions,
+    UserRepository,
 } from '@/domain/scheduling/application/repositories/user.repository'
 import { Address } from '@/domain/scheduling/enterprise/entities/address'
 import { Client } from '@/domain/scheduling/enterprise/entities/client'
@@ -34,7 +34,7 @@ export class PrismaUserRepository implements UserRepository {
     const filter = options?.filter ?? 'all'
     const order = options?.order ?? 'name'
 
-    let users: any[] = []
+    let user: any[] = []
     if (filter === 'all' || filter === 'registered') {
       const where: any = {}
 
@@ -47,7 +47,7 @@ export class PrismaUserRepository implements UserRepository {
         where.whatsappNumber = { not: undefined }
       }
 
-      users = await this.prisma.user.findMany({
+      user = await this.prisma.user.findMany({
         where,
         include: {
           client: {
@@ -71,30 +71,30 @@ export class PrismaUserRepository implements UserRepository {
           phone: {
             not: {
               not: undefined,
-              in: users.map((u) => u.whatsappNumber),
+              in: user.map((u) => u.whatsappNumber),
             },
           },
         },
       })
     }
 
-    if (users.length === 0 && contacts.length === 0) {
+    if (user.length === 0 && contacts.length === 0) {
       return null
     }
 
-    if (users && users.length > 0) {
+    if (user && user.length > 0) {
       if (order === 'name') {
-        users.sort((a: any, b: any) =>
+        user.sort((a: any, b: any) =>
           (a.name || '').localeCompare(b.name || ''),
         )
       } else if (order === 'recent') {
-        users.sort((a: any, b: any) => {
+        user.sort((a: any, b: any) => {
           const at = a?.createdAt ? new Date(a.createdAt).getTime() : 0
           const bt = b?.createdAt ? new Date(b.createdAt).getTime() : 0
           return bt - at
         })
       } else if (order === 'more_appointments') {
-        users.sort((a: any, b: any) => {
+        user.sort((a: any, b: any) => {
           const ac = a?.client?.appointments ? a.client.appointments.length : 0
           const bc = b?.client?.appointments ? b.client.appointments.length : 0
           return bc - ac
@@ -119,7 +119,7 @@ export class PrismaUserRepository implements UserRepository {
     }
 
     return {
-      registred: users.map(PrismaUserWithWhatsappAndAppointmentMapper.toDomain),
+      registred: user.map(PrismaUserWithWhatsappAndAppointmentMapper.toDomain),
       unlinked: contacts.map(PrismaWhatsappContactMapper.toDomain),
     }
   }
@@ -127,7 +127,7 @@ export class PrismaUserRepository implements UserRepository {
   async findManyUsersWithWhatsApp(): Promise<
     UserClientWhatsappAppointments[] | null
   > {
-    const users = await this.prisma.user.findMany({
+    const user = await this.prisma.user.findMany({
       where: {
         whatsappNumber: {
           not: undefined,
@@ -143,11 +143,11 @@ export class PrismaUserRepository implements UserRepository {
       },
     })
 
-    if (!users || users.length === 0) {
+    if (!user || user.length === 0) {
       return null
     }
 
-    return users.map((user) =>
+    return user.map((user) =>
       PrismaUserWithWhatsappAndAppointmentMapper.toDomain(user),
     )
   }
@@ -169,7 +169,7 @@ export class PrismaUserRepository implements UserRepository {
   }
 
   async findManyProfessionalUsers(): Promise<User[]> {
-    const users = await this.prisma.user.findMany({
+    const user = await this.prisma.user.findMany({
       where: {
         professionalId: {
           not: null,
@@ -188,7 +188,7 @@ export class PrismaUserRepository implements UserRepository {
       },
     })
 
-    return users.map(PrismaUserMapper.toDomain)
+    return user.map(PrismaUserMapper.toDomain)
   }
 
   async findByEmail(email: string): Promise<User | null> {
@@ -226,7 +226,7 @@ export class PrismaUserRepository implements UserRepository {
     return PrismaUserMapper.toDomain(user)
   }
   async findManyClientUsers(): Promise<User[] | null> {
-    const users = await this.prisma.user.findMany({
+    const user = await this.prisma.user.findMany({
       where: {
         clientId: {
           not: null,
@@ -238,11 +238,11 @@ export class PrismaUserRepository implements UserRepository {
       },
     })
 
-    if (!users) {
+    if (!user) {
       return null
     }
 
-    return users.map(PrismaUserMapper.toDomain)
+    return user.map(PrismaUserMapper.toDomain)
   }
 
   async findByProfessionalId(professionalId: string): Promise<User | null> {

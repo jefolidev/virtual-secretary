@@ -241,7 +241,7 @@ model ScheduleConfiguration {
   holidays               DateTime[]
   enableGoogleMeet       Boolean    @default(false) @map("enable_google_meet")
   createdAt              DateTime   @default(now()) @map("created_at")
-  updatedAt              DateTime?  @map("updated_at")
+  updatedAt              DateTime?  @updatedAt @map("updated_at")
 
   professional   Professional @relation(fields: [professionalId], references: [id])
   professionalId String       @unique @map("professional_id")
@@ -258,7 +258,7 @@ model Client {
 
   appointments Appointment[]
 
-  users User?
+  user User?
 
   @@map("clients")
 }

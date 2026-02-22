@@ -1,7 +1,17 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
-import { Appointment, PaymentStatus } from '@/domain/scheduling/enterprise/entities/appointment'
+import {
+  Appointment,
+  PaymentStatus,
+} from '@/domain/scheduling/enterprise/entities/appointment'
 import { Appointment as PrismaAppointment } from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/index-browser'
+
+import { Evaluation } from '@/domain/evaluation/enterprise/entities/evaluation'
+import { Evaluation as PrismaEvaluation } from '@prisma/client'
+
+export type PrismaAppointmentWithEvaluation = PrismaAppointment & {
+  evaluation?: PrismaEvaluation | null
+}
 
 export class PrismaAppointmentMapper {
   static toPrisma(raw: Appointment): PrismaAppointment {
@@ -29,7 +39,7 @@ export class PrismaAppointmentMapper {
     }
   }
 
-  static toDomain(raw: PrismaAppointment): Appointment {
+  static toDomain(raw: PrismaAppointmentWithEvaluation): Appointment {
     if (!raw.clientId) {
       throw new Error('Invalid client id.')
     }
@@ -50,6 +60,17 @@ export class PrismaAppointmentMapper {
         endDateTime: raw.endDateTime,
         clientId: new UniqueEntityId(raw.clientId),
         modality: raw.modality,
+        evaluation: raw.evaluation
+          ? Evaluation.create(
+              {
+                professionalId: raw.evaluation.professionalId,
+                score: raw.evaluation.score,
+                comment: raw.evaluation.comment ?? '',
+                appointmentId: raw.evaluation.appointmentId,
+              },
+              new UniqueEntityId(raw.evaluation.id),
+            )
+          : undefined,
         professionalId: new UniqueEntityId(raw.professionalId),
         startDateTime: raw.startDateTime,
         createdAt: raw.createdAt,

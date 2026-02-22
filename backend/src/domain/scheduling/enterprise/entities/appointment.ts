@@ -6,6 +6,7 @@ import { CanceledAppointmentEvent } from '../events/canceled-appointment'
 import { ConfirmedAppointmentEvent } from '../events/confirmed-appointment'
 import { FinishedAppointmentEvent } from '../events/finished-appointment'
 import { ScheduledAppointmentEvent } from '../events/scheduled-appointment-event'
+import { Evaluation } from '@/domain/evaluation/enterprise/entities/evaluation'
 
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 export type AppointmentStatusType =
@@ -40,6 +41,8 @@ export interface AppointmentProps {
   googleMeetLink?: string | null
   googleCalendarEventId?: string | null
 
+  evaluation: Evaluation | null | undefined
+
   rescheduleDateTime?: { start: Date; end: Date }
   syncWithGoogleCalendar: boolean
   isPaid: boolean
@@ -62,6 +65,10 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
   get googleCalendarEventId() {
     return this.props.googleCalendarEventId
+  }
+
+  get evaluation(): Evaluation | null | undefined {
+    return this.props.evaluation
   }
 
   set googleCalendarEventId(googleCalendarEventId: string | null | undefined) {

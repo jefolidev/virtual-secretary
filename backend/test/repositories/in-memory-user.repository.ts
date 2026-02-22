@@ -1,8 +1,8 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { DomainEvents } from '@/core/events/domain-events'
 import {
-  CookieClearOptions,
-  UserRepository,
+    CookieClearOptions,
+    UserRepository,
 } from '@/domain/scheduling/application/repositories/user.repository'
 import { User } from '@/domain/scheduling/enterprise/entities/user'
 import { UserClientWhatsappAppointments } from '@/domain/scheduling/enterprise/entities/value-objects/user-with-clients-and-appointments'
@@ -38,7 +38,7 @@ export class InMemoryUserRepository implements UserRepository {
     const filter = options?.filter ?? 'all'
     const order = options?.order ?? 'name'
 
-    let users: UserClientWhatsappAppointments[] = []
+    let user: UserClientWhatsappAppointments[] = []
     if (filter === 'all' || filter === 'clients' || filter === 'registered') {
       const filtered = this.items.filter((user) => {
         if (filter === 'clients')

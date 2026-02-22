@@ -124,10 +124,10 @@ export class CreateAppointmentUseCase {
       startDateTime,
       endDateTime: endScheduleTime,
       modality,
+      evaluation: undefined,
       googleMeetLink,
       agreedPrice: professional.sessionPrice,
       syncWithGoogleCalendar,
-      
     })
 
     try {

@@ -5,11 +5,11 @@ import { Controller, Get, NotFoundException } from '@nestjs/common'
 
 @Controller('/me')
 export class MeController {
-  constructor(private readonly users: UserRepository) {}
+  constructor(private readonly user: UserRepository) {}
 
   @Get()
   async handle(@CurrentUser() { sub: userId }: UserPayload) {
-    const user = await this.users.findById(userId)
+    const user = await this.user.findById(userId)
 
     if (!user) {
       throw new NotFoundException('User not found')
