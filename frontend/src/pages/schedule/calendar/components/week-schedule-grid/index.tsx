@@ -101,7 +101,7 @@ export function WeekScheduleGrid({
             >
               {weekDays.map((date, dayIndex) => {
                 const daySchedules = schedules.filter((item) => {
-                  const aptDate = new Date(item.appointments.startDateTime)
+                  const aptDate = new Date(item.startDateTime)
                   return (
                     aptDate.getDate() === date.getDate() &&
                     aptDate.getMonth() === date.getMonth()
@@ -114,7 +114,7 @@ export function WeekScheduleGrid({
                     className="relative border-r dark:border-gray-50/20 last:border-r-0"
                   >
                     {daySchedules.map((item) => {
-                      const apt = item.appointments
+                      const apt = item
                       const aptDate = new Date(apt.startDateTime)
 
                       // Formatação segura de hora para busca no index
@@ -134,11 +134,11 @@ export function WeekScheduleGrid({
 
                       const collisions = daySchedules.filter(
                         (s) =>
-                          new Date(s.appointments.startDateTime).getTime() ===
+                          new Date(s.startDateTime).getTime() ===
                           aptDate.getTime(),
                       )
                       const colIndex = collisions.findIndex(
-                        (s) => s.appointments.id === apt.id,
+                        (s) => s.id === apt.id,
                       )
 
                       // Empilhar verticalmente: cada item ocupa a largura total

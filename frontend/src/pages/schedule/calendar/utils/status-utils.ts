@@ -108,15 +108,12 @@ export const getStatusLabel = (status: Appointment['status']) => {
     RESCHEDULED: 'Remarcado',
     NO_SHOW: 'No-Show',
     IN_PROGRESS: 'Em Andamento',
-    // Caso existam no seu banco, mesmo que comentados:
-    // PAGO: 'Pago',
-    // NAO_PAGO: 'Não Pago',
   }
 
   return labels[status] || 'Desconhecido'
 }
 
-// 2. Atualize os Ícones para bater com os Enums do Prisma
+// 2. Atualize os Ícones para bater com os Enums do Prisma 
 export const getStatusIcon = (status: Appointment['status']) => {
   const iconMap: Record<Appointment['status'], React.ElementType> = {
     SCHEDULED: Calendar,

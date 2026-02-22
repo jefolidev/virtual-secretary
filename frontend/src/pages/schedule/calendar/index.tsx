@@ -45,11 +45,9 @@ export function ScheduleCalendarPage() {
     setCurrentDate(new Date())
   }
 
-  // Filtrar agendamentos baseado nos filtros selecionados
   const filteredAppointments = useMemo(() => {
     return currentProfessionalSchedules.filter((apt) => {
-      // Acesse o status de dentro do objeto appointment (verifique se o nome é singular no seu DTO)
-      const status = apt.appointments.status
+      const status = apt.status
 
       const statusFilter =
         (status === 'SCHEDULED' && filters.showAgendado) ||
@@ -61,14 +59,14 @@ export function ScheduleCalendarPage() {
         true
 
       const patientFilter =
-        selectedPatient === 'all' || apt.name === selectedPatient
+        selectedPatient === 'all' || apt.userDetails.name === selectedPatient
 
       return statusFilter && patientFilter
     })
   }, [currentProfessionalSchedules, filters, selectedPatient])
   // Obter lista única de pacientes para o select
   const uniquePatients = [
-    ...new Set(currentProfessionalSchedules.map((apt) => apt.name)),
+    ...new Set(currentProfessionalSchedules.map((apt) => apt.userDetails.name)),
   ]
 
   const renderCalendar = () => {

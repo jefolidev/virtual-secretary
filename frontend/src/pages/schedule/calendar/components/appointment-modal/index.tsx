@@ -20,9 +20,9 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { formatFullAddress } from '@/utils/format-address'
 import { formatPhoneNumber } from '@/utils/format-phone'
+import { VideoCameraIcon } from '@phosphor-icons/react'
 import {
   Bell,
-  Camera,
   Clock,
   CreditCard,
   MapPin,
@@ -34,7 +34,6 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
-import { VideoCameraIcon } from '@phosphor-icons/react'
 
 interface AppointmentModalProps {
   schedule: FetchProfessionalSchedulesSchema | null
@@ -68,8 +67,6 @@ export function AppointmentModal({
   const [currentStatus, setCurrentStatus] =
     useState<Appointment['status']>('IN_PROGRESS')
 
-  console.log('[]', schedule)
-
   const [timer, setTimer] = useState<SessionTimer>({
     isRunning: false,
     isPaused: false,
@@ -78,8 +75,8 @@ export function AppointmentModal({
   })
 
   useEffect(() => {
-    if (schedule?.appointments?.status) {
-      setCurrentStatus(schedule?.appointments?.status)
+    if (schedule?.status) {
+      setCurrentStatus(schedule?.status)
     }
   }, [schedule])
 
@@ -184,7 +181,7 @@ export function AppointmentModal({
     }
   }
 
-  const isPaymentPaid = schedule?.appointments?.paymentStatus === 'SUCCEEDED'
+  const isPaymentPaid = schedule?.paymentStatus === 'SUCCEEDED'
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -194,10 +191,7 @@ export function AppointmentModal({
             <span className="text-base font-normal dark:text-zinc-200/50">
               Agendamento
             </span>
-            #
-            {schedule?.appointments?.id
-              ? schedule.appointments.id.slice(0, 8).toUpperCase()
-              : '-----'}
+            #{schedule?.id ? schedule.id.slice(0, 8).toUpperCase() : '-----'}
           </DialogTitle>
         </DialogHeader>
 
@@ -212,7 +206,9 @@ export function AppointmentModal({
               </div>
               <div className="flex flex-col gap-0.5">
                 <p className="text-xs text-muted-foreground">Paciente</p>
-                <h2 className="text-xl font-semibold">{schedule.name}</h2>
+                <h2 className="text-xl font-semibold">
+                  {schedule.userDetails.name}
+                </h2>
               </div>
             </div>
 
@@ -242,7 +238,7 @@ export function AppointmentModal({
             {/* Modalidade */}
             <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                {schedule?.appointments?.modality === 'IN_PERSON' ? (
+                {schedule?.modality === 'IN_PERSON' ? (
                   <MapPin className="h-5 w-5 text-zinc-600" />
                 ) : (
                   <Monitor className="h-5 w-5 text-zinc-600" />
@@ -253,24 +249,25 @@ export function AppointmentModal({
                   Modalidade
                 </p>
                 <p className="font-semibold capitalize">
-                  {schedule?.appointments?.modality === 'IN_PERSON'
-                    ? 'Presencial'
-                    : 'Online'}
+                  {schedule?.modality === 'IN_PERSON' ? 'Presencial' : 'Online'}
                 </p>
               </div>
             </div>
 
-            {schedule?.appointments?.modality === 'ONLINE' && (
+            {schedule?.modality === 'ONLINE' && (
               <div className="flex gap-2.5">
                 <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                  <VideoCameraIcon className="h-5 w-5 text-zinc-600" weight="bold"/>
+                  <VideoCameraIcon
+                    className="h-5 w-5 text-zinc-600"
+                    weight="bold"
+                  />
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase font-medium">
                     Link
                   </p>
                   <a
-                    href={schedule?.appointments?.googleMeetLink || ''}
+                    href={schedule?.googleMeetLink || ''}
                     className="font-semibold text-xs text-blue-600 hover:text-blue-700"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -291,21 +288,20 @@ export function AppointmentModal({
                   Data/Horário
                 </p>
                 <p className="font-semibold text-xs">
-                  {new Date(
-                    schedule?.appointments?.startDateTime,
-                  ).toLocaleDateString('pt-BR')}
+                  {new Date(schedule?.startDateTime).toLocaleDateString(
+                    'pt-BR',
+                  )}
                 </p>
                 <p className="text-xs">
-                  {new Date(
-                    schedule?.appointments?.startDateTime,
-                  ).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}{' '}
+                  {new Date(schedule?.startDateTime).toLocaleTimeString(
+                    'pt-BR',
+                    {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    },
+                  )}{' '}
                   -{' '}
-                  {new Date(
-                    schedule?.appointments?.endDateTime,
-                  ).toLocaleTimeString('pt-BR', {
+                  {new Date(schedule?.endDateTime).toLocaleTimeString('pt-BR', {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
@@ -325,7 +321,7 @@ export function AppointmentModal({
                 <div className="flex gap-4 items-center">
                   <div>
                     <p className="font-semibold">
-                      Conta: {schedule?.appointments?.currentTransactionId}
+                      Conta: {schedule?.currentTransactionId}
                     </p>
                     <div className="flex items-center gap-2">
                       {(() => {
@@ -381,14 +377,14 @@ export function AppointmentModal({
                     Telefone:
                   </span>
                   <span className="text-base">
-                    {formatPhoneNumber(schedule.whatsappNumber)}
+                    {formatPhoneNumber(schedule.userDetails.whatsappNumber)}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
                     Email:
                   </span>
-                  <span className="text-base">{schedule.email}</span>
+                  <span className="text-base">{schedule.userDetails.email}</span>
                 </div>
               </div>
               <div className="space-y-3">
@@ -397,7 +393,7 @@ export function AppointmentModal({
                     Gênero:
                   </span>
                   <span className="text-base">
-                    {schedule.gender === 'MALE' ? 'Masculino' : 'Feminino'}
+                    {schedule.userDetails.gender === 'MALE' ? 'Masculino' : 'Feminino'}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -405,7 +401,7 @@ export function AppointmentModal({
                     Endereço:
                   </span>
                   <span className="text-[13.5px]">
-                    {formatFullAddress(schedule.address.props)}
+                    {formatFullAddress(schedule.userDetails.address.props)}
                   </span>
                 </div>
               </div>
