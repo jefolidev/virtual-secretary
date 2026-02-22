@@ -4,8 +4,15 @@ import {
 } from '@/api/endpoints/appointments'
 import type { AddressSchema } from '@/api/schemas/address-schema'
 import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
+import { Button } from '@/components/ui/button'
 import { useAuth } from '@/contexts/auth-context'
-import { Search } from 'lucide-react'
+import {
+  ChevronFirst,
+  ChevronLast,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { SessionHistoryItem } from './components/session-history-item'
@@ -52,7 +59,28 @@ export function SessionHistory() {
     status: 'all',
   })
 
-  const [page, setPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
+  const handleFowardPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage((prev) => prev + 1)
+    }
+  }
+
+  const handleBackwardPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1)
+    }
+  }
+
+  const handleJumpToFirstPage = () => {
+    setCurrentPage(1)
+  }
+
+  const handleJumpToLastPage = () => {
+    setCurrentPage(totalPages)
+  }
 
   const { user } = useAuth()
 
@@ -70,13 +98,14 @@ export function SessionHistory() {
         return
       }
 
-      const { appointments } = await fetchAppointmentsByProfessional(
+      const { data } = await fetchAppointmentsByProfessional(
         user?.professional_id,
-        page,
+        currentPage,
         filters,
       )
 
-      setSessions(appointments)
+      setSessions(data.appointments)
+      setTotalPages(data.pages)
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error)
     }
@@ -84,7 +113,7 @@ export function SessionHistory() {
 
   useEffect(() => {
     loadAppointments()
-  }, [filters, page])
+  }, [filters, currentPage])
 
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -132,35 +161,39 @@ export function SessionHistory() {
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Total</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.length}
+              {sessions.length * (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
           <div className="w-px h-10 bg-gray-200"></div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Realizadas</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.status === 'COMPLETED').length}
+              {sessions.filter((s) => s.status === 'COMPLETED').length *
+                (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
           <div className="w-px h-10 bg-gray-200"></div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Canceladas</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.status === 'CANCELLED').length}
+              {sessions.filter((s) => s.status === 'CANCELLED').length *
+                (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
           <div className="w-px h-10 bg-gray-200"></div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">No-shows</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.status === 'NO_SHOW').length}
+              {sessions.filter((s) => s.status === 'NO_SHOW').length *
+                (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
           <div className="w-px h-10 bg-gray-200"></div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Pendentes</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.paymentStatus === 'PENDING').length}
+              {sessions.filter((s) => s.paymentStatus === 'PENDING').length *
+                (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
         </div>
@@ -279,6 +312,52 @@ export function SessionHistory() {
             <p className="text-gray-500">Nenhuma sessão encontrada</p>
           </div>
         ) : null}
+        <div className="flex items-end justify-end gap-2 mt-6">
+          <Button
+            variant={'outline'}
+            onClick={handleJumpToFirstPage}
+            disabled={
+              currentPage === 1 ||
+              sessions.length === 0 ||
+              filteredSessions.length === 0
+            }
+          >
+            <ChevronFirst />
+          </Button>
+          <Button
+            variant={'outline'}
+            onClick={handleBackwardPage}
+            disabled={
+              currentPage === 1 ||
+              sessions.length === 0 ||
+              filteredSessions.length === 0
+            }
+          >
+            <ChevronLeft />
+          </Button>
+          <Button
+            variant={'outline'}
+            onClick={handleFowardPage}
+            disabled={
+              currentPage === totalPages ||
+              sessions.length === 0 ||
+              filteredSessions.length === 0
+            }
+          >
+            <ChevronRight />
+          </Button>
+          <Button
+            variant={'outline'}
+            onClick={handleJumpToLastPage}
+            disabled={
+              currentPage === totalPages ||
+              sessions.length === 0 ||
+              filteredSessions.length === 0
+            }
+          >
+            <ChevronLast />
+          </Button>
+        </div>
       </div>
     </div>
   )

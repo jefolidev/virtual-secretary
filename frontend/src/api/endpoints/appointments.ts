@@ -48,7 +48,7 @@ export const appointmentsServices = {
         `/professional/${professionalId}/appointments?page=${page}&period=${filter.period}&status=${filter.status}&paymentStatus=${filter.paymentStatus}&modality=${filter.modality}`,
       )
 
-      return response.data
+      return response
     } catch (error) {
       console.error('Erro ao buscar agendamentos do profissional:', error)
       throw error
