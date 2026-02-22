@@ -34,6 +34,10 @@ export abstract class AppointmentsRepository {
     params?: PaginationParams,
     filters?: FetchScheduleByProfesionalIdFilters,
   ): Promise<AppointmentWithClient[]>
+  abstract countAppointmentsByProfessionalId(
+    professionalId: string,
+    filters?: FetchScheduleByProfesionalIdFilters,
+  ): Promise<number>
   abstract findManyByClientId(
     clientId: string,
     params?: PaginationParams,

@@ -49,7 +49,7 @@ export interface FetchScheduleByProfessionalIdUseCaseProps {
 
 type FetchScheduleByProfessionalIdUseCaseResponse = Either<
   NotFoundError,
-  { appointments: AppointmentWithClient[] }
+  { appointments: AppointmentWithClient[]; pages: number }
 >
 
 @Injectable()
@@ -73,6 +73,14 @@ export class FetchScheduleByProfessionalIdUseCase {
         filters,
       )
 
-    return right({ appointments })
+    const total =
+      await this.appointmentsRepository.countAppointmentsByProfessionalId(
+        professionalId,
+        filters,
+      )
+
+    const pageSize = 5
+
+    return right({ appointments, pages: Math.ceil(total / pageSize) })
   }
 }

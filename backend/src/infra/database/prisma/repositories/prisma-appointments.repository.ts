@@ -288,10 +288,18 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     },
   ): Promise<AppointmentWithClient[]> {
     const { modality, paymentStatus, period, status: filterStatus } = filters
+    const page = Number(params?.page) > 0 ? Number(params.page) : 1
 
     const appointments = await this.prisma.appointment.findMany({
       where: {
         professionalId,
+        client: {
+          is: {
+            user: {
+              addressId: { not: null },
+            },
+          },
+        },
         ...(period === 'last-month'
           ? {
               createdAt: {
@@ -337,8 +345,8 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
           },
         },
       },
-      take: 10,
-      skip: params.page ? (params.page - 1) * 10 : 0,
+      take: 5,
+      skip: Math.max(0, (page - 1) * 5),
     })
 
     const appointmentsWithUser = appointments.filter(
@@ -357,6 +365,58 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     return appointmentsWithUser.map((raw) =>
       PrismaAppointmentWithClientMapper.toDomain(raw),
     )
+  }
+
+  async countAppointmentsByProfessionalId(
+    professionalId: string,
+    filters: FetchScheduleByProfesionalIdFilters = {
+      modality: 'all',
+      paymentStatus: 'all',
+      period: 'all',
+      status: 'all',
+    },
+  ): Promise<number> {
+    const { modality, paymentStatus, period, status: filterStatus } = filters
+
+    const where: any = {
+      professionalId,
+      client: {
+        is: {
+          user: {
+            addressId: { not: null },
+          },
+        },
+      },
+      ...(period === 'last-month'
+        ? {
+            createdAt: {
+              gte: dayjs().subtract(1, 'month').toDate(),
+              lte: new Date(),
+            },
+          }
+        : period === 'last-year'
+          ? {
+              createdAt: {
+                gte: dayjs().subtract(1, 'year').toDate(),
+                lte: new Date(),
+              },
+            }
+          : period === 'last-week'
+            ? {
+                createdAt: {
+                  gte: dayjs().subtract(1, 'week').toDate(),
+                  lte: new Date(),
+                },
+              }
+            : undefined),
+      ...(filterStatus &&
+        (filterStatus === 'all' ? undefined : { status: filterStatus })),
+      ...(modality && (modality === 'all' ? undefined : { modality })),
+      ...(paymentStatus &&
+        (paymentStatus === 'all' ? undefined : { paymentStatus })),
+    }
+
+    return this.prisma.appointment.count({ where })
   }
 
   async findManyByClientId(

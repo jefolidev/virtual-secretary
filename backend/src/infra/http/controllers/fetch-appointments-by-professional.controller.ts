@@ -61,6 +61,7 @@ export class FetchAppointmentsByProfessionalController {
 
     return {
       appointments: appointments.map(AppointmentWithClientPresenter.toHTTP),
+      pages: result.value.pages,
     }
   }
 }
