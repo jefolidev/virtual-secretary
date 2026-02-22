@@ -75,7 +75,6 @@ export function SessionHistory() {
         page,
         filters,
       )
-      console.log(appointments)
 
       setSessions(appointments)
     } catch (error) {
@@ -258,22 +257,22 @@ export function SessionHistory() {
         </div>
 
         {/* Sessions List */}
-        <div className="space-y-3"></div>
-
-        {filteredSessions.map((session) => {
-          return (
-            <SessionHistoryItem
-              key={session.id || session.userDetails.name}
-              session={session}
-              isExpanded={expandedSession === session.id}
-              onToggleExpand={() =>
-                setExpandedSession(
-                  expandedSession === session.id ? null : session.id,
-                )
-              }
-            />
-          )
-        })}
+        <div className="space-y-3">
+          {filteredSessions.map((session) => {
+            return (
+              <SessionHistoryItem
+                key={session.id || session.userDetails.name}
+                session={session}
+                isExpanded={expandedSession === session.id}
+                onToggleExpand={() =>
+                  setExpandedSession(
+                    expandedSession === session.id ? null : session.id,
+                  )
+                }
+              />
+            )
+          })}
+        </div>
 
         {sessions.length === 0 || filteredSessions.length === 0 ? (
           <div className="text-center py-12">
