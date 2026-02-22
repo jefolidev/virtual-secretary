@@ -13,7 +13,7 @@ export function ModalityIcon({
   modality: AppointmentsSesions['modality']
 }) {
   return (
-    <div className={`p-1.5 bg-blue-100 rounded-md dark:bg-blue-700/10 ${modality === 'ONLINE' ? 'bg-blue-100 dark:bg-blue-700/10' : 'bg-purple-500 dark:bg-purple-700/10'}`}>
+    <div className={`p-1.5 rounded-md  ${modality === 'ONLINE' ? 'bg-blue-100 dark:bg-blue-700/10' : 'bg-purple-100 dark:bg-purple-700/10'}`}>
       {modality === 'ONLINE' ? (
         <Video className={`w-4 h-4 ${getIconStatusColor(modality)}`} />
       ) : (
