@@ -1,5 +1,11 @@
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import { FetchScheduleByProfessionalIdUseCase } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
+import {
+  FetchScheduleByProfessionalIdModality,
+  FetchScheduleByProfessionalIdPaymentStatus,
+  FetchScheduleByProfessionalIdPeriod,
+  FetchScheduleByProfessionalIdStatus,
+  FetchScheduleByProfessionalIdUseCase,
+} from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import { PaginationQueryPipe } from '@/infra/http/pipes/pagination-query.pipe'
 import {
   BadRequestException,
@@ -22,10 +28,23 @@ export class FetchAppointmentsByProfessionalController {
   async handle(
     @Param('id') professionalId,
     @Query('page', PaginationQueryPipe) page: PageQueryParamSchema,
+    @Query('period') period: FetchScheduleByProfessionalIdPeriod,
+    @Query('status') status: FetchScheduleByProfessionalIdStatus,
+    @Query('paymentStatus')
+    paymentStatus: FetchScheduleByProfessionalIdPaymentStatus,
+    @Query('modality') modality: FetchScheduleByProfessionalIdModality,
   ) {
+    const filters = {
+      period: period || 'all',
+      status: status || 'all',
+      paymentStatus: paymentStatus || 'all',
+      modality: modality || 'all',
+    }
+
     const result = await this.fetchAppointmentsByProfessionalId.execute({
       professionalId,
       page,
+      filters,
     })
 
     if (result.isLeft()) {

@@ -1,6 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events'
 import { PaginationParams } from '@/core/repositories/pagination-params'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
+import { FetchScheduleByProfesionalIdFilters } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import {
   Appointment,
   AppointmentModalityType,
@@ -279,9 +280,50 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
   async findManyByProfessionalId(
     professionalId: string,
     params: PaginationParams,
+    filters: FetchScheduleByProfesionalIdFilters = {
+      modality: 'all',
+      paymentStatus: 'all',
+      period: 'all',
+      status: 'all',
+    },
   ): Promise<AppointmentWithClient[]> {
+    const { modality, paymentStatus, period, status: filterStatus } = filters
+
     const appointments = await this.prisma.appointment.findMany({
-      where: { professionalId },
+      where: {
+        professionalId,
+        ...(period === 'last-month'
+          ? {
+              createdAt: {
+                gte: dayjs().subtract(1, 'month').toDate(),
+                lte: new Date(),
+              },
+            }
+          : period === 'last-year'
+            ? {
+                createdAt: {
+                  gte: dayjs().subtract(1, 'year').toDate(),
+                  lte: new Date(),
+                },
+              }
+            : period === 'last-week'
+              ? {
+                  createdAt: {
+                    gte: dayjs().subtract(1, 'week').toDate(),
+                    lte: new Date(),
+                  },
+                }
+              : undefined),
+        ...(filterStatus && {
+          status: filterStatus === 'all' ? undefined : filterStatus,
+        }),
+        ...(modality && {
+          modality: modality === 'all' ? undefined : modality,
+        }),
+        ...(paymentStatus && {
+          paymentStatus: paymentStatus === 'all' ? undefined : paymentStatus,
+        }),
+      },
       include: {
         evaluation: true,
         client: {

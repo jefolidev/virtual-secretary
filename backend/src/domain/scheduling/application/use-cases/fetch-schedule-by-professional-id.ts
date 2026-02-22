@@ -4,9 +4,47 @@ import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import { AppointmentWithClient } from '../../enterprise/entities/value-objects/appointment-with-client'
 import { AppointmentsRepository } from '../repositories/appointments.repository'
 
+export type FetchScheduleByProfessionalIdStatus =
+  | 'SCHEDULED'
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'RESCHEDULED'
+  | 'NO_SHOW'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'AWAITING_SCORE'
+  | 'AWAITING_COMMENT'
+  | 'all'
+
+export type FetchScheduleByProfessionalIdPaymentStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'REFUNDED'
+  | 'all'
+
+export type FetchScheduleByProfessionalIdPeriod =
+  | 'last-year'
+  | 'last-month'
+  | 'last-week'
+  | 'all'
+export type FetchScheduleByProfessionalIdModality =
+  | 'IN_PERSON'
+  | 'ONLINE'
+  | 'all'
+
+export type FetchScheduleByProfesionalIdFilters = {
+  period: FetchScheduleByProfessionalIdPeriod
+  status: FetchScheduleByProfessionalIdStatus
+  paymentStatus: FetchScheduleByProfessionalIdPaymentStatus
+  modality: FetchScheduleByProfessionalIdModality
+}
+
 export interface FetchScheduleByProfessionalIdUseCaseProps {
   professionalId: string
   page?: number
+  filters?: FetchScheduleByProfesionalIdFilters
 }
 
 type FetchScheduleByProfessionalIdUseCaseResponse = Either<
@@ -21,11 +59,18 @@ export class FetchScheduleByProfessionalIdUseCase {
   async execute({
     professionalId,
     page = 1,
+    filters = {
+      period: 'all',
+      status: 'all',
+      paymentStatus: 'all',
+      modality: 'all',
+    },
   }: FetchScheduleByProfessionalIdUseCaseProps): Promise<FetchScheduleByProfessionalIdUseCaseResponse> {
     const appointments =
       await this.appointmentsRepository.findManyByProfessionalId(
         professionalId,
         { page },
+        filters,
       )
 
     return right({ appointments })
