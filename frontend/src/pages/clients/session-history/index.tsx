@@ -1,468 +1,129 @@
+import { appointmentsServices } from '@/api/endpoints/appointments'
+import type { AddressSchema } from '@/api/schemas/address-schema'
+import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
+import { useAuth } from '@/contexts/auth-context'
 import { Search } from 'lucide-react'
-import { useState } from 'react'
-import {
-  SessionHistoryItem,
-  type Session,
-} from './components/session-history-item'
+import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { SessionHistoryItem } from './components/session-history-item'
 
-const mockSessions: Session[] = [
-  // Ana Carolina Silva - 5 sessões
-  {
-    id: '1',
-    patientName: 'Ana Carolina Silva',
-    patientImage:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    date: '2024-02-11',
-    startTime: '14:00',
-    endTime: '14:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/abc-defg-hij',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 10,
-    feedback: 'Excelente atendimento! Me senti muito acolhida.',
-  },
-  {
-    id: '2',
-    patientName: 'Ana Carolina Silva',
-    patientImage:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    date: '2024-02-04',
-    startTime: '14:00',
-    endTime: '14:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/abc-defg-hij',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 9,
-  },
-  {
-    id: '3',
-    patientName: 'Ana Carolina Silva',
-    patientImage:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    date: '2024-01-28',
-    startTime: '14:00',
-    endTime: '14:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'cartao',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 10,
-  },
-  {
-    id: '4',
-    patientName: 'Ana Carolina Silva',
-    patientImage:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    date: '2024-01-21',
-    startTime: '14:00',
-    endTime: '14:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/abc-defg-hij',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 180.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 9,
-  },
-  {
-    id: '5',
-    patientName: 'Ana Carolina Silva',
-    patientImage:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400',
-    date: '2024-01-14',
-    startTime: '14:00',
-    endTime: '14:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/abc-defg-hij',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 180.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 8,
-  },
+type FilterPeriodProps = 'all' | 'week' | 'month' | 'year'
 
-  // Carlos Eduardo - 4 sessões
-  {
-    id: '6',
-    patientName: 'Carlos Eduardo',
-    patientImage:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    date: '2024-02-10',
-    startTime: '10:00',
-    endTime: '10:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'cartao',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 9,
-    feedback: 'Muito bom, estou evoluindo bastante.',
-  },
-  {
-    id: '7',
-    patientName: 'Carlos Eduardo',
-    patientImage:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    date: '2024-01-27',
-    startTime: '10:00',
-    endTime: '10:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'cartao',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 8,
-  },
-  {
-    id: '8',
-    patientName: 'Carlos Eduardo',
-    patientImage:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    date: '2024-01-13',
-    startTime: '10:00',
-    endTime: '10:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'cancelada',
-    paymentStatus: 'liberada',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: false, t30min: false },
-  },
-  {
-    id: '9',
-    patientName: 'Carlos Eduardo',
-    patientImage:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400',
-    date: '2023-12-16',
-    startTime: '10:00',
-    endTime: '10:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/xyz-abc-123',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 180.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 9,
-  },
+type FilterStatusProps =
+  | 'all'
+  | 'SCHEDULED'
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'RESCHEDULED'
+  | 'NO_SHOW'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
 
-  // Maria (WhatsApp) - 3 sessões
-  {
-    id: '10',
-    patientName: 'Maria (WhatsApp)',
-    patientImage:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
-    date: '2024-02-09',
-    startTime: '16:00',
-    endTime: '16:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/xyz-uvw-rst',
-    status: 'no-show',
-    paymentStatus: 'liberada',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-  },
-  {
-    id: '11',
-    patientName: 'Maria (WhatsApp)',
-    patientImage:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
-    date: '2024-01-26',
-    startTime: '16:00',
-    endTime: '16:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/xyz-uvw-rst',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 7,
-  },
-  {
-    id: '12',
-    patientName: 'Maria (WhatsApp)',
-    patientImage:
-      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400',
-    date: '2024-01-12',
-    startTime: '16:00',
-    endTime: '16:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/xyz-uvw-rst',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 8,
-  },
+type FilterPaymentStatusProps =
+  | 'all'
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SUCCEEDED'
+  | 'FAILED'
+  | 'REFUNDED'
 
-  // João Pedro Santos - 5 sessões
-  {
-    id: '13',
-    patientName: 'João Pedro Santos',
-    patientImage:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-    date: '2024-02-08',
-    startTime: '11:00',
-    endTime: '11:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'pendente',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: false, t30min: false },
-    npsScore: 8,
-  },
-  {
-    id: '14',
-    patientName: 'João Pedro Santos',
-    patientImage:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-    date: '2024-01-25',
-    startTime: '11:00',
-    endTime: '11:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'cartao',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 9,
-  },
-  {
-    id: '15',
-    patientName: 'João Pedro Santos',
-    patientImage:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-    date: '2024-01-11',
-    startTime: '11:00',
-    endTime: '11:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/qwe-rty-uio',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 7,
-  },
-  {
-    id: '16',
-    patientName: 'João Pedro Santos',
-    patientImage:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-    date: '2023-12-28',
-    startTime: '11:00',
-    endTime: '11:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'remarcada',
-    paymentStatus: 'pendente',
-    value: 180.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: false, t30min: false },
-  },
-  {
-    id: '17',
-    patientName: 'João Pedro Santos',
-    patientImage:
-      'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400',
-    date: '2023-12-14',
-    startTime: '11:00',
-    endTime: '11:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/qwe-rty-uio',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 180.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 8,
-  },
+type FilterModalityProps = 'all' | 'ONLINE' | 'IN_PERSON'
 
-  // Juliana Oliveira - 4 sessões
-  {
-    id: '18',
-    patientName: 'Juliana Oliveira',
-    patientImage:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-    date: '2024-02-07',
-    startTime: '15:00',
-    endTime: '15:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/klm-nop-qrs',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 10,
-    feedback: 'Sessão transformadora!',
-  },
-  {
-    id: '19',
-    patientName: 'Juliana Oliveira',
-    patientImage:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-    date: '2024-01-24',
-    startTime: '15:00',
-    endTime: '15:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/klm-nop-qrs',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 9,
-  },
-  {
-    id: '20',
-    patientName: 'Juliana Oliveira',
-    patientImage:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-    date: '2024-01-10',
-    startTime: '15:00',
-    endTime: '15:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'cartao',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 10,
-  },
-  {
-    id: '21',
-    patientName: 'Juliana Oliveira',
-    patientImage:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400',
-    date: '2023-12-20',
-    startTime: '15:00',
-    endTime: '15:50',
-    modality: 'online',
-    meetingLink: 'https://meet.google.com/klm-nop-qrs',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 180.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 9,
-  },
+export type AppointmentsSesions = Appointment & {
+  userDetails: {
+    name: string
+    email: string
+    whatsappNumber: string
+    cpf: string
 
-  // Roberto (WhatsApp) - 2 sessões
-  {
-    id: '22',
-    patientName: 'Roberto (WhatsApp)',
-    patientImage:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-    date: '2024-02-06',
-    startTime: '09:00',
-    endTime: '09:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'pix',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 8,
-  },
-  {
-    id: '23',
-    patientName: 'Roberto (WhatsApp)',
-    patientImage:
-      'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400',
-    date: '2024-01-23',
-    startTime: '09:00',
-    endTime: '09:50',
-    modality: 'presencial',
-    address: 'Rua das Flores, 123 - Sala 45',
-    status: 'realizada',
-    paymentStatus: 'paga',
-    paymentMethod: 'cartao',
-    value: 200.0,
-    confirmationSent: true,
-    remindersSent: { d1: true, t2h: true, t30min: true },
-    npsScore: 7,
-  },
-]
+    address: AddressSchema
+  }
+}
 
 export function SessionHistory() {
+  const [sessions, setSessions] = useState<AppointmentsSesions[]>([])
+  const { user } = useAuth()
+
+  const { fetchAppointmentsByProfessional } = appointmentsServices
+
+  const loadAppointments = async () => {
+    try {
+      if (!user?.professional_id) {
+        console.warn(
+          'Usuário não é um profissional ou ID do profissional não disponível',
+        )
+        toast.error(
+          'Não foi possível carregar os agendamentos. ID do profissional não disponível.',
+        )
+        return
+      }
+
+      const { appointments } = await fetchAppointmentsByProfessional(
+        user?.professional_id,
+      )
+      console.log(appointments)
+
+      setSessions(appointments)
+    } catch (error) {
+      console.error('Erro ao carregar agendamentos:', error)
+    }
+  }
+
+  useEffect(() => {
+    loadAppointments()
+  }, [])
+
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState<
-    'all' | 'realizada' | 'cancelada' | 'remarcada' | 'no-show'
-  >('all')
-  const [filterPayment, setFilterPayment] = useState<
-    'all' | 'paga' | 'pendente' | 'liberada'
-  >('all')
-  const [filterModality, setFilterModality] = useState<
-    'all' | 'online' | 'presencial'
-  >('all')
-  const [filterPeriod, setFilterPeriod] = useState<
-    'all' | 'week' | 'month' | 'year'
-  >('all')
+
+  const [filterStatus, setFilterStatus] = useState<FilterStatusProps>('all')
+  const [filterPayment, setFilterPayment] =
+    useState<FilterPaymentStatusProps>('all')
+  const [filterModality, setFilterModality] =
+    useState<FilterModalityProps>('all')
+  const [filterPeriod, setFilterPeriod] = useState<FilterPeriodProps>('all')
+
   const [expandedSession, setExpandedSession] = useState<string | null>(null)
 
-  const filteredSessions = mockSessions.filter((session) => {
+  const getAppointments = (session: AppointmentsSesions) => {
+    const a = session
+    if (Array.isArray(a)) return a
+    if (a) return [a]
+    return []
+  }
+
+  const filteredSessions = sessions.filter((session) => {
     const matchesSearch =
-      session.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      session.date.includes(searchTerm)
+      session.userDetails.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      getAppointments(session).some((appointment) =>
+        appointment?.id?.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
 
     const matchesStatus =
-      filterStatus === 'all' || session.status === filterStatus
+      filterStatus === 'all' ||
+      getAppointments(session).some(
+        (appointment) => appointment?.status === filterStatus,
+      )
     const matchesPayment =
-      filterPayment === 'all' || session.paymentStatus === filterPayment
+      filterPayment === 'all' ||
+      getAppointments(session).some(
+        (appointment) => appointment?.paymentStatus === filterPayment,
+      )
     const matchesModality =
-      filterModality === 'all' || session.modality === filterModality
-
+      filterModality === 'all' ||
+      getAppointments(session).some(
+        (appointment) => appointment?.modality === filterModality,
+      )
     // Period filter
     let matchesPeriod = true
     if (filterPeriod !== 'all') {
-      const sessionDate = new Date(session.date)
+      const firstAppointment = getAppointments(session)[0]
+      const sessionDate = firstAppointment
+        ? new Date(firstAppointment.startDateTime)
+        : null
       const now = new Date()
-      const diffTime = now.getTime() - sessionDate.getTime()
+      const diffTime = sessionDate ? now.getTime() - sessionDate.getTime() : 0
       const diffDays = diffTime / (1000 * 3600 * 24)
 
       if (filterPeriod === 'week' && diffDays > 7) matchesPeriod = false
@@ -480,35 +141,39 @@ export function SessionHistory() {
   })
 
   // Group sessions by patient
-  const sessionsByPatient = filteredSessions.reduce(
-    (acc, session) => {
-      if (!acc[session.patientName]) {
-        acc[session.patientName] = []
-      }
-      acc[session.patientName].push(session)
-      return acc
-    },
-    {} as Record<string, Session[]>,
-  )
-
   const totalSessions = filteredSessions.length
-  const totalPatients = Object.keys(sessionsByPatient).length
-  const realizadas = filteredSessions.filter(
-    (s) => s.status === 'realizada',
+
+  const realizadas = filteredSessions.filter((s) =>
+    getAppointments(s).some(
+      (appointment) => appointment?.status === 'COMPLETED',
+    ),
   ).length
-  const canceladas = filteredSessions.filter(
-    (s) => s.status === 'cancelada',
+
+  const canceladas = filteredSessions.filter((s) =>
+    getAppointments(s).some(
+      (appointment) => appointment?.status === 'CANCELLED',
+    ),
   ).length
-  const noShows = filteredSessions.filter((s) => s.status === 'no-show').length
-  const pagamentosPendentes = filteredSessions.filter(
-    (s) => s.paymentStatus === 'pendente',
+
+  const noShows = filteredSessions.filter((s) =>
+    getAppointments(s).some((appointment) => appointment?.status === 'NO_SHOW'),
+  ).length
+
+  const pagamentosPendentes = filteredSessions.filter((s) =>
+    getAppointments(s).some(
+      (appointment) => appointment?.paymentStatus === 'PENDING',
+    ),
   ).length
 
   const stats = {
     total: totalSessions,
     registered: realizadas,
     unregistered: totalSessions - realizadas,
-    online: filteredSessions.filter((s) => s.modality === 'online').length,
+    online: filteredSessions.filter((s) =>
+      getAppointments(s).some(
+        (appointment) => appointment?.modality === 'ONLINE',
+      ),
+    ).length,
   }
 
   return (
@@ -645,9 +310,58 @@ export function SessionHistory() {
 
         {/* Sessions List */}
         <div className="space-y-3">
-          {filteredSessions.map((session) => (
+          {/* {filteredSessions.map((session) => {
+            const appointment = getAppointments(session)[0]
+            if (!appointment) return null
+            // Map appointment to Session type
+            const mappedSession = {
+              name: session.name,
+              date: appointment.startDateTime
+                ? new Date(appointment.startDateTime).toLocaleDateString()
+                : '',
+              startTime: appointment.startDateTime
+                ? new Date(appointment.startDateTime).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : '',
+              endTime: appointment.endDateTime
+                ? new Date(appointment.endDateTime).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : '',
+              modality: appointment.modality,
+              status: appointment.status,
+              paymentStatus: appointment.paymentStatus,
+              address: session.address,
+              value: 0,
+              confirmationSent: false,
+              remindersSent: {
+                d1: false,
+                t2h: false,
+                t30min: false,
+              },
+            }
+            return (
+              <SessionHistoryItem
+                key={appointment.id}
+                session={mappedSession}
+                isExpanded={expandedSession === appointment.id}
+                onToggleExpand={() =>
+                  setExpandedSession(
+                    expandedSession === appointment.id ? null : appointment.id,
+                  )
+                }
+              />
+            )
+          })} */}
+        </div>
+
+        {sessions.map((session) => {
+          return (
             <SessionHistoryItem
-              key={session.id}
+              key={session.id || session.userDetails.name}
               session={session}
               isExpanded={expandedSession === session.id}
               onToggleExpand={() =>
@@ -656,8 +370,8 @@ export function SessionHistory() {
                 )
               }
             />
-          ))}
-        </div>
+          )
+        })}
 
         {filteredSessions.length === 0 && (
           <div className="text-center py-12">
