@@ -54,4 +54,34 @@ export const appointmentsServices = {
       throw error
     }
   },
+
+  startAppointment: async (appointmentId: string) => {
+    try {
+      const response = await api.post(`/sessions/${appointmentId}/start`)
+      return response
+    } catch (error) {
+      console.error('Erro ao iniciar o agendamento:', error)
+      throw error
+    }
+  },
+
+  pauseAppointment: async (appointmentId: string) => {
+    try {
+      const response = await api.post(`/sessions/${appointmentId}/pause`)
+      return response
+    } catch (error) {
+      console.error('Erro ao pausar o agendamento:', error)
+      throw error
+    }
+  },
+
+  endAppointment: async (appointmentId: string) => {
+    try {
+      const response = await api.post(`/sessions/${appointmentId}/stop`)
+      return response
+    } catch (error) {
+      console.error('Erro ao finalizar o agendamento:', error)
+      throw error
+    }
+  },
 }

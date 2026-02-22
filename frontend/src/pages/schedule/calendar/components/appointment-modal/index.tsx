@@ -1,3 +1,4 @@
+import { appointmentsServices } from '@/api/endpoints/appointments'
 import type {
   Appointment,
   FetchProfessionalSchedulesSchema,
@@ -64,6 +65,9 @@ export function AppointmentModal({
   open,
   onOpenChange,
 }: AppointmentModalProps) {
+  const { startAppointment, pauseAppointment, endAppointment } =
+    appointmentsServices
+
   const [currentStatus, setCurrentStatus] =
     useState<Appointment['status']>('IN_PROGRESS')
 
@@ -73,6 +77,22 @@ export function AppointmentModal({
     startTime: null,
     elapsedTime: 0,
   })
+  const [lastAction, setLastAction] = useState<
+    'start' | 'resume' | 'pause' | 'stop' | null
+  >(null)
+
+  useEffect(() => {
+    if (schedule?.status == 'IN_PROGRESS') {
+      setTimer((prev) => ({
+        ...prev,
+        isRunning: true,
+        startTime: schedule.startedAt ? new Date(schedule.startedAt) : null,
+        elapsedTime: schedule.totalElapsedMs
+          ? Math.floor(schedule.totalElapsedMs / 1000)
+          : 0,
+      }))
+    }
+  }, [schedule])
 
   useEffect(() => {
     if (schedule?.status) {
@@ -111,38 +131,39 @@ export function AppointmentModal({
 
   const handleStartSession = async () => {
     if (!timer.isRunning) {
-      // Iniciar sessão
       try {
-        // await fetch(`/sessions/${appointment.id}/start`, { method: 'POST' })
+        await startAppointment(schedule.id)
         setTimer({
           isRunning: true,
           isPaused: false,
           startTime: new Date(),
           elapsedTime: 0,
         })
+        setLastAction('start')
       } catch (error) {
         console.error('Erro ao iniciar sessão:', error)
       }
     } else if (timer.isPaused) {
       // Retomar sessão
       try {
-        // await fetch(`/sessions/${appointment.id}/start`, { method: 'POST' })
+        await startAppointment(schedule.id)
         setTimer((prev) => ({
           ...prev,
           isPaused: false,
           startTime: new Date(Date.now() - prev.elapsedTime * 1000),
         }))
+        setLastAction('resume')
       } catch (error) {
         console.error('Erro ao retomar sessão:', error)
       }
     } else {
-      // Pausar sessão
       try {
-        // await fetch(`/sessions/${appointment.id}/pause`, { method: 'POST' })
+        await pauseAppointment(schedule.id)
         setTimer((prev) => ({
           ...prev,
           isPaused: true,
         }))
+        setLastAction('pause')
       } catch (error) {
         console.error('Erro ao pausar sessão:', error)
       }
@@ -151,13 +172,14 @@ export function AppointmentModal({
 
   const handleStopSession = async () => {
     try {
-      // await fetch(`/sessions/${appointment.id}/stop`, { method: 'POST' })
+      await endAppointment(schedule.id)
       setTimer({
         isRunning: false,
         isPaused: false,
         startTime: null,
         elapsedTime: 0,
       })
+      setLastAction('stop')
     } catch (error) {
       console.error('Erro ao parar sessão:', error)
     }
@@ -182,6 +204,11 @@ export function AppointmentModal({
   }
 
   const isPaymentPaid = schedule?.paymentStatus === 'SUCCEEDED'
+  const isCompleted =
+    currentStatus === 'COMPLETED' || schedule?.status === 'COMPLETED'
+  const completedElapsedSeconds = schedule?.totalElapsedMs
+    ? Math.floor(schedule.totalElapsedMs / 1000)
+    : timer.elapsedTime
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -384,7 +411,9 @@ export function AppointmentModal({
                   <span className="text-xs font-medium text-zinc-500">
                     Email:
                   </span>
-                  <span className="text-base">{schedule.userDetails.email}</span>
+                  <span className="text-base">
+                    {schedule.userDetails.email}
+                  </span>
                 </div>
               </div>
               <div className="space-y-3">
@@ -393,7 +422,9 @@ export function AppointmentModal({
                     Gênero:
                   </span>
                   <span className="text-base">
-                    {schedule.userDetails.gender === 'MALE' ? 'Masculino' : 'Feminino'}
+                    {schedule.userDetails.gender === 'MALE'
+                      ? 'Masculino'
+                      : 'Feminino'}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -413,9 +444,18 @@ export function AppointmentModal({
             <div className="flex flex-col items-center gap-4">
               <div className="text-center">
                 <p className="text-2xl font-mono font-bold">
-                  {formatTime(timer.elapsedTime)}
+                  {isCompleted
+                    ? formatTime(completedElapsedSeconds)
+                    : formatTime(timer.elapsedTime)}
                 </p>
-                <p className="text-xs text-muted-foreground">Tempo de sessão</p>
+                <p className="text-xs text-muted-foreground">
+                  {isCompleted ? 'Duração da sessão' : 'Tempo de sessão'}
+                </p>
+                {isCompleted && (
+                  <p className="text-sm text-green-600 mt-2">
+                    Sessão concluída
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -423,11 +463,16 @@ export function AppointmentModal({
                   variant={
                     timer.isRunning && !timer.isPaused ? 'secondary' : 'default'
                   }
+                  disabled={isCompleted}
                 >
                   {timer.isRunning && !timer.isPaused ? (
-                    <>
-                      <Pause className="h-4 w-4 mr-2" /> Pausar
-                    </>
+                    lastAction === 'resume' ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <>
+                        <Pause className="h-4 w-4 mr-2" /> Pausar
+                      </>
+                    )
                   ) : (
                     <>
                       <Play className="h-4 w-4 mr-2" />{' '}
@@ -435,20 +480,23 @@ export function AppointmentModal({
                     </>
                   )}
                 </Button>
-                {timer.isRunning && (
+                {timer.isRunning && !isCompleted && (
                   <Button onClick={handleStopSession} variant="destructive">
-                    <Square className="h-4 w-4 mr-2" /> Parar
+                    <Square className="h-4 w-4 mr-2" /> Encerrar
                   </Button>
                 )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleNoShow}
-                className="text-red-600 hover:text-red-700 w-full max-w-xs"
-              >
-                <UserX className="h-4 w-4 mr-2" /> Paciente ausente
-              </Button>
+              {schedule.status === 'SCHEDULED' ||
+                (schedule.status === 'CONFIRMED' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNoShow}
+                    className="text-red-600 hover:text-red-700 w-full max-w-xs"
+                  >
+                    <UserX className="h-4 w-4 mr-2" /> Paciente ausente
+                  </Button>
+                ))}
             </div>
           </div>
         </div>
