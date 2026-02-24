@@ -682,7 +682,7 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
       throw new BadRequestException('Agendamento não encontrado')
     }
 
-    const intent = this.parseReply(message)
+    const intent = await this.parseScheduleConfirmationReply(message)
 
     switch (intent) {
       case 'confirm':
@@ -693,7 +693,6 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
           `Consulta confirmada para ${dayjs(appointment.startDateTime).format('DD/MM/YYYY [às] HH:mm')}. Obrigado!`,
         )
         await this.clearPendingConfirmation(cleanNumber)
-        // schedule 2h and 30min reminders now that the appointment is confirmed
         try {
           const now = Date.now()
           const startTime = new Date(appointment.startDateTime).getTime()
@@ -769,24 +768,56 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     }
   }
 
-  public parseReply(
-    message = '',
-  ): 'confirm' | 'cancel' | 'reschedule' | 'unknown' {
-    const normalize = (text: string) =>
-      text
-        .trim()
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/\p{Diacritic}/gu, '')
+  async parseScheduleConfirmationReply(
+    message: string,
+  ): Promise<'confirm' | 'cancel' | 'reschedule' | 'unknown'> {
+    const response = await this.openAiService.chat([
+      {
+        role: 'system',
+        content: `Você é um classificador de intenção de resposta para um sistema de agendamento de consultas de terapia.
 
-    const t = normalize(message)
+Sua única tarefa é classificar a mensagem do usuário em uma das 4 categorias abaixo.
+Responda APENAS com uma dessas palavras exatas, sem pontuação, sem explicação:
 
-    if (/\b(confirmar|confirm|sim|s|1)\b/.test(t)) return 'confirm'
-    if (/\b(cancelar|cancela|nao|nao vou|nao consigo|nao deu|n|nao)\b/.test(t))
-      return 'cancel'
-    if (/\b(reagendar|remarcar|trocar|outro horario|outro horario)\b/.test(t))
-      return 'reschedule'
+- confirm
+- cancel  
+- reschedule
+- unknown
 
+REGRAS DE CLASSIFICAÇÃO:
+
+confirm → O usuário quer confirmar, aceitar ou manter o compromisso.
+Exemplos: "sim", "ok", "pode ser", "confirmo", "tá bom", "claro", "com certeza", "vou sim",
+"perfeito", "combinado", "fechado", "pode confirmar", "isso mesmo", "tudo certo",
+"estou confirmando", "pode deixar", "vai ter sim", "bora", "show", "ótimo"
+
+cancel → O usuário quer cancelar, desistir ou não pode comparecer.
+Exemplos: "não", "cancela", "não posso", "não vou conseguir", "esquece", "desisto",
+"não quero mais", "não vai dar", "preciso cancelar", "não vou", "cancela pra mim",
+"não tenho interesse", "não quero", "para", "encerra"
+
+reschedule → O usuário quer mudar a data/hora mas ainda quer a consulta.
+Exemplos: "reagendar", "remarcar", "outro horário", "mudar o dia", "trocar a data",
+"posso em outro dia?", "não posso nesse horário", "tem outro dia disponível?",
+"preciso mudar", "pode ser em outro dia", "vou precisar trocar"
+
+unknown → A mensagem não se encaixa claramente em nenhuma das categorias acima,
+é uma pergunta, um comentário aleatório ou está fora de contexto.
+
+IMPORTANTE: Seja tolerante com erros de digitação, gírias, linguagem informal e
+variações regionais do português brasileiro. Analise a INTENÇÃO, não as palavras exatas.`,
+      },
+      {
+        role: 'user',
+        content: message,
+      },
+    ])
+
+    const result = response.choices[0].message.content?.trim().toLowerCase()
+
+    if (result === 'confirm') return 'confirm'
+    if (result === 'cancel') return 'cancel'
+    if (result === 'reschedule') return 'reschedule'
     return 'unknown'
   }
 
@@ -902,20 +933,22 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
     const user = await this.userRepository.findByPhone(cleanNumber)
 
     if (user) {
-      const replyIntent = this.parseReply(message)
+      const pending = await this.getPendingConfirmation(user.whatsappNumber)
 
-      if (
-        replyIntent === 'confirm' ||
-        replyIntent === 'cancel' ||
-        replyIntent === 'reschedule'
-      ) {
-        const pending = await this.getPendingConfirmation(user.whatsappNumber)
-        if (pending)
-          return this.handleConfirmAppointment(
-            message,
+      if (pending) {
+        const replyIntent = await this.parseScheduleConfirmationReply(message)
+
+        if (replyIntent === 'unknown') {
+          return this.sendMessage(
             user.whatsappNumber,
-            pending,
+            `Não entendi bem sua resposta 😅\n\nVocê ainda tem uma consulta aguardando confirmação. Por favor, responda:\n\n✅ *confirmar* — para confirmar sua consulta\n❌ *cancelar* — para cancelar\n🔄 *reagendar* — para remarcar`,
           )
+        }
+        return this.handleConfirmAppointment(
+          message,
+          user.whatsappNumber,
+          pending,
+        )
       }
 
       return this.handleRegisteredUserFlow(message, user)

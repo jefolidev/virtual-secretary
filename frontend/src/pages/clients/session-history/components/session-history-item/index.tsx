@@ -69,7 +69,7 @@ export function SessionHistoryItem({
     return isLabel ? 'text-gray-500' : 'bg-gray-500'
   }
   return (
-    <div className="rounded-md border border-muted/80 dark:border-muted/40 bg-muted/60 dark:bg-muted/30 overflow-hidden hover:bg-muted/70 dark:hover:bg-muted/10 transition-colors">
+    <div className="bg-foreground/1 rounded-lg border border-foreground/5 overflow-hidden hover:bg-muted/40 dark:hover:bg-muted/10 transition-colors">
       {/* Header - Always Visible */}
       <div
         onClick={onToggleExpand}

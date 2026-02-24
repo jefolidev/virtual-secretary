@@ -7,6 +7,7 @@ import {
   AppointmentModalityType,
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
+import { ReminderTypes } from '@/domain/scheduling/enterprise/entities/reminders'
 import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
 import { InjectQueue } from '@nestjs/bullmq'
 import {
@@ -61,29 +62,30 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       const consultationTime = new Date(data.startDateTime).getTime()
 
       let delay24h = consultationTime - 24 * 60 * 60 * 1000 - Date.now()
-      if (delay24h <= 0) {
-        delay24h = 0
-      }
+      if (delay24h <= 0) delay24h = 0
 
       await this.remindersQueue.add(
         'send-24h-reminder',
-        {
-          appointmentId: appointment.id.toString(),
-        },
-        {
-          delay: delay24h,
-        },
+        { appointmentId: appointment.id.toString() },
+        { delay: delay24h },
       )
 
-      const delayTimeout = consultationTime - 12 * 60 * 60 * 1000 - Date.now()
+      let delay2h = consultationTime - 2 * 60 * 60 * 1000 - Date.now()
+      if (delay2h <= 0) delay2h = 0
+
       await this.remindersQueue.add(
-        'auto-cancel-timeout',
-        {
-          appointmentId: appointment.id.toString(),
-        },
-        {
-          delay: delayTimeout,
-        },
+        'send-2h-reminder',
+        { appointmentId: appointment.id.toString() },
+        { delay: delay2h },
+      )
+
+      let delay30m = consultationTime - 30 * 60 * 1000 - Date.now()
+      if (delay30m <= 0) delay30m = 0
+
+      await this.remindersQueue.add(
+        'send-30m-reminder',
+        { appointmentId: appointment.id.toString() },
+        { delay: delay30m },
       )
 
       await tx.appointment.create({
@@ -95,6 +97,19 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     })
 
     DomainEvents.dispatchEventsForAggregate(appointment.id)
+  }
+
+  async markReminderAsSended(
+    appointmentId: string,
+    reminder: ReminderTypes,
+  ): Promise<void> {
+    await this.prisma.appointmentReminder.create({
+      data: {
+        appointmentId,
+        type: reminder,
+        sentAt: new Date(),
+      },
+    })
   }
 
   async scheduleFromRawData({
@@ -229,6 +244,11 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
         id,
       },
     })
+
+    console.log(
+      'PrismaAppointmentsRepository.findById: appointment raw from DB',
+      appointment,
+    )
 
     if (!appointment) {
       return null

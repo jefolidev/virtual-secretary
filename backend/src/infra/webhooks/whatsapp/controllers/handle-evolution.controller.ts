@@ -40,7 +40,8 @@ export class HandleEvolutionController {
         const user = await this.userRepository.findByPhone(whatsappNumber)
 
         // quick-reply handling for appointment confirmations
-        const replyIntent = this.whatsappService.parseReply(message)
+        const replyIntent =
+          await this.whatsappService.parseScheduleConfirmationReply(message)
         if (
           replyIntent === 'confirm' ||
           replyIntent === 'cancel' ||

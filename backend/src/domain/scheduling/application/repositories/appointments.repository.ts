@@ -3,6 +3,7 @@ import type {
   Appointment,
   AppointmentStatusType,
 } from '../../enterprise/entities/appointment'
+import { ReminderTypes } from '../../enterprise/entities/reminders'
 import { AppointmentWithClient } from '../../enterprise/entities/value-objects/appointment-with-client'
 import { FetchScheduleByProfesionalIdFilters } from '../use-cases/fetch-schedule-by-professional-id'
 
@@ -19,6 +20,12 @@ export abstract class AppointmentsRepository {
     startDateTime: Date
     modality: string
   }): Promise<void>
+
+  abstract markReminderAsSended(
+    appointmentId: string,
+    reminder: ReminderTypes,
+  ): Promise<void>
+
   abstract findMany(params?: PaginationParams): Promise<Appointment[]>
   abstract findById(id: string): Promise<Appointment | null>
   abstract findByGoogleEventId(
@@ -46,9 +53,10 @@ export abstract class AppointmentsRepository {
     startDate: Date,
     endDate: Date,
   ): Promise<Appointment[]>
-  abstract save(appointment: Appointment): Promise<void>
   abstract findManyByStatus(
     status: AppointmentStatusType,
     params?: PaginationParams,
   ): Promise<Appointment[]>
+
+  abstract save(appointment: Appointment): Promise<void>
 }

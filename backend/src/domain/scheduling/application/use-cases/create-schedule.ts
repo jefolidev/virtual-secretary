@@ -14,6 +14,7 @@ import { ProfessionalRepository } from '../repositories/professional.repository'
 import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { InvalidValueError } from './errors/invalid-value-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
+import { Reminders } from '../../enterprise/entities/reminders'
 
 interface CreateAppointmentUseCaseProps {
   clientId: string

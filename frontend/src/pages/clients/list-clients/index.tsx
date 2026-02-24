@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
 import { Calendar, Filter, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ClientCard, type ClientCardProps } from './components/client-card'
@@ -135,7 +134,7 @@ export function ListClientsPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="bg-foreground/5 rounded-lg border border-foreground/20 p-4 mb-6">
+        <div className="bg-foreground/1 rounded-lg border border-foreground/5 p-4 mb-2">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search */}
             <div className="flex-1 relative">
@@ -181,7 +180,6 @@ export function ListClientsPage() {
             </Select>
           </div>
 
-          <Separator className="mt-5" />
           {/* Active Filters */}
           {(searchQuery || filterType !== 'all') && (
             <div className="flex items-center gap-2  pt-4  border-gray-100">

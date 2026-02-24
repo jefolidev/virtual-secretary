@@ -3,10 +3,11 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { BadRequestError } from '@/core/errors/bad-request'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { Appointment } from '../../enterprise/entities/appointment'
-import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
+import { Injectable } from '@nestjs/common'
+import { Appointment } from '../../enterprise/entities/appointment'
+import { AppointmentsRepository } from '../repositories/appointments.repository'
+import { ClientRepository } from '../repositories/client.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface CompleteAppointmentUseCaseRequest {
   appointmentId: string
@@ -21,6 +22,7 @@ export type CompleteAppointmentUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class CompleteAppointmentUseCase {
   constructor(
     readonly appointmentsRepository: AppointmentsRepository,

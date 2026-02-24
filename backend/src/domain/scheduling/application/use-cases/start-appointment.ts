@@ -3,10 +3,11 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { BadRequestError } from '@/core/errors/bad-request'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
+import { Injectable } from '@nestjs/common'
 import type { Appointment } from '../../enterprise/entities/appointment'
-import type { AppointmentsRepository } from '../repositories/appointments.repository'
-import type { ClientRepository } from '../repositories/client.repository'
-import type { ProfessionalRepository } from '../repositories/professional.repository'
+import { AppointmentsRepository } from '../repositories/appointments.repository'
+import { ClientRepository } from '../repositories/client.repository'
+import { ProfessionalRepository } from '../repositories/professional.repository'
 
 export interface StartAppointmentUseCaseRequest {
   appointmentId: string
@@ -20,11 +21,12 @@ export type StartAppointmentUseCaseResponse = Either<
   }
 >
 
+@Injectable()
 export class StartAppointmentUseCase {
   constructor(
     readonly appointmentsRepository: AppointmentsRepository,
     readonly clientRepository: ClientRepository,
-    readonly professionalRepository: ProfessionalRepository
+    readonly professionalRepository: ProfessionalRepository,
   ) {}
 
   async execute({
@@ -32,16 +34,15 @@ export class StartAppointmentUseCase {
     professionalId,
   }: StartAppointmentUseCaseRequest): Promise<StartAppointmentUseCaseResponse> {
     const appointment = await this.appointmentsRepository.findById(
-      appointmentId.toString()
+      appointmentId.toString(),
     )
 
     if (!appointment) return left(new NotFoundError('Appointment not found!'))
 
     const { clientId } = appointment
 
-    const professional = await this.professionalRepository.findById(
-      professionalId
-    )
+    const professional =
+      await this.professionalRepository.findById(professionalId)
 
     if (!professional) return left(new NotFoundError('Professional not found!'))
 
@@ -52,18 +53,27 @@ export class StartAppointmentUseCase {
     if (!appointment.professionalId.equals(new UniqueEntityId(professionalId)))
       return left(
         new NotAllowedError(
-          'You cannot start an appointment that is not yours.'
-        )
+          'You cannot start an appointment that is not yours.',
+        ),
       )
 
     try {
+      if (appointment.totalElapsedMs) {
+        appointment.resume()
+        await this.appointmentsRepository.save(appointment)
+
+        return right({
+          appointment,
+        })
+      }
+
       appointment.start()
       await this.appointmentsRepository.save(appointment)
 
       return right({
         appointment,
       })
-    }  catch (error: unknown) {
+    } catch (error: unknown) {
       return left(new BadRequestError((error as Error).message))
     }
   }

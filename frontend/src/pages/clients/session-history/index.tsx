@@ -4,18 +4,21 @@ import {
 } from '@/api/endpoints/appointments'
 import type { AddressSchema } from '@/api/schemas/address-schema'
 import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/contexts/auth-context'
+import { PaginationButtons } from '@/components/pagination-buttons'
+import { Input } from '@/components/ui/input'
 import {
-  ChevronFirst,
-  ChevronLast,
-  ChevronLeft,
-  ChevronRight,
-  Search,
-} from 'lucide-react'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { useAuth } from '@/contexts/auth-context'
+import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { SessionHistoryItem } from './components/session-history-item'
+import { Label } from '@/components/ui/label'
 
 type FilterPeriodProps = 'all' | 'week' | 'month' | 'year'
 
@@ -62,24 +65,8 @@ export function SessionHistory() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  const handleFowardPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1)
-    }
-  }
-
-  const handleBackwardPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1)
-    }
-  }
-
-  const handleJumpToFirstPage = () => {
-    setCurrentPage(1)
-  }
-
-  const handleJumpToLastPage = () => {
-    setCurrentPage(totalPages)
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
   }
 
   const { user } = useAuth()
@@ -201,90 +188,109 @@ export function SessionHistory() {
 
       {/* Search and Filters */}
       <div className="p-6">
-        <div className=" border border-muted/80 dark:border-muted/40 bg-muted/60 dark:bg-muted/30 rounded-xl p-6  mb-6">
+        <div className="bg-foreground/1 rounded-lg border border-foreground/5 p-6  mb-6">
           <div className="flex gap-4 items-center mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
+              <Input
                 type="text"
                 placeholder="Buscar por paciente"
                 value={searchTerm}
                 onChange={(e) => handleSearchByPatientName(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="pl-10 bg-white dark:bg-transparent"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
             <div>
-              <label className="block text-sm font-medium text-accent-foreground mb-2">
+              <Label className="block text-sm font-medium text-accent-foreground mb-2">
                 Período
-              </label>
-              <select
+              </Label>
+              <Select
                 value={filterPeriod}
-                onChange={(e) => handleFilterChange('period', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onValueChange={(value) => handleFilterChange('period', value)}
               >
-                <option value="all">Todo período</option>
-                <option value="last-week">Última semana</option>
-                <option value="last-month">Último mês</option>
-                <option value="last-year">Último ano</option>
-              </select>
+                <SelectTrigger className="w-full bg-white dark:bg-transparent">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todo período</SelectItem>
+                  <SelectItem value="last-week">Última semana</SelectItem>
+                  <SelectItem value="last-month">Último mês</SelectItem>
+                  <SelectItem value="last-year">Último ano</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-accent-foreground mb-2">
+              <Label className="block text-sm font-medium text-accent-foreground mb-2">
                 Status da Sessão
-              </label>
-              <select
+              </Label>
+
+              <Select
                 value={filterStatus}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onValueChange={(value) => handleFilterChange('status', value)}
               >
-                <option value="all">Todos</option>
-                <option value="SCHEDULED">Agendada</option>
-                <option value="CONFIRMED">Confirmada</option>
-                <option value="CANCELLED">Cancelada</option>
-                <option value="RESCHEDULED">Remarcada</option>
-                <option value="NO_SHOW">No-show</option>
-                <option value="IN_PROGRESS">Em andamento</option>
-                <option value="COMPLETED">Realizada</option>
-              </select>
+                <SelectTrigger className="w-full bg-white dark:bg-transparent">
+                  <SelectValue />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="SCHEDULED">Agendada</SelectItem>
+                  <SelectItem value="CONFIRMED">Confirmada</SelectItem>
+                  <SelectItem value="CANCELLED">Cancelada</SelectItem>
+                  <SelectItem value="RESCHEDULED">Remarcada</SelectItem>
+                  <SelectItem value="NO_SHOW">No-show</SelectItem>
+                  <SelectItem value="IN_PROGRESS">Em andamento</SelectItem>
+                  <SelectItem value="COMPLETED">Realizada</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-accent-foreground mb-2">
+              <Label className="block text-sm font-medium text-accent-foreground mb-2">
                 Status de Pagamento
-              </label>
-              <select
+              </Label>
+
+              <Select
                 value={filterPayment}
-                onChange={(e) =>
-                  handleFilterChange('paymentStatus', e.target.value)
+                onValueChange={(value) =>
+                  handleFilterChange('paymentStatus', value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="PENDING">Pendente</option>
-                <option value="PROCESSING">Paga</option>
-                <option value="SUCCEEDED">Concluída</option>
-                <option value="FAILED">Liberada</option>
-                <option value="REFUNDED">Reembolsado</option>
-                <option value="all">Todos</option>
-              </select>
+                <SelectTrigger className="w-full bg-white dark:bg-transparent">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PENDING">Pendente</SelectItem>
+                  <SelectItem value="PROCESSING">Paga</SelectItem>
+                  <SelectItem value="SUCCEEDED">Concluída</SelectItem>
+                  <SelectItem value="FAILED">Liberada</SelectItem>
+                  <SelectItem value="REFUNDED">Reembolsado</SelectItem>
+                  <SelectItem value="all">Todos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-accent-foreground mb-2">
+              <Label className="block text-sm font-medium text-accent-foreground mb-2">
                 Modalidade
-              </label>
-              <select
+              </Label>
+              <Select
                 value={filterModality}
-                onChange={(e) => handleFilterChange('modality', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onValueChange={(value) => handleFilterChange('modality', value)}
               >
-                <option value="all">Todas</option>
-                <option value="ONLINE">Online</option>
-                <option value="IN_PERSON">Presencial</option>
-              </select>
+                <SelectTrigger className="w-full bg-white dark:bg-transparent">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas</SelectItem>
+                  <SelectItem value="ONLINE">Online</SelectItem>
+                  <SelectItem value="IN_PERSON">Presencial</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -312,52 +318,15 @@ export function SessionHistory() {
             <p className="text-gray-500">Nenhuma sessão encontrada</p>
           </div>
         ) : null}
-        <div className="flex items-end justify-end gap-2 mt-6">
-          <Button
-            variant={'outline'}
-            onClick={handleJumpToFirstPage}
-            disabled={
-              currentPage === 1 ||
-              sessions.length === 0 ||
-              filteredSessions.length === 0
-            }
-          >
-            <ChevronFirst />
-          </Button>
-          <Button
-            variant={'outline'}
-            onClick={handleBackwardPage}
-            disabled={
-              currentPage === 1 ||
-              sessions.length === 0 ||
-              filteredSessions.length === 0
-            }
-          >
-            <ChevronLeft />
-          </Button>
-          <Button
-            variant={'outline'}
-            onClick={handleFowardPage}
-            disabled={
-              currentPage === totalPages ||
-              sessions.length === 0 ||
-              filteredSessions.length === 0
-            }
-          >
-            <ChevronRight />
-          </Button>
-          <Button
-            variant={'outline'}
-            onClick={handleJumpToLastPage}
-            disabled={
-              currentPage === totalPages ||
-              sessions.length === 0 ||
-              filteredSessions.length === 0
-            }
-          >
-            <ChevronLast />
-          </Button>
-        </div>
+
+        {(sessions.length > 0 || filteredSessions.length > 0) && (
+          <PaginationButtons
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            position="end"
+          />
+        )}
       </div>
     </div>
   )

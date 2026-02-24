@@ -1,12 +1,13 @@
 import { AggregateRoot } from '@/core/entities/aggregate'
 import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { Evaluation } from '@/domain/evaluation/enterprise/entities/evaluation'
 import { AppointmentCreatedEvent } from '../events/appointment-created-event'
 import { CanceledAppointmentEvent } from '../events/canceled-appointment'
 import { ConfirmedAppointmentEvent } from '../events/confirmed-appointment'
 import { FinishedAppointmentEvent } from '../events/finished-appointment'
 import { ScheduledAppointmentEvent } from '../events/scheduled-appointment-event'
-import { Evaluation } from '@/domain/evaluation/enterprise/entities/evaluation'
+import { Reminders } from './reminders'
 
 export type AppointmentModalityType = 'IN_PERSON' | 'ONLINE'
 export type AppointmentStatusType =
@@ -42,6 +43,7 @@ export interface AppointmentProps {
   googleCalendarEventId?: string | null
 
   evaluation: Evaluation | null | undefined
+  reminders: Reminders | null
 
   rescheduleDateTime?: { start: Date; end: Date }
   syncWithGoogleCalendar: boolean
@@ -96,6 +98,15 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
   get paymentId() {
     return this.props.paymentId
+  }
+
+  get reminders() {
+    return this.props.reminders || null
+  }
+
+  set reminders(reminders: Reminders | null) {
+    this.props.reminders = reminders
+    this.touch()
   }
 
   get startDateTime() {
@@ -391,6 +402,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
       | 'paymentExpiresAt'
       | 'googleCalendarEventId'
       | 'syncWithGoogleCalendar'
+      | 'reminders'
     >,
     id?: UniqueEntityId,
   ) {
@@ -407,6 +419,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
         paymentExpiresAt: props.paymentExpiresAt ?? null,
         totalElapsedMs: props.totalElapsedMs ?? null,
         syncWithGoogleCalendar: props.syncWithGoogleCalendar ?? false,
+        reminders: props.reminders ?? null,
         createdAt: props.createdAt ?? new Date(),
       },
       id,

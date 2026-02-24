@@ -2,6 +2,7 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { DomainEvents } from '@/core/events/domain-events'
 import { PaginationParams } from '@/core/repositories/pagination-params'
 import type { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
+import { FetchScheduleByProfesionalIdFilters } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import type {
   Appointment,
   AppointmentStatusType,
@@ -9,6 +10,75 @@ import type {
 import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
 
 export class InMemoryAppointmentRepository implements AppointmentsRepository {
+  async countAppointmentsByProfessionalId(
+    professionalId: string,
+    filters?: FetchScheduleByProfesionalIdFilters,
+  ): Promise<number> {
+    let filtered = this.items.filter((appointment) =>
+      appointment.professionalId.equals(new UniqueEntityId(professionalId)),
+    )
+
+    if (filters?.status) {
+      filtered = filtered.filter(
+        (appointment) => appointment.status === filters.status,
+      )
+    }
+    if (filters?.modality) {
+      filtered = filtered.filter(
+        (appointment) => appointment.modality === filters.modality,
+      )
+    }
+
+    if (filters?.paymentStatus) {
+      filtered = filtered.filter(
+        (appointment) => appointment.paymentStatus === filters.paymentStatus,
+      )
+    }
+
+    if (filters?.period) {
+      filtered = filtered.filter((appointment) => {
+        const appointmentDate = appointment.startDateTime
+        const now = new Date()
+
+        if (filters.period === 'last-month') {
+          const oneMonthAgo = new Date(
+            now.getFullYear(),
+            now.getMonth() - 1,
+            now.getDate(),
+          )
+          return appointmentDate < now && appointmentDate > oneMonthAgo
+        }
+
+        if (filters.period === 'last-week') {
+          const oneWeekAgo = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() - 7,
+          )
+          return appointmentDate > oneWeekAgo && appointmentDate < now
+        }
+
+        if (filters.period === 'last-year') {
+          const oneYearAgo = new Date(
+            now.getFullYear() - 1,
+            now.getMonth(),
+            now.getDate(),
+          )
+          return appointmentDate > oneYearAgo && appointmentDate < now
+        }
+
+        return true
+      })
+    }
+
+    if (filters?.status) {
+      filtered = filtered.filter(
+        (appointment) => appointment.status === filters.status,
+      )
+    }
+
+    return filtered.length
+  }
   public items: Appointment[] = []
 
   async create(appointment: Appointment): Promise<void> {

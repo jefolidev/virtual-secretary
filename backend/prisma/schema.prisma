@@ -96,6 +96,8 @@ model Appointment {
   paymentExpiresAt     DateTime?     @map("payment_expires_at")
   currentTransactionId String?       @map("current_transaction_id")
 
+  reminders AppointmentReminder[]
+
   client       Client       @relation(fields: [clientId], references: [id])
   professional Professional @relation(fields: [professionalId], references: [id])
 
@@ -122,6 +124,25 @@ model AppointmentHistory {
   appointment Appointment @relation(fields: [appointmentId], references: [id])
 
   @@map("appointment_history")
+}
+
+model AppointmentReminder {
+  id            String        @id @default(uuid())
+  appointmentId String        @map("appointment_id")
+  type          ReminderType?
+  sentAt        DateTime?     @map("sent_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id])
+
+  @@unique([appointmentId, type])
+  @@map("appointment_reminders")
+}
+
+enum ReminderType {
+  D1_REMINDER
+  T2H_REMINDER
+  T30M_REMINDER
 }
 
 model Evaluation {

@@ -12,6 +12,7 @@ export class WhatsappRemindersProcessor extends WorkerHost {
     private appointmentRepository: AppointmentsRepository,
     private userRepository: UserRepository,
     private whatsappService: WhatsappService,
+
     @InjectQueue('whatsapp-reminders') private remindersQueue: Queue,
   ) {
     super()
@@ -19,8 +20,6 @@ export class WhatsappRemindersProcessor extends WorkerHost {
 
   async process(job: Job<any, any, string>): Promise<any> {
     const { appointmentId } = job.data
-
-    // processing reminder job
 
     const appointment = await this.appointmentRepository.findById(appointmentId)
 
@@ -65,6 +64,10 @@ Confirme sua presença enviando *confirmar*, ou *cancelar* para cancelar.
 
 Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será considerado como não confirmado. Se precisar reagendar ou cancelar, por favor, entre em contato conosco. Obrigado!`,
           )
+          await this.appointmentRepository.markReminderAsSended(
+            appointment.id.toString(),
+            'D1_REMINDER',
+          )
         } catch (err) {
           console.error(
             '[WhatsappRemindersProcessor] Error sending 24h reminder:',
@@ -72,7 +75,6 @@ Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será
           )
         }
 
-        // marca pendência de confirmação para permitir respostas rápidas (TTL 12h por padrão)
         try {
           await this.whatsappService.markPendingConfirmation(
             user.whatsappNumber,
@@ -84,7 +86,6 @@ Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será
         break
 
       case 'send-2h-reminder':
-        // Only send 2h reminder if the user already confirmed the appointment
         if (appointment.status !== 'CONFIRMED') {
           break
         }
@@ -96,6 +97,11 @@ Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será
 
 Falta 2 horas para o seu compromisso, fique atento!`,
           )
+
+          await this.appointmentRepository.markReminderAsSended(
+            appointment.id.toString(),
+            'T2H_REMINDER',
+          )
         } catch (err) {
           console.error(
             '[WhatsappRemindersProcessor] Error sending 2h reminder:',
@@ -105,7 +111,6 @@ Falta 2 horas para o seu compromisso, fique atento!`,
         break
 
       case 'send-30min-reminder':
-        // Only send 30min reminder if the user already confirmed the appointment
         if (appointment.status !== 'CONFIRMED') {
           break
         }
@@ -116,6 +121,10 @@ Falta 2 horas para o seu compromisso, fique atento!`,
             `Olá ${user.name}! Esta é uma mensagem automática para lembrá-lo do seu compromisso agendado para *${appointment.startDateTime.toLocaleString()}*, com o(a) doutor(a) *${professional.name}*.
             
 Falta 30 minutos para o seu compromisso.`,
+          )
+          await this.appointmentRepository.markReminderAsSended(
+            appointment.id.toString(),
+            'T30M_REMINDER',
           )
         } catch (err) {
           console.error(
