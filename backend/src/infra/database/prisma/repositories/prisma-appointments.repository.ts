@@ -365,6 +365,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
           },
         },
       },
+      orderBy: { createdAt: 'desc' },
       take: 5,
       skip: Math.max(0, (page - 1) * 5),
     })
