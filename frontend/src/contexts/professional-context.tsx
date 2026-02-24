@@ -1,13 +1,21 @@
-import { professionalServices } from '@/api/endpoints/professionals'
-import type { FetchProfessionalSchedulesSchema } from '@/api/schemas/fetch-professional-schedules.dto'
+import { appointmentsServices } from '@/api/endpoints/appointments'
+import type {
+  FetchProfessionalSchedulesListResponse,
+  FetchProfessionalSchedulesResponse,
+} from '@/api/endpoints/appointments/dto'
 import { createContext, useCallback, useContext, useState } from 'react'
 import { useAuth } from './auth-context'
 
 interface ProfessionalContextType {
   isProfessionalContextLoading: boolean
+  currentProfessionalSchedules: FetchProfessionalSchedulesResponse[] | null
+  totalPages: number
 
-  currentProfessionalSchedules: FetchProfessionalSchedulesSchema[]
   handleFetchProfessionalSchedules: () => Promise<void>
+  handleSetCurrentProfessionalSchedules: (
+    schedules: FetchProfessionalSchedulesResponse[] | null,
+  ) => void
+  handleSetIsProfessionalContextLoading: (loading: boolean) => void
 }
 
 const ProfessionalContext = createContext<ProfessionalContextType | undefined>(
@@ -20,31 +28,26 @@ export function ProfessionalProvider({
   children: React.ReactNode
 }) {
   const { user } = useAuth()
-
   const [currentProfessionalSchedules, setCurrentProfessionalSchedules] =
-    useState<FetchProfessionalSchedulesSchema[]>([])
+    useState<FetchProfessionalSchedulesResponse[] | null>(null)
+  const [totalPages, setTotalPages] = useState(0)
   const [isProfessionalContextLoading, setIsProfessionalContextLoading] =
     useState(true)
 
   const handleFetchProfessionalSchedules = useCallback(async () => {
     if (!user) return
-
     setIsProfessionalContextLoading(true)
     try {
       if (!user.professional_id) {
         console.error('Usuário não é um profissional ou não existe.')
         return
       }
-
-      const response = await professionalServices.getProfessionalSchedules(
-        user.professional_id,
-      )
-
-      const schedulesArray = Array.isArray(response)
-        ? response
-        : response.appointments || []
-
-      setCurrentProfessionalSchedules(schedulesArray)
+      const response: FetchProfessionalSchedulesListResponse =
+        await appointmentsServices.fetchAppointmentsByProfessional(
+          user.professional_id,
+        )
+      setCurrentProfessionalSchedules(response.appointments)
+      setTotalPages(response.pages)
     } catch (error) {
       console.error('Erro ao buscar horários do profissional:', error)
     } finally {
@@ -52,13 +55,26 @@ export function ProfessionalProvider({
     }
   }, [user])
 
+  const handleSetCurrentProfessionalSchedules = (
+    schedules: FetchProfessionalSchedulesResponse[] | null,
+  ) => {
+    setCurrentProfessionalSchedules(schedules)
+  }
+
+  const handleSetIsProfessionalContextLoading = (loading: boolean) => {
+    setIsProfessionalContextLoading(loading)
+  }
+
   return (
     <ProfessionalContext.Provider
       value={{
         isProfessionalContextLoading,
-
         currentProfessionalSchedules,
+        totalPages,
+
         handleFetchProfessionalSchedules,
+        handleSetCurrentProfessionalSchedules,
+        handleSetIsProfessionalContextLoading,
       }}
     >
       {children}

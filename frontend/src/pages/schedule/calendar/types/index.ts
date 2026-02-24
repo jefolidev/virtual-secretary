@@ -1,9 +1,10 @@
+import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
 import type { FetchProfessionalSchedulesSchema } from '@/api/schemas/fetch-professional-schedules.dto'
 
 export type ViewMode = 'day' | 'week' | 'month'
 
 export interface AppointmentCardProps {
-  schedule: FetchProfessionalSchedulesSchema
+  schedule: FetchProfessionalSchedulesResponse
   style?: React.CSSProperties
   className?: string
   onClick?: () => void

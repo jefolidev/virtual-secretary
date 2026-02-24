@@ -9,4 +9,4 @@ export const addressSchema = z.object({
   postalCode: z.string().min(8, 'O CEP deve ter pelo menos 8 caracteres'),
 })
 
-export type AddressSchema = z.infer<typeof addressSchema>
+export type Address = z.infer<typeof addressSchema>

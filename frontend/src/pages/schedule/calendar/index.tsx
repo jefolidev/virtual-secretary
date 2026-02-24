@@ -1,17 +1,23 @@
+import { appointmentsServices } from '@/api/endpoints/appointments'
+import type { FetchProfessionalSchedulesListResponse } from '@/api/endpoints/appointments/dto'
 import { Card, CardContent } from '@/components/ui/card'
-import { useSidebar } from '@/components/ui/sidebar'
+import { useAuth } from '@/contexts/auth-context'
 import { useProfessional } from '@/contexts/professional-context'
 import { Calendar as CalendarIcon } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { CalendarToolbar } from './components/calendar-toolbar'
 import { WeekScheduleGrid } from './components/week-schedule-grid'
 import type { CalendarFilters, ViewMode } from './types'
 import { getWeekDays } from './utils'
 
 export function ScheduleCalendarPage() {
+  const { user } = useAuth()
+
   const [currentDate, setCurrentDate] = useState(new Date())
-  const viewMode: ViewMode = 'week'
   const [selectedPatient, setSelectedPatient] = useState('all')
+
+  const viewMode: ViewMode = 'week'
+
   const [filters, setFilters] = useState<CalendarFilters>({
     showAgendado: true,
     showConfirmado: true,
@@ -23,10 +29,59 @@ export function ScheduleCalendarPage() {
     showCancelado: true,
   })
 
-  const { state } = useSidebar()
+  const {
+    currentProfessionalSchedules,
+    handleSetIsProfessionalContextLoading,
+    handleSetCurrentProfessionalSchedules,
+  } = useProfessional()
 
-  const { currentProfessionalSchedules, handleFetchProfessionalSchedules } =
-    useProfessional()
+  const handleFetchProfessionalSchedules = useCallback(async () => {
+    if (!user) return
+    handleSetIsProfessionalContextLoading(true)
+    try {
+      if (!user.professional_id) {
+        console.error('Usuário não é um profissional ou não existe.')
+        return
+      }
+      const firstResponse: FetchProfessionalSchedulesListResponse =
+        await appointmentsServices.fetchAppointmentsByProfessional(
+          user.professional_id,
+          1,
+        )
+
+      const allAppointments = [...firstResponse.appointments]
+      const total = firstResponse.pages
+
+      // Fetch remaining pages in parallel
+      if (total > 1) {
+        const remainingPages = Array.from(
+          { length: total - 1 },
+          (_, i) => i + 2,
+        )
+
+        const remainingResponses = await Promise.all(
+          remainingPages.map((page) =>
+            appointmentsServices.fetchAppointmentsByProfessional(
+              user.professional_id!,
+              page,
+            ),
+          ),
+        )
+
+        remainingResponses.forEach((response) => {
+          allAppointments.push(...response.appointments)
+        })
+      }
+
+      console.log('agendamentos carregados:', allAppointments)
+
+      handleSetCurrentProfessionalSchedules(allAppointments)
+    } catch (error) {
+      console.error('Erro ao buscar horários do profissional:', error)
+    } finally {
+      handleSetIsProfessionalContextLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     handleFetchProfessionalSchedules()
@@ -34,47 +89,22 @@ export function ScheduleCalendarPage() {
 
   const navigateDate = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate)
-
-    // visualização fixa em semana: navegar por 7 dias
     newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7))
-
     setCurrentDate(newDate)
   }
 
-  const goToToday = () => {
-    setCurrentDate(new Date())
-  }
+  const goToToday = () => setCurrentDate(new Date())
 
-  const filteredAppointments = useMemo(() => {
-    return currentProfessionalSchedules.filter((apt) => {
-      const status = apt.status
-
-      const statusFilter =
-        (status === 'SCHEDULED' && filters.showAgendado) ||
-        (status === 'COMPLETED' && filters.showFinalizado) ||
-        (status === 'CONFIRMED' && filters.showConfirmado) ||
-        (status === 'CANCELLED' && filters.showCancelado) ||
-        (status === 'RESCHEDULED' && filters.showRemarcado) ||
-        (status === 'NO_SHOW' && filters.showNoShow) ||
-        true
-
-      const patientFilter =
-        selectedPatient === 'all' || apt.userDetails.name === selectedPatient
-
-      return statusFilter && patientFilter
-    })
-  }, [currentProfessionalSchedules, filters, selectedPatient])
-  // Obter lista única de pacientes para o select
-  const uniquePatients = [
-    ...new Set(currentProfessionalSchedules.map((apt) => apt.userDetails.name)),
-  ]
+  const uniquePatients = currentProfessionalSchedules
+    ? Array.from(new Set(currentProfessionalSchedules.map((item) => item.name)))
+    : []
 
   const renderCalendar = () => {
     const weekDays = getWeekDays(currentDate)
     return (
       <WeekScheduleGrid
         weekDays={weekDays}
-        schedules={currentProfessionalSchedules} // Passamos o schedule completo aqui
+        schedule={currentProfessionalSchedules ?? []}
       />
     )
   }
@@ -89,16 +119,14 @@ export function ScheduleCalendarPage() {
         }}
       >
         <div className="flex flex-col min-h-screen p-6 w-full">
-          {/* Cabeçalho com contador */}
           <div className="flex items-center gap-3 shrink-0 pb-2">
             <CalendarIcon className="h-5 w-5 text-primary" />
             <span className="text-2xl font-bold">
-              {filteredAppointments.length}
+              {currentProfessionalSchedules?.length ?? 0}
             </span>
             <span className="text-muted-foreground">agendamentos totais</span>
           </div>
 
-          {/* Barra de ferramentas */}
           <div className="shrink-0 pb-2 my-2">
             <CalendarToolbar
               currentDate={currentDate}
@@ -113,7 +141,6 @@ export function ScheduleCalendarPage() {
             />
           </div>
 
-          {/* Calendário */}
           <div className="flex-1 min-h-0 pb-4">
             <Card className="h-full">
               <CardContent className="p-0 h-full">

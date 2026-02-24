@@ -1,8 +1,6 @@
 import { appointmentsServices } from '@/api/endpoints/appointments'
-import type {
-  Appointment,
-  FetchProfessionalSchedulesSchema,
-} from '@/api/schemas/fetch-professional-schedules.dto'
+import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
+import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -37,7 +35,7 @@ import { useEffect, useState } from 'react'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
 
 interface AppointmentModalProps {
-  schedule: FetchProfessionalSchedulesSchema | null
+  schedule: FetchProfessionalSchedulesResponse | null
   open: boolean
   onOpenChange: (open: boolean) => void
 }
@@ -82,21 +80,23 @@ export function AppointmentModal({
   >(null)
 
   useEffect(() => {
-    if (schedule?.status == 'IN_PROGRESS') {
+    if (schedule?.appointment.status === 'IN_PROGRESS') {
       setTimer((prev) => ({
         ...prev,
         isRunning: true,
-        startTime: schedule.startedAt ? new Date(schedule.startedAt) : null,
-        elapsedTime: schedule.totalElapsedMs
-          ? Math.floor(schedule.totalElapsedMs / 1000)
+        startTime: schedule.appointment.startedAt
+          ? new Date(schedule.appointment.startedAt)
+          : null,
+        elapsedTime: schedule.appointment.totalElapsedMs
+          ? Math.floor(schedule.appointment.totalElapsedMs / 1000)
           : 0,
       }))
     }
   }, [schedule])
 
   useEffect(() => {
-    if (schedule?.status) {
-      setCurrentStatus(schedule?.status)
+    if (schedule?.appointment.status) {
+      setCurrentStatus(schedule.appointment.status)
     }
   }, [schedule])
 
@@ -132,7 +132,7 @@ export function AppointmentModal({
   const handleStartSession = async () => {
     if (!timer.isRunning) {
       try {
-        await startAppointment(schedule.id)
+        await startAppointment(schedule.appointment.id)
         setTimer({
           isRunning: true,
           isPaused: false,
@@ -146,7 +146,7 @@ export function AppointmentModal({
     } else if (timer.isPaused) {
       // Retomar sessão
       try {
-        await startAppointment(schedule.id)
+        await startAppointment(schedule.appointment.id)
         setTimer((prev) => ({
           ...prev,
           isPaused: false,
@@ -158,7 +158,7 @@ export function AppointmentModal({
       }
     } else {
       try {
-        await pauseAppointment(schedule.id)
+        await pauseAppointment(schedule.appointment.id)
         setTimer((prev) => ({
           ...prev,
           isPaused: true,
@@ -172,7 +172,7 @@ export function AppointmentModal({
 
   const handleStopSession = async () => {
     try {
-      await endAppointment(schedule.id)
+      await endAppointment(schedule.appointment.id)
       setTimer({
         isRunning: false,
         isPaused: false,
@@ -203,11 +203,12 @@ export function AppointmentModal({
     }
   }
 
-  const isPaymentPaid = schedule?.paymentStatus === 'SUCCEEDED'
+  const isPaymentPaid = schedule?.appointment.paymentStatus === 'SUCCEEDED'
   const isCompleted =
-    currentStatus === 'COMPLETED' || schedule?.status === 'COMPLETED'
-  const completedElapsedSeconds = schedule?.totalElapsedMs
-    ? Math.floor(schedule.totalElapsedMs / 1000)
+    currentStatus === 'COMPLETED' ||
+    schedule?.appointment.status === 'COMPLETED'
+  const completedElapsedSeconds = schedule?.appointment.totalElapsedMs
+    ? Math.floor(schedule.appointment.totalElapsedMs / 1000)
     : timer.elapsedTime
 
   return (
@@ -218,7 +219,10 @@ export function AppointmentModal({
             <span className="text-base font-normal dark:text-zinc-200/50">
               Agendamento
             </span>
-            #{schedule?.id ? schedule.id.slice(0, 8).toUpperCase() : '-----'}
+            #
+            {schedule?.appointment.id
+              ? schedule.appointment.id.slice(0, 8).toUpperCase()
+              : '-----'}
           </DialogTitle>
         </DialogHeader>
 
@@ -233,9 +237,7 @@ export function AppointmentModal({
               </div>
               <div className="flex flex-col gap-0.5">
                 <p className="text-xs text-muted-foreground">Paciente</p>
-                <h2 className="text-xl font-semibold">
-                  {schedule.userDetails.name}
-                </h2>
+                <h2 className="text-xl font-semibold">{schedule.name}</h2>
               </div>
             </div>
 
@@ -265,7 +267,7 @@ export function AppointmentModal({
             {/* Modalidade */}
             <div className="flex items-center gap-3 p-3 rounded-lg">
               <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                {schedule?.modality === 'IN_PERSON' ? (
+                {schedule?.appointment.modality === 'IN_PERSON' ? (
                   <MapPin className="h-5 w-5 text-zinc-600" />
                 ) : (
                   <Monitor className="h-5 w-5 text-zinc-600" />
@@ -276,12 +278,14 @@ export function AppointmentModal({
                   Modalidade
                 </p>
                 <p className="font-semibold capitalize">
-                  {schedule?.modality === 'IN_PERSON' ? 'Presencial' : 'Online'}
+                  {schedule?.appointment.modality === 'IN_PERSON'
+                    ? 'Presencial'
+                    : 'Online'}
                 </p>
               </div>
             </div>
 
-            {schedule?.modality === 'ONLINE' && (
+            {schedule?.appointment.modality === 'ONLINE' && (
               <div className="flex gap-2.5">
                 <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
                   <VideoCameraIcon
@@ -294,7 +298,7 @@ export function AppointmentModal({
                     Link
                   </p>
                   <a
-                    href={schedule?.googleMeetLink || ''}
+                    href={schedule?.appointment.googleMeetLink || ''}
                     className="font-semibold text-xs text-blue-600 hover:text-blue-700"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -315,20 +319,21 @@ export function AppointmentModal({
                   Data/Horário
                 </p>
                 <p className="font-semibold text-xs">
-                  {new Date(schedule?.startDateTime).toLocaleDateString(
-                    'pt-BR',
-                  )}
+                  {new Date(
+                    schedule?.appointment.startDateTime,
+                  ).toLocaleDateString('pt-BR')}
                 </p>
                 <p className="text-xs">
-                  {new Date(schedule?.startDateTime).toLocaleTimeString(
-                    'pt-BR',
-                    {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    },
-                  )}{' '}
+                  {new Date(
+                    schedule?.appointment.startDateTime,
+                  ).toLocaleTimeString('pt-BR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}{' '}
                   -{' '}
-                  {new Date(schedule?.endDateTime).toLocaleTimeString('pt-BR', {
+                  {new Date(
+                    schedule?.appointment.endDateTime,
+                  ).toLocaleTimeString('pt-BR', {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
@@ -348,11 +353,11 @@ export function AppointmentModal({
                 <div className="flex gap-4 items-center">
                   <div>
                     <p className="font-semibold">
-                      Conta: {schedule?.currentTransactionId}
+                      Conta: {schedule?.appointment.currentTransactionId}
                     </p>
                     <div className="flex items-center gap-2">
                       {(() => {
-                        const lastFirstReminder = schedule.notifications
+                        const lastFirstReminder = schedule.notification
                           ?.filter((n) => n.reminderType === 'FIRST_REMINDER')
                           // Ordena da mais nova para a mais antiga baseado no createdAt
                           .sort(
@@ -404,16 +409,14 @@ export function AppointmentModal({
                     Telefone:
                   </span>
                   <span className="text-base">
-                    {formatPhoneNumber(schedule.userDetails.whatsappNumber)}
+                    {formatPhoneNumber(schedule.whatsappNumber)}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-medium text-zinc-500">
                     Email:
                   </span>
-                  <span className="text-base">
-                    {schedule.userDetails.email}
-                  </span>
+                  <span className="text-base">{schedule.email}</span>
                 </div>
               </div>
               <div className="space-y-3">
@@ -422,9 +425,7 @@ export function AppointmentModal({
                     Gênero:
                   </span>
                   <span className="text-base">
-                    {schedule.userDetails.gender === 'MALE'
-                      ? 'Masculino'
-                      : 'Feminino'}
+                    {schedule.gender === 'MALE' ? 'Masculino' : 'Feminino'}
                   </span>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -432,7 +433,16 @@ export function AppointmentModal({
                     Endereço:
                   </span>
                   <span className="text-[13.5px]">
-                    {formatFullAddress(schedule.userDetails.address.props)}
+                    {formatFullAddress({
+                      addressLine1: schedule.address.addressLine1,
+                      addressLine2: schedule.address.addressLine2 || '',
+                      neighborhood: schedule.address.neighborhood,
+                      city: schedule.address.city,
+                      state: schedule.address.state,
+                      postalCode: schedule.address.postalCode,
+                      country: 'Brasil',
+                      organizationId: null,
+                    })}
                   </span>
                 </div>
               </div>
@@ -486,8 +496,8 @@ export function AppointmentModal({
                   </Button>
                 )}
               </div>
-              {schedule.status === 'SCHEDULED' ||
-                (schedule.status === 'CONFIRMED' && (
+              {schedule.appointment.status === 'SCHEDULED' ||
+                (schedule.appointment.status === 'CONFIRMED' && (
                   <Button
                     variant="outline"
                     size="sm"

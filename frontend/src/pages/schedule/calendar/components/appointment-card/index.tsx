@@ -10,11 +10,13 @@ export function AppointmentCard({
   onClick,
   hasActiveSession = false,
 }: AppointmentCardProps) {
-  const styles = getStatusStyles(schedule.status)
-  const StatusIcon = getStatusIcon(schedule.status)
+  const styles = getStatusStyles(schedule.appointment.status)
+  const StatusIcon = getStatusIcon(schedule.appointment.status)
 
-  const startDate = new Date(schedule.startDateTime)
-  const endDate = schedule.endDateTime ? new Date(schedule.endDateTime) : null
+  const startDate = new Date(schedule.appointment.startDateTime)
+  const endDate = schedule.appointment.endDateTime
+    ? new Date(schedule.appointment.endDateTime)
+    : null
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('pt-BR', {
@@ -46,7 +48,7 @@ export function AppointmentCard({
             </div>
             {/* Nome do paciente */}
             <div className="font-semibold text-sm leading-tight truncate">
-              {schedule.userDetails.name}
+              {schedule.name}
             </div>
           </div>
           {/* Status no canto direito */}
@@ -82,13 +84,15 @@ export function AppointmentCard({
               </span>
             </div> */}
             <div className="dark:bg-card bg-white text-zinc-950 dark:text-white px-1.5 py-0.5 rounded-sm flex items-center gap-1 shrink-0">
-              {schedule.modality === 'IN_PERSON' ? (
+              {schedule.appointment.modality === 'IN_PERSON' ? (
                 <MapPin className="h-2.5 w-2.5" />
               ) : (
                 <Monitor className="h-2.5 w-2.5" />
               )}
               <span className="text-xs font-medium opacity-75">
-                {schedule.modality === 'IN_PERSON' ? 'Presencial' : 'Remota'}
+                {schedule.appointment.modality === 'IN_PERSON'
+                  ? 'Presencial'
+                  : 'Remota'}
               </span>
             </div>
           </div>

@@ -2,10 +2,10 @@ import {
   appointmentsServices,
   type FetchScheduleByProfessionalIdFilters,
 } from '@/api/endpoints/appointments'
-import type { AddressSchema } from '@/api/schemas/address-schema'
-import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
+import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
 import { PaginationButtons } from '@/components/pagination-buttons'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -18,10 +18,8 @@ import { Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { SessionHistoryItem } from './components/session-history-item'
-import { Label } from '@/components/ui/label'
 
 type FilterPeriodProps = 'all' | 'week' | 'month' | 'year'
-
 type FilterStatusProps =
   | 'all'
   | 'SCHEDULED'
@@ -31,7 +29,6 @@ type FilterStatusProps =
   | 'NO_SHOW'
   | 'IN_PROGRESS'
   | 'COMPLETED'
-
 type FilterPaymentStatusProps =
   | 'all'
   | 'PENDING'
@@ -39,22 +36,12 @@ type FilterPaymentStatusProps =
   | 'SUCCEEDED'
   | 'FAILED'
   | 'REFUNDED'
-
 type FilterModalityProps = 'all' | 'ONLINE' | 'IN_PERSON'
 
-export type AppointmentsSesions = Appointment & {
-  userDetails: {
-    name: string
-    email: string
-    whatsappNumber: string
-    cpf: string
-
-    address: AddressSchema
-  }
-}
-
 export function SessionHistory() {
-  const [sessions, setSessions] = useState<AppointmentsSesions[]>([])
+  const [sessions, setSessions] = useState<
+    FetchProfessionalSchedulesResponse[]
+  >([])
   const [filters, setFilters] = useState<FetchScheduleByProfessionalIdFilters>({
     modality: 'all',
     paymentStatus: 'all',
@@ -65,12 +52,9 @@ export function SessionHistory() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
+  const handlePageChange = (page: number) => setCurrentPage(page)
 
   const { user } = useAuth()
-
   const { fetchAppointmentsByProfessional } = appointmentsServices
 
   const loadAppointments = async () => {
@@ -85,14 +69,14 @@ export function SessionHistory() {
         return
       }
 
-      const { data } = await fetchAppointmentsByProfessional(
-        user?.professional_id,
+      const response = await fetchAppointmentsByProfessional(
+        user.professional_id,
         currentPage,
         filters,
       )
 
-      setSessions(data.appointments)
-      setTotalPages(data.pages)
+      setSessions(response.appointments)
+      setTotalPages(response.pages)
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error)
     }
@@ -103,22 +87,13 @@ export function SessionHistory() {
   }, [filters, currentPage])
 
   const [searchTerm, setSearchTerm] = useState('')
-
   const [expandedSession, setExpandedSession] = useState<string | null>(null)
 
   const handleFilterChange = (
     filterType: 'period' | 'status' | 'paymentStatus' | 'modality',
     value: string,
   ) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }))
-  }
-
-  const handleSearchByPatientName = (searchedName: string) => {
-    setSearchTerm(searchedName)
-    return
+    setFilters((prev) => ({ ...prev, [filterType]: value }))
   }
 
   const filterPeriod = filters.period as FilterPeriodProps
@@ -128,9 +103,7 @@ export function SessionHistory() {
 
   const filteredSessions = sessions.filter((session) => {
     if (!searchTerm) return true
-    return session.userDetails.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
+    return session.name.toLowerCase().includes(searchTerm.toLowerCase())
   })
 
   return (
@@ -155,40 +128,39 @@ export function SessionHistory() {
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Realizadas</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.status === 'COMPLETED').length *
-                (totalPages > 1 ? totalPages : 1)}
+              {sessions.filter((s) => s.appointment.status === 'COMPLETED')
+                .length * (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
           <div className="w-px h-10 bg-gray-200"></div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Canceladas</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.status === 'CANCELLED').length *
-                (totalPages > 1 ? totalPages : 1)}
+              {sessions.filter((s) => s.appointment.status === 'CANCELLED')
+                .length * (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
           <div className="w-px h-10 bg-gray-200"></div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">No-shows</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.status === 'NO_SHOW').length *
-                (totalPages > 1 ? totalPages : 1)}
+              {sessions.filter((s) => s.appointment.status === 'NO_SHOW')
+                .length * (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
           <div className="w-px h-10 bg-gray-200"></div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Pendentes</p>
             <p className="text-2xl font-semibold text-accent-foreground">
-              {sessions.filter((s) => s.paymentStatus === 'PENDING').length *
-                (totalPages > 1 ? totalPages : 1)}
+              {sessions.filter((s) => s.appointment.paymentStatus === 'PENDING')
+                .length * (totalPages > 1 ? totalPages : 1)}
             </p>
           </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
       <div className="p-6">
-        <div className="bg-foreground/1 rounded-lg border border-foreground/5 p-6  mb-6">
+        <div className="bg-foreground/1 rounded-lg border border-foreground/5 p-6 mb-6">
           <div className="flex gap-4 items-center mb-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -196,7 +168,7 @@ export function SessionHistory() {
                 type="text"
                 placeholder="Buscar por paciente"
                 value={searchTerm}
-                onChange={(e) => handleSearchByPatientName(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-white dark:bg-transparent"
               />
             </div>
@@ -227,7 +199,6 @@ export function SessionHistory() {
               <Label className="block text-sm font-medium text-accent-foreground mb-2">
                 Status da Sessão
               </Label>
-
               <Select
                 value={filterStatus}
                 onValueChange={(value) => handleFilterChange('status', value)}
@@ -235,7 +206,6 @@ export function SessionHistory() {
                 <SelectTrigger className="w-full bg-white dark:bg-transparent">
                   <SelectValue />
                 </SelectTrigger>
-
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
                   <SelectItem value="SCHEDULED">Agendada</SelectItem>
@@ -253,7 +223,6 @@ export function SessionHistory() {
               <Label className="block text-sm font-medium text-accent-foreground mb-2">
                 Status de Pagamento
               </Label>
-
               <Select
                 value={filterPayment}
                 onValueChange={(value) =>
@@ -295,31 +264,30 @@ export function SessionHistory() {
           </div>
         </div>
 
-        {/* Sessions List */}
         <div className="space-y-3">
-          {filteredSessions.map((session) => {
-            return (
-              <SessionHistoryItem
-                key={session.id || session.userDetails.name}
-                session={session}
-                isExpanded={expandedSession === session.id}
-                onToggleExpand={() =>
-                  setExpandedSession(
-                    expandedSession === session.id ? null : session.id,
-                  )
-                }
-              />
-            )
-          })}
+          {filteredSessions.map((session) => (
+            <SessionHistoryItem
+              key={session.appointment.id}
+              session={session}
+              isExpanded={expandedSession === session.appointment.id}
+              onToggleExpand={() =>
+                setExpandedSession(
+                  expandedSession === session.appointment.id
+                    ? null
+                    : session.appointment.id,
+                )
+              }
+            />
+          ))}
         </div>
 
-        {sessions.length === 0 || filteredSessions.length === 0 ? (
+        {filteredSessions.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">Nenhuma sessão encontrada</p>
           </div>
-        ) : null}
+        )}
 
-        {(sessions.length > 0 || filteredSessions.length > 0) && (
+        {filteredSessions.length > 0 && (
           <PaginationButtons
             currentPage={currentPage}
             totalPages={totalPages}

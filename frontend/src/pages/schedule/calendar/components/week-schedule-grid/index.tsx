@@ -1,33 +1,40 @@
-import type { FetchProfessionalSchedulesSchema } from '@/api/schemas/fetch-professional-schedules.dto'
+import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
 import { useState } from 'react'
-import { calculateSlotHeight, generateTimeSlots } from '../../utils'
+import {
+  calculateSlotHeight,
+  generateTimeSlots,
+  HOUR_HEIGHT,
+  timeToMinutes,
+} from '../../utils'
 import { AppointmentCard } from '../appointment-card'
 import { AppointmentModal } from '../appointment-modal'
 
-interface RefactoredWeekGridProps {
+interface WeekScheduleGridProps {
   weekDays: Date[]
-  schedules: FetchProfessionalSchedulesSchema[]
+  schedule: FetchProfessionalSchedulesResponse[]
 }
 
 export function WeekScheduleGrid({
   weekDays,
-  schedules,
-}: RefactoredWeekGridProps) {
+  schedule,
+}: WeekScheduleGridProps) {
   const [selectedAppointment, setSelectedAppointment] =
-    useState<FetchProfessionalSchedulesSchema | null>(null)
+    useState<FetchProfessionalSchedulesResponse | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
 
   const timeSlots = generateTimeSlots(7, 22)
-  // Usar colunas responsivas para evitar overflow horizontal em telas pequenas
-  // cada coluna terá pelo menos 100px e crescerá igualmente
   const dayColumnTemplate = `repeat(${weekDays.length}, minmax(100px, 1fr))`
 
-  // --- CORREÇÃO DE TIPAGEM AQUI ---
-  // Passamos 'schedules' diretamente. A função utils deve estar preparada
-  // para receber o objeto completo e acessar .appointments internamente.
-  const slotHeights = timeSlots.map((time) =>
-    calculateSlotHeight(schedules, time),
-  )
+  const slotHeights = timeSlots.map((time) => {
+    const match = schedule.find((item) => {
+      const aptTime = new Date(
+        item.appointment.startDateTime,
+      ).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      return aptTime === time
+    })
+
+    return match ? calculateSlotHeight(match, time) : HOUR_HEIGHT
+  })
 
   const slotPositions = slotHeights.reduce((acc: number[], _, index) => {
     index === 0
@@ -40,7 +47,6 @@ export function WeekScheduleGrid({
 
   return (
     <div className="h-full w-full flex flex-col overflow-hidden">
-      {/* Cabeçalho dos dias */}
       <div className="h-12 border-b border-gray-300 dark:border-gray-50/20 flex shrink-0">
         <div className="w-16 sm:w-18"></div>
         <div
@@ -63,7 +69,6 @@ export function WeekScheduleGrid({
 
       <div className="flex-1 flex overflow-hidden">
         <div className="flex overflow-auto w-full">
-          {/* Coluna de Horas */}
           <div className="w-16 sm:w-18 shrink-0 bg-muted/5">
             {timeSlots.map((time, index) => (
               <div
@@ -78,12 +83,10 @@ export function WeekScheduleGrid({
             ))}
           </div>
 
-          {/* Área do Grid */}
           <div
             className="flex-1 relative"
             style={{ height: `${totalHeight}px` }}
           >
-            {/* Linhas Horizontais */}
             {timeSlots.map((time, index) => (
               <div
                 key={time}
@@ -100,8 +103,8 @@ export function WeekScheduleGrid({
               style={{ gridTemplateColumns: dayColumnTemplate }}
             >
               {weekDays.map((date, dayIndex) => {
-                const daySchedules = schedules.filter((item) => {
-                  const aptDate = new Date(item.startDateTime)
+                const daySchedules = schedule.filter((item) => {
+                  const aptDate = new Date(item.appointment.startDateTime)
                   return (
                     aptDate.getDate() === date.getDate() &&
                     aptDate.getMonth() === date.getMonth()
@@ -114,19 +117,21 @@ export function WeekScheduleGrid({
                     className="relative border-r dark:border-gray-50/20 last:border-r-0"
                   >
                     {daySchedules.map((item) => {
-                      const apt = item
-                      const aptDate = new Date(apt.startDateTime)
+                      const aptDate = new Date(item.appointment.startDateTime)
 
-                      // Formatação segura de hora para busca no index
                       const timeStr = aptDate.toLocaleTimeString('pt-BR', {
                         hour: '2-digit',
                         minute: '2-digit',
                       })
 
-                      const slotIndex = timeSlots.findIndex(
-                        (s) => s === timeStr,
-                      )
-
+                      const slotIndex = timeSlots.findIndex((s) => {
+                        const slotMinutes = timeToMinutes(s)
+                        const aptMinutes = timeToMinutes(timeStr)
+                        return (
+                          aptMinutes >= slotMinutes &&
+                          aptMinutes < slotMinutes + 60
+                        )
+                      })
                       if (slotIndex === -1) return null
 
                       const slotTop = slotPositions[slotIndex]
@@ -134,15 +139,13 @@ export function WeekScheduleGrid({
 
                       const collisions = daySchedules.filter(
                         (s) =>
-                          new Date(s.startDateTime).getTime() ===
+                          new Date(s.appointment.startDateTime).getTime() ===
                           aptDate.getTime(),
                       )
                       const colIndex = collisions.findIndex(
-                        (s) => s.id === apt.id,
+                        (s) => s.appointment.id === item.appointment.id,
                       )
 
-                      // Empilhar verticalmente: cada item ocupa a largura total
-                      // e é deslocado verticalmente pelo índice de colisão.
                       const perItemHeight = Math.max(
                         60,
                         slotHeight / Math.max(1, collisions.length),
@@ -151,12 +154,12 @@ export function WeekScheduleGrid({
 
                       return (
                         <div
-                          key={apt.id}
+                          key={item.appointment.id}
                           className="absolute p-0.5"
                           style={{
                             top: `${stackedTop}px`,
-                            left: `0%`,
-                            width: `100%`,
+                            left: '0%',
+                            width: '100%',
                             height: `${perItemHeight}px`,
                             zIndex: 10 - colIndex,
                           }}

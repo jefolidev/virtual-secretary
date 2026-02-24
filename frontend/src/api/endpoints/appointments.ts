@@ -1,4 +1,5 @@
 import { api } from '../axios'
+import type { FetchProfessionalSchedulesListResponse, FetchProfessionalSchedulesResponse } from './appointments/dto'
 
 export type FetchScheduleByProfesionalIdStatus =
   | 'SCHEDULED'
@@ -40,15 +41,15 @@ export type FetchScheduleByProfessionalIdFilters = {
 export const appointmentsServices = {
   fetchAppointmentsByProfessional: async (
     professionalId: string,
-    page: number = 1,
-    filter: FetchScheduleByProfessionalIdFilters,
-  ) => {
+    page?: number,
+    filter?: FetchScheduleByProfessionalIdFilters,
+  ): Promise<FetchProfessionalSchedulesListResponse> => {
     try {
       const response = await api.get(
-        `/professional/${professionalId}/appointments?page=${page}&period=${filter.period}&status=${filter.status}&paymentStatus=${filter.paymentStatus}&modality=${filter.modality}`,
+        `/professional/${professionalId}/appointments?page=${page || 1}&period=${filter?.period || 'all'}&status=${filter?.status || 'all'}&paymentStatus=${filter?.paymentStatus || 'all'}&modality=${filter?.modality || 'all'}`,
       )
 
-      return response
+      return response.data
     } catch (error) {
       console.error('Erro ao buscar agendamentos do profissional:', error)
       throw error
