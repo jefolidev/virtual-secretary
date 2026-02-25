@@ -24,11 +24,13 @@ import { PrismaClientRepository } from './prisma/repositories/prisma-client.repo
 import { PrismaNotificationsRepository } from './prisma/repositories/prisma-notification.repository'
 import { PrismaProfessionalRepository } from './prisma/repositories/prisma-professional.repository'
 
+import { EvaluationRepository } from '@/domain/evaluation/application/repositories/evaluation.repository'
 import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
 import { WhatsappContactRepository } from '@/domain/scheduling/application/repositories/whatsapp-contact.repository'
 import { WhatsappRepository } from '@/domain/scheduling/application/repositories/whatsapp.repository'
 import { RedisModule } from '@nestjs-modules/ioredis'
 import { PrismaCalendarEventRepository } from './prisma/repositories/prisma-calendar-event.repository'
+import { PrismaEvaluationRepository } from './prisma/repositories/prisma-evaluation.repository'
 import { PrismaGoogleCalendarTokenRepository } from './prisma/repositories/prisma-google-calendar-token.repository'
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
@@ -80,6 +82,10 @@ import { PrismaWhatsappRepository } from './prisma/repositories/prisma-whatsapp.
     {
       provide: ClientRepository,
       useClass: PrismaClientRepository,
+    },
+    {
+      provide: EvaluationRepository,
+      useClass: PrismaEvaluationRepository,
     },
     {
       provide: OrganizationRepository,
@@ -134,6 +140,7 @@ import { PrismaWhatsappRepository } from './prisma/repositories/prisma-whatsapp.
     GoogleCalendarEventRepository,
     WhatsappContactRepository,
     WhatsappRepository,
+    EvaluationRepository,
   ],
 })
 export class DatabaseModule {}

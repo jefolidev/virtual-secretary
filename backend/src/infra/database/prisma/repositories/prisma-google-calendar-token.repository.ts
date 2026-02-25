@@ -20,10 +20,8 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
     const fullUrl = `${apiUri}:${port}`
 
     const environment = this.configService.get('NODE_ENV')
-    // Remove trailing colon if exists
     const baseUrl = apiUri.endsWith(':') ? apiUri.slice(0, -1) : apiUri
 
-    // const redirectUri = `${environment === 'production' ? apiUri : fullUrl}/webhooks/google/oauth/callback`
     const redirectUri = this.configService.get('GOOGLE_REDIRECT_URI')
 
     console.log('Initializing OAuth2Client with redirect URI:', redirectUri)

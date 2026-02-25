@@ -1,21 +1,23 @@
 import { Either, left, right } from '@/core/either'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
+import { Injectable } from '@nestjs/common'
 import { Evaluation } from '../../enterprise/entities/evaluation'
 import { EvaluationRepository } from '../repositories/evaluation.repository'
 import { AppointmentIsntAwaitingScoreError } from './errors/appointment-isnt-awaiting-score'
 
-export interface GetEvaluationScoreUseCaseRequest {
+export interface SendEvaluationScoreUseCaseRequest {
   appointmentId: string
   score: number
 }
 
-export type GetEvaluationScoreUseCaseResponse = Either<
+export type SendEvaluationScoreUseCaseResponse = Either<
   NotFoundError | AppointmentIsntAwaitingScoreError,
   {}
 >
 
-export class GetEvaluationScoreUseCase {
+@Injectable()
+export class SendEvaluationScoreUseCase {
   constructor(
     private readonly appointmentRepository: AppointmentsRepository,
     private readonly evaluationRepository: EvaluationRepository,
@@ -24,7 +26,7 @@ export class GetEvaluationScoreUseCase {
   async execute({
     appointmentId,
     score,
-  }: GetEvaluationScoreUseCaseRequest): Promise<GetEvaluationScoreUseCaseResponse> {
+  }: SendEvaluationScoreUseCaseRequest): Promise<SendEvaluationScoreUseCaseResponse> {
     const appointment = await this.appointmentRepository.findById(appointmentId)
 
     if (!appointment) {

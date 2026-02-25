@@ -1,3 +1,5 @@
+import { SendEvaluationCommentUseCase } from '@/domain/evaluation/application/use-case/send-evaluation-comment'
+import { SendEvaluationScoreUseCase } from '@/domain/evaluation/application/use-case/send-evaluation-score'
 import { DatabaseModule } from '@/infra/database/database.module'
 import { FlowModule } from '@/infra/flow/flow.module'
 import { FlowService } from '@/infra/flow/flow.service'
@@ -15,6 +17,9 @@ import { WhatsappService } from './whatsapp.service'
     OpenAiService,
     FlowService,
     WhatsappRemindersProcessor,
+
+    SendEvaluationScoreUseCase,
+    SendEvaluationCommentUseCase,
   ],
   exports: [WhatsappService],
   controllers: [HandleEvolutionController],

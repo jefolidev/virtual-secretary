@@ -4,19 +4,19 @@ import { makeProfessional } from '@test/factories/make-professional'
 import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
 import { InMemoryEvaluationRepository } from '@test/repositories/in-memory-evaluation.repository'
 import { beforeEach, describe, it } from 'vitest'
-import { GetEvaluationScoreUseCase } from './get-evaluation-score'
+import { SendEvaluationScoreUseCase } from './send-evaluation-score'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
 let inMemoryEvaluationRepository: InMemoryEvaluationRepository
 
-let sut: GetEvaluationScoreUseCase
+let sut: SendEvaluationScoreUseCase
 
 describe('Get Evaluation Score', () => {
   beforeEach(() => {
     inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
     inMemoryEvaluationRepository = new InMemoryEvaluationRepository()
 
-    sut = new GetEvaluationScoreUseCase(
+    sut = new SendEvaluationScoreUseCase(
       inMemoryAppointmentRepository,
       inMemoryEvaluationRepository,
     )
@@ -47,6 +47,8 @@ describe('Get Evaluation Score', () => {
     })
 
     expect(inMemoryEvaluationRepository.items[0].score).toEqual(4)
-    expect(inMemoryAppointmentRepository.items[0].status).toEqual('AWAITING_COMMENT')
+    expect(inMemoryAppointmentRepository.items[0].status).toEqual(
+      'AWAITING_COMMENT',
+    )
   })
 })

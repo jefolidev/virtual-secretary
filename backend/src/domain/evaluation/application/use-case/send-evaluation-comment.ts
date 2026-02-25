@@ -1,19 +1,21 @@
 import { Either, left, right } from '@/core/either'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
+import { Injectable } from '@nestjs/common'
 import { EvaluationRepository } from '../repositories/evaluation.repository'
 import { AppointmentIsntAwaitingCommentError } from './errors/appointment-isnt-awaiting-comment'
 
-export interface GetEvaluationCommentUseCaseRequest {
+export interface SendEvaluationCommentUseCaseRequest {
   appointmentId: string
   comment: string
 }
-export type GetEvaluationCommentUseCaseResponse = Either<
+export type SendEvaluationCommentUseCaseResponse = Either<
   NotFoundError | AppointmentIsntAwaitingCommentError,
   {}
 >
 
-export class GetEvaluationCommentUseCase {
+@Injectable()
+export class SendEvaluationCommentUseCase {
   constructor(
     private readonly appointmentRepository: AppointmentsRepository,
     private readonly evaluationRepository: EvaluationRepository,
@@ -22,7 +24,7 @@ export class GetEvaluationCommentUseCase {
   async execute({
     appointmentId,
     comment,
-  }: GetEvaluationCommentUseCaseRequest): Promise<GetEvaluationCommentUseCaseResponse> {
+  }: SendEvaluationCommentUseCaseRequest): Promise<SendEvaluationCommentUseCaseResponse> {
     const appointment = await this.appointmentRepository.findById(appointmentId)
 
     if (!appointment) {

@@ -5,19 +5,19 @@ import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appo
 import { InMemoryEvaluationRepository } from '@test/repositories/in-memory-evaluation.repository'
 import { beforeEach, describe, it } from 'vitest'
 import { Evaluation } from '../../enterprise/entities/evaluation'
-import { GetEvaluationCommentUseCase } from './get-evaluation-comment'
+import { SendEvaluationCommentUseCase } from './send-evaluation-comment'
 
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
 let inMemoryEvaluationRepository: InMemoryEvaluationRepository
 
-let sut: GetEvaluationCommentUseCase
+let sut: SendEvaluationCommentUseCase
 
 describe('Get Evaluation Comment', () => {
   beforeEach(() => {
     inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
     inMemoryEvaluationRepository = new InMemoryEvaluationRepository()
 
-    sut = new GetEvaluationCommentUseCase(
+    sut = new SendEvaluationCommentUseCase(
       inMemoryAppointmentRepository,
       inMemoryEvaluationRepository,
     )

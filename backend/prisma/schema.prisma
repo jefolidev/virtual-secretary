@@ -149,6 +149,8 @@ model Evaluation {
 
   professionalId String   @map("professional_id")
   createdAt      DateTime @default(now()) @map("created_at")
+
+  @@map("evaluations")
 }
 
 model Professional {

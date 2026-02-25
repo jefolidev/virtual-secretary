@@ -1,5 +1,9 @@
+import { SendEvaluationCommentUseCase } from '@/domain/evaluation/application/use-case/send-evaluation-comment'
+import { SendEvaluationScoreUseCase } from '@/domain/evaluation/application/use-case/send-evaluation-score'
+import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { WhatsappContactRepository } from '@/domain/scheduling/application/repositories/whatsapp-contact.repository'
+import { WhatsappRepository } from '@/domain/scheduling/application/repositories/whatsapp.repository'
 import { Public } from '@/infra/auth/public'
 import { FlowService } from '@/infra/flow/flow.service'
 import { SessionService } from '@/infra/sessions/session.service'
@@ -11,11 +15,18 @@ import { WhatsappService } from '../whatsapp.service'
 export class HandleEvolutionController {
   constructor(
     private readonly sessionsService: SessionService,
-    private readonly whatsappService: WhatsappService,
     private readonly flowService: FlowService,
     private readonly openAiService: OpenAiService,
     private readonly userRepository: UserRepository,
+
+    private readonly appointmentRepository: AppointmentsRepository,
+
+    private readonly whatsappService: WhatsappService,
     private readonly whatsappContactRepository: WhatsappContactRepository,
+    private readonly whatsappRepository: WhatsappRepository,
+
+    private readonly sendEvaluationScoreUseCase: SendEvaluationScoreUseCase,
+    private readonly sendEvaluationCommentUseCase: SendEvaluationCommentUseCase,
   ) {}
 
   @Public()
@@ -32,21 +43,21 @@ export class HandleEvolutionController {
           data.message.conversation || data.message.extendedTextMessage?.text
 
         if (!message) return { success: true }
-        const messageId = key.id
 
         const whatsappId = key.remoteJid
         const whatsappNumber = data.key.remoteJid.split('@')[0]
 
         const user = await this.userRepository.findByPhone(whatsappNumber)
 
-        // quick-reply handling for appointment confirmations
         const replyIntent =
           await this.whatsappService.parseScheduleConfirmationReply(message)
-        if (
+
+        const confirmationIntent =
           replyIntent === 'confirm' ||
           replyIntent === 'cancel' ||
           replyIntent === 'reschedule'
-        ) {
+
+        if (confirmationIntent) {
           const pending =
             await this.whatsappService.getPendingConfirmation(whatsappNumber)
           if (pending) {
@@ -69,12 +80,90 @@ export class HandleEvolutionController {
             user.id.toString(),
           )
 
+          const pendingEvaluation =
+            await this.whatsappRepository.getPendingEvaluation(
+              user.whatsappNumber,
+            )
+
+          if (pendingEvaluation) {
+            const appointment =
+              await this.appointmentRepository.findById(pendingEvaluation)
+
+            if (appointment) {
+              if (appointment.status === 'AWAITING_SCORE') {
+                const score = parseInt(message.trim())
+
+                if (isNaN(score) || score < 1 || score > 10) {
+                  await this.whatsappService.sendMessage(
+                    whatsappId,
+                    'Por favor, envie um número de 1 a 10 para avaliar sua experiência.',
+                  )
+                  return { success: true }
+                }
+
+                await this.sendEvaluationScoreUseCase.execute({
+                  appointmentId: pendingEvaluation,
+                  score,
+                })
+
+                if (score <= 3) {
+                  await this.whatsappService.sendMessage(
+                    whatsappId,
+                    'Lamentamos que sua experiência não tenha sido satisfatória. Se desejar, por favor, envie um comentário detalhado sobre o que aconteceu para que possamos entender melhor e trabalhar para melhorar nossos serviços. Caso contrário digite *pular* para finalizar sua avaliação.',
+                  )
+                }
+
+                if (score >= 4 && score <= 7) {
+                  await this.whatsappService.sendMessage(
+                    whatsappId,
+                    'Agradecemos por sua avaliação! Se quiser, deixe um comentário sobre o que poderíamos melhorar para tornar sua experiência ainda melhor. Agradecemos por dedicar um tempo para nos ajudar a melhorar nossos serviços! Caso contrário digite *pular* para finalizar sua avaliação.',
+                  )
+                }
+
+                if (score >= 8 && score <= 10) {
+                  await this.whatsappService.sendMessage(
+                    whatsappId,
+                    'Ficamos felizes em saber que sua experiência foi positiva! Se quiser, deixe um comentário sobre o que você mais gostou ou se tem alguma sugestão para melhorarmos ainda mais nossos serviços. Caso contrário digite *pular* para finalizar sua avaliação. Agradecemos por dedicar um tempo para nos ajudar a melhorar nossos serviços!',
+                  )
+                }
+
+                return { success: true }
+              }
+
+              if (appointment.status === 'AWAITING_COMMENT') {
+                const comment = message.trim()
+
+                if (comment.toLowerCase() === 'pular') {
+                  await this.whatsappRepository.sendMessage(
+                    whatsappId,
+                    'Entendido, vamos finalizar sua avaliação. Agradecemos por dedicar um tempo para nos ajudar a melhorar nossos serviços! Se tiver mais alguma coisa que queira compartilhar conosco no futuro, não hesite em entrar em contato. Tenha um ótimo dia!',
+                  )
+
+                  appointment.status = 'COMPLETED'
+                  await this.appointmentRepository.save(appointment)
+
+                  return { success: true }
+                } else {
+                  await this.sendEvaluationCommentUseCase.execute({
+                    appointmentId: pendingEvaluation,
+                    comment,
+                  })
+                }
+
+                await this.whatsappService.sendMessage(
+                  whatsappId,
+                  'Obrigado por compartilhar seu comentário! Agradecemos por dedicar um tempo para nos ajudar a melhorar nossos serviços! Se tiver mais alguma coisa que queira compartilhar conosco no futuro, não hesite em entrar em contato. Tenha um ótimo dia!',
+                )
+
+                return { success: true }
+              }
+            }
+          }
           session = await this.sessionsService.getOrCreateSession(
             user.id.toString(),
           )
         } else {
-          const data =
-            await this.whatsappContactRepository.upsertFromWebhook(body)
+          await this.whatsappContactRepository.upsertFromWebhook(body)
 
           session =
             await this.sessionsService.getOrCreateSessionByWhatsapp(
