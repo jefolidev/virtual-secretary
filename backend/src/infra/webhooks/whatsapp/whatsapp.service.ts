@@ -909,6 +909,7 @@ variações regionais do português brasileiro. Analise a INTENÇÃO, não as pa
       }
 
       const data = await response.json()
+      console.log(data)
       return data
     } catch (error) {
       console.error('❌ Erro ao enviar mensagem:', error)

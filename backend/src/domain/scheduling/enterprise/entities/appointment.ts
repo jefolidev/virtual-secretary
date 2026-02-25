@@ -262,7 +262,6 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.touch()
 
     this.addDomainEvent(new ConfirmedAppointmentEvent(this))
-    this.addDomainEvent(new FinishedAppointmentEvent(this))
   }
 
   public cancel() {
@@ -325,14 +324,13 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
       throw new Error('Can only complete an appointment that is in progress')
     }
 
-    // If appointment is currently running (not paused), calculate final elapsed time
     if (this.props.startedAt) {
       const now = new Date()
       const elapsedMs = now.getTime() - this.props.startedAt.getTime()
       this.props.totalElapsedMs = (this.props.totalElapsedMs ?? 0) + elapsedMs
     }
 
-    this.props.status = 'COMPLETED'
+    this.props.status = 'AWAITING_SCORE'
     this.props.startedAt = null
     this.touch()
 

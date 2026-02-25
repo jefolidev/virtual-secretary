@@ -6,7 +6,7 @@ export interface EvaluationProps {
   professionalId: string
 
   score: number
-  comment?: string
+  comment?: string | null
   createdAt: Date
 }
 
@@ -23,8 +23,12 @@ export class Evaluation extends AggregateRoot<EvaluationProps> {
     return this.props.score
   }
 
-  get comment(): string | undefined {
-    return this.props.comment
+  get comment(): string | undefined | null {
+    return this.props.comment || null
+  }
+
+  set comment(comment: string | null | undefined) {
+    this.props.comment = comment || null
   }
 
   get createdAt(): Date {
@@ -35,10 +39,13 @@ export class Evaluation extends AggregateRoot<EvaluationProps> {
     props: Omit<EvaluationProps, 'createdAt'>,
     id?: UniqueEntityId,
   ): Evaluation {
-    const evaluation = new Evaluation({
-      ...props,
-      createdAt: new Date(),
-    }, id)
+    const evaluation = new Evaluation(
+      {
+        ...props,
+        createdAt: new Date(),
+      },
+      id,
+    )
 
     return evaluation
   }

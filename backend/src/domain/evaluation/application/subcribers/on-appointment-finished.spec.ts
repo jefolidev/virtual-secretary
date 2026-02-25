@@ -9,25 +9,6 @@ import { InMemoryWhatsappRepository } from '@test/repositories/in-memory-whatsap
 import { beforeEach, describe, expect, it } from 'vitest'
 import { OnAppointmentFinished } from './on-appointment-finished'
 
-// lightweight waitFor replacement for environments without vi.waitFor
-async function waitForAssert(fn: () => void, timeout = 2000, interval = 10) {
-  const start = Date.now()
-  return new Promise<void>((resolve, reject) => {
-    const t = setInterval(() => {
-      try {
-        fn()
-        clearInterval(t)
-        resolve()
-      } catch (err) {
-        if (Date.now() - start > timeout) {
-          clearInterval(t)
-          reject(err)
-        }
-      }
-    }, interval)
-  })
-}
-
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
 let inMemoryProfessionalRepository: InMemoryProfessionalRepository
 let inMemoryUserRepository: InMemoryUserRepository
@@ -90,14 +71,20 @@ describe('On Appointment Finished', () => {
 
     appointment.start()
 
-    inMemoryAppointmentRepository.save(appointment)
+    await inMemoryAppointmentRepository.save(appointment)
 
     appointment.complete()
 
-    inMemoryAppointmentRepository.save(appointment)
+    await inMemoryAppointmentRepository.save(appointment)
 
-    await waitForAssert(() => {
-      expect(inMemoryWhatsappRepository.sendMessage).toHaveBeenCalled()
+    await vi.waitFor(() => {
+      expect(inMemoryWhatsappRepository.messages).toHaveLength(1)
     })
+
+    expect(
+      await inMemoryWhatsappRepository.getPendingEvaluation(
+        userClient.whatsappNumber,
+      ),
+    ).toBe(appointment.id.toString())
   })
 })

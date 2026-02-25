@@ -1,20 +1,18 @@
 import { WhatsappRepository } from '@/domain/scheduling/application/repositories/whatsapp.repository';
-import { vi } from 'vitest';
 
 export class InMemoryWhatsappRepository implements WhatsappRepository {
-  private messages: { to: string; message: string }[] = []
+  public messages: { to: string; message: string }[] = []
   private pendingEvaluations: Map<string, string> = new Map()
 
-  // make sendMessage a mockable function so tests can assert calls
-  sendMessage = vi.fn(async (to: string, message: string) => {
+  async sendMessage(to: string, message: string): Promise<string> {
     this.messages.push({ to, message })
+    console.log(this.messages)
     return message
-  })
+  }
 
   async markPendingEvaluation(
     whatsappNumber: string,
     appointmentId: string,
-    ttlDays = 7,
   ): Promise<void> {
     this.pendingEvaluations.set(whatsappNumber, appointmentId)
   }

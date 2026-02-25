@@ -19,11 +19,12 @@ export class OnAppointmentFinished implements EventHandler {
 
   setupSubscriptions(): void {
     DomainEvents.register(
-      this.handleAppointmentFinished.bind(this),
+      this.sendFinishedMessageEvaluation.bind(this),
       'FinishedAppointmentEvent',
     )
   }
-  private async handleAppointmentFinished({ appointment }: any) {
+
+  private async sendFinishedMessageEvaluation({ appointment }: any) {
     const professional = await this.professionalRepository.findById(
       appointment.professionalId.toString(),
     )
@@ -38,14 +39,17 @@ export class OnAppointmentFinished implements EventHandler {
 
     if (professional && userClient && userProfessional) {
       const message = `Olá ${userClient.name}, esperamos que sua consulta com *${userProfessional.name}* tenha sido ótima! Gostaríamos de ouvir sua opinião. Por favor, avalie sua experiência de 1 a 10, sendo 1 muito ruim e 10 excelente!`
-
-      await this.whatsappRepository.sendMessage(
-        userClient.whatsappNumber,
-        message,
-      )
-
-      appointment.status = 'AWAITING_SCORE'
       try {
+        await this.whatsappRepository.sendMessage(
+          userClient.whatsappNumber,
+          message,
+        )
+
+        await this.whatsappRepository.markPendingEvaluation(
+          userClient.whatsappNumber,
+          appointment.id.toString(),
+        )
+        appointment.status = 'AWAITING_SCORE'
         await this.appointmentsRepository.save(appointment)
       } catch (err) {
         console.error(
@@ -54,11 +58,5 @@ export class OnAppointmentFinished implements EventHandler {
         )
       }
     }
-
-    console.log(
-      `[OnAppointmentFinished] Appointment finished: ${appointment.id.toString()}`,
-    )
-
-    // Aqui você pode adicionar lógica adicional, como enviar notificações, atualizar estatísticas, etc.
   }
 }

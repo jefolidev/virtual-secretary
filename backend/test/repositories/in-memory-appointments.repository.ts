@@ -7,6 +7,10 @@ import type {
   Appointment,
   AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
+import {
+  Reminders,
+  ReminderTypes,
+} from '@/domain/scheduling/enterprise/entities/reminders'
 import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
 
 export class InMemoryAppointmentRepository implements AppointmentsRepository {
@@ -85,6 +89,27 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
     await this.items.push(appointment)
 
     DomainEvents.dispatchEventsForAggregate(appointment.id)
+  }
+
+  async markReminderAsSended(
+    appointmentId: string,
+    reminder: ReminderTypes,
+  ): Promise<void> {
+    const appointment = await this.findById(appointmentId)
+
+    if (!appointment) {
+      throw new Error('Appointment not found')
+    }
+
+    const newReminder = Reminders.create({
+      appointmentId,
+      type: reminder,
+      sentAt: new Date(),
+    })
+
+    appointment.reminders = newReminder
+
+    await this.save(appointment)
   }
 
   async findMany(
@@ -205,8 +230,8 @@ export class InMemoryAppointmentRepository implements AppointmentsRepository {
   }
 
   async save(appointment: Appointment): Promise<void> {
-    const itemIndex = await this.items.findIndex(
-      (item) => item.id === appointment.id,
+    const itemIndex = await this.items.findIndex((item) =>
+      item.id.equals(appointment.id),
     )
 
     this.items[itemIndex] = appointment

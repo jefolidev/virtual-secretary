@@ -3,50 +3,50 @@ import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { Evaluation } from '../../enterprise/entities/evaluation'
 import { EvaluationRepository } from '../repositories/evaluation.repository'
+import { AppointmentIsntAwaitingScoreError } from './errors/appointment-isnt-awaiting-score'
 
-export interface CreateEvaluationUseCaseRequest {
+export interface GetEvaluationScoreUseCaseRequest {
   appointmentId: string
-  professionalId: string
-
   score: number
-  comment?: string
 }
-export type CreateEvaluationUseCaseResponse = Either<
-  NotFoundError,
-  {
-    evaluation?: Evaluation
-  }
+
+export type GetEvaluationScoreUseCaseResponse = Either<
+  NotFoundError | AppointmentIsntAwaitingScoreError,
+  {}
 >
 
-export class CreateEvaluationUseCase {
+export class GetEvaluationScoreUseCase {
   constructor(
-    private readonly evaluationRepository: EvaluationRepository,
     private readonly appointmentRepository: AppointmentsRepository,
+    private readonly evaluationRepository: EvaluationRepository,
   ) {}
 
   async execute({
     appointmentId,
-    professionalId,
     score,
-    comment,
-  }: CreateEvaluationUseCaseRequest): Promise<CreateEvaluationUseCaseResponse> {
+  }: GetEvaluationScoreUseCaseRequest): Promise<GetEvaluationScoreUseCaseResponse> {
     const appointment = await this.appointmentRepository.findById(appointmentId)
 
     if (!appointment) {
       return left(new NotFoundError('Appointment not found'))
     }
 
+    if (appointment.status !== 'AWAITING_SCORE') {
+      return left(new AppointmentIsntAwaitingScoreError())
+    }
+
     const evaluation = Evaluation.create({
       appointmentId,
-      professionalId,
+      professionalId: appointment.professionalId.toString(),
       score,
-      comment: comment ?? '',
     })
 
     await this.evaluationRepository.create(evaluation)
 
-    return right({
-      evaluation,
-    })
+    appointment.status = 'AWAITING_COMMENT'
+
+    await this.appointmentRepository.save(appointment)
+
+    return right({})
   }
 }

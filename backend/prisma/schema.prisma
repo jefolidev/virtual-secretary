@@ -139,12 +139,6 @@ model AppointmentReminder {
   @@map("appointment_reminders")
 }
 
-enum ReminderType {
-  D1_REMINDER
-  T2H_REMINDER
-  T30M_REMINDER
-}
-
 model Evaluation {
   id      String  @id @default(uuid())
   score   Int
@@ -497,4 +491,10 @@ enum WeekDays {
 enum Genders {
   MALE
   FEMALE
+}
+
+enum ReminderType {
+  D1_REMINDER
+  T2H_REMINDER
+  T30M_REMINDER
 }

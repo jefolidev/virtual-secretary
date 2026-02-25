@@ -32,6 +32,7 @@ import { CryptographyModule } from '@/infra/cryptography/cryptography.module'
     CheckGoogleCalendarConnectionUseCase,
     AuthenticateWithGoogleUseCase,
     OnAppointmentCreated,
+    
     GoogleAuthStrategy,
   ],
   exports: [],

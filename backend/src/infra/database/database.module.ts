@@ -26,12 +26,15 @@ import { PrismaProfessionalRepository } from './prisma/repositories/prisma-profe
 
 import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
 import { WhatsappContactRepository } from '@/domain/scheduling/application/repositories/whatsapp-contact.repository'
+import { WhatsappRepository } from '@/domain/scheduling/application/repositories/whatsapp.repository'
+import { RedisModule } from '@nestjs-modules/ioredis'
 import { PrismaCalendarEventRepository } from './prisma/repositories/prisma-calendar-event.repository'
 import { PrismaGoogleCalendarTokenRepository } from './prisma/repositories/prisma-google-calendar-token.repository'
 import { PrismaOrganizationRepository } from './prisma/repositories/prisma-organization.repository'
 import { PrismaScheduleConfigurationRepository } from './prisma/repositories/prisma-schedule-configuration.repository'
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository'
 import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-whatsapp-conntact.repository'
+import { PrismaWhatsappRepository } from './prisma/repositories/prisma-whatsapp.repository'
 
 @Module({
   imports: [
@@ -48,6 +51,15 @@ import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-wh
           ttl: 60 * 60 * 24, // 24 hours
         }),
       }),
+    }),
+    RedisModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService<Env, true>) => ({
+        type: 'single',
+        url: `redis://${configService.get('REDIS_HOST')}:${configService.get('REDIS_PORT')}`,
+        password: configService.get('REDIS_PASSWORD'),
+      }),
+      inject: [ConfigService],
     }),
   ],
   providers: [
@@ -101,6 +113,10 @@ import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-wh
       provide: WhatsappContactRepository,
       useClass: PrismaWhatsappContactRepository,
     },
+    {
+      provide: WhatsappRepository,
+      useClass: PrismaWhatsappRepository,
+    },
   ],
   exports: [
     CacheModule,
@@ -117,6 +133,7 @@ import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-wh
     GoogleCalendarTokenRepository,
     GoogleCalendarEventRepository,
     WhatsappContactRepository,
+    WhatsappRepository,
   ],
 })
 export class DatabaseModule {}

@@ -6,6 +6,7 @@ import { OnAppointmentScheduled } from './../../domain/notifications/application
 import { OnProfessionalAddedToOrganization } from './../../domain/notifications/application/subscribers/on-professional-added-in-organization'
 import { OnProfessionalRemovedFromOrganization } from './../../domain/notifications/application/subscribers/on-professional-removed-in-organization'
 import { SendNotificationUseCase } from './../../domain/notifications/application/use-cases/send-notification'
+import { OnAppointmentFinished } from '@/domain/evaluation/application/subcribers/on-appointment-finished'
 
 @Module({
   imports: [DatabaseModule],
@@ -13,6 +14,7 @@ import { SendNotificationUseCase } from './../../domain/notifications/applicatio
     OnAppointmentScheduled,
     OnAppointmentCanceled,
     OnAppointmentConfirmed,
+    OnAppointmentFinished,
     OnProfessionalAddedToOrganization,
     OnProfessionalRemovedFromOrganization,
     SendNotificationUseCase,
