@@ -2,15 +2,17 @@ import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/v
 import {
   Address as PrismaAddress,
   Appointment as PrismaAppointment,
+  AppointmentReminder as PrismaAppointmentReminder,
   Client as PrismaClient,
   Notification as PrismaNotification,
-  User as PrismaUser
+  User as PrismaUser,
 } from '@prisma/client'
 import { PrismaAddressMapper } from './prisma-address-mapper'
 import { PrismaAppointmentMapper } from './prisma-appointment-mapper'
 import { PrismaNotificationMapper } from './prisma-notification-mapper'
 
 type PrismaAppointmentWithClient = PrismaAppointment & {
+  reminders: PrismaAppointmentReminder[]
   client: PrismaClient & {
     user:
       | (PrismaUser & {
@@ -40,7 +42,10 @@ export class PrismaAppointmentWithClientMapper {
     }
 
     return AppointmentWithClient.create({
-      appointment: PrismaAppointmentMapper.toDomain(raw),
+      appointment: PrismaAppointmentMapper.toDomain({
+        ...raw,
+        reminders: raw.reminders,
+      }),
       client: {
         extraPreference: raw.client.extraPreference,
         periodPreference: raw.client.periodPreference,

@@ -37,8 +37,6 @@ export class CreateCalendarEventUseCase {
       return left(new NotFoundError('Appointment not found'))
     }
 
-    console.log(appointmentId)
-
     // 2. Verificar se profissional tem Google Calendar conectado
     const hasGoogleConnected =
       await this.googleCalendarTokenRepository.hasTokens(

@@ -46,9 +46,6 @@ export class FlowService {
     intent: ConversationFlow,
     message: string,
   ) {
-    console.log(
-      `Session: ${JSON.stringify(session)}, Intent: ${intent}\n\n mensagem: "${message}"`,
-    )
 
     switch (intent) {
       case ConversationFlow.REGISTRATION:
@@ -101,9 +98,6 @@ export class FlowService {
   ) {
     if (!user) {
       if (session.currentFlow === 'registration') {
-        console.log('Continuing registration flow for unregistered user')
-        return this.continueFlow(session, message, aiIntent)
-      }
 
       const registrationSession: ConversationSession<'registration'> = {
         ...session,

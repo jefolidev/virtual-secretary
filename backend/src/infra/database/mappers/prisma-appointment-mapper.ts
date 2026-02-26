@@ -3,14 +3,19 @@ import {
   Appointment,
   PaymentStatus,
 } from '@/domain/scheduling/enterprise/entities/appointment'
-import { Appointment as PrismaAppointment } from '@prisma/client'
+import {
+  Appointment as PrismaAppointment,
+  AppointmentReminder as PrismaReminder,
+} from '@prisma/client'
 import { Decimal } from '@prisma/client/runtime/index-browser'
 
 import { Evaluation } from '@/domain/evaluation/enterprise/entities/evaluation'
+import { Reminders } from '@/domain/scheduling/enterprise/entities/reminders'
 import { Evaluation as PrismaEvaluation } from '@prisma/client'
 
-export type PrismaAppointmentWithEvaluation = PrismaAppointment & {
+export type PrismaAppointmentWithEvaluationAndReminders = PrismaAppointment & {
   evaluation?: PrismaEvaluation | null
+  reminders: PrismaReminder[]
 }
 
 export class PrismaAppointmentMapper {
@@ -39,7 +44,9 @@ export class PrismaAppointmentMapper {
     }
   }
 
-  static toDomain(raw: PrismaAppointmentWithEvaluation): Appointment {
+  static toDomain(
+    raw: PrismaAppointmentWithEvaluationAndReminders,
+  ): Appointment {
     if (!raw.clientId) {
       throw new Error('Invalid client id.')
     }
@@ -53,6 +60,18 @@ export class PrismaAppointmentMapper {
         end: new Date(parsed.end),
       }
     }
+
+    const reminders = raw.reminders.map((reminder) =>
+      Reminders.create(
+        {
+          appointmentId: reminder.appointmentId,
+          type: reminder.type ?? null,
+          sentAt: reminder.sentAt,
+          createdAt: reminder.createdAt,
+        },
+        new UniqueEntityId(reminder.id),
+      ),
+    )
 
     return Appointment.create(
       {
@@ -77,6 +96,7 @@ export class PrismaAppointmentMapper {
         googleMeetLink: raw.googleMeetLink || undefined,
         rescheduleDateTime,
         status: raw.status,
+        reminders,
         paymentStatus: raw.paymentStatus as PaymentStatus,
         startedAt: raw.startedAt,
         totalElapsedMs: raw.totalElapsedMs ? Number(raw.totalElapsedMs) : null,

@@ -24,7 +24,6 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
 
     const redirectUri = this.configService.get('GOOGLE_REDIRECT_URI')
 
-    console.log('Initializing OAuth2Client with redirect URI:', redirectUri)
 
     this.oauth2Client = new google.auth.OAuth2({
       redirectUri,
@@ -32,12 +31,6 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
       clientSecret: this.configService.get('GOOGLE_CALENDAR_SECRET'),
     })
 
-    console.log('Environment check:', {
-      hasClientId: !!this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
-      hasClientSecret: !!this.configService.get('GOOGLE_CALENDAR_SECRET'),
-      redirectUri: this.configService.get('GOOGLE_REDIRECT_URI'),
-      nodeEnv: process.env.NODE_ENV,
-    })
   }
 
   async getAuthUrl(professionalId: string): Promise<string> {

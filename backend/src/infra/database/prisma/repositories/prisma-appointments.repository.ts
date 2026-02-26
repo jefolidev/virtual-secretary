@@ -9,6 +9,7 @@ import {
 } from '@/domain/scheduling/enterprise/entities/appointment'
 import { ReminderTypes } from '@/domain/scheduling/enterprise/entities/reminders'
 import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
+import { InjectRedis } from '@nestjs-modules/ioredis'
 import { InjectQueue } from '@nestjs/bullmq'
 import {
   BadRequestException,
@@ -18,6 +19,7 @@ import {
 import { Prisma } from '@prisma/client'
 import { Queue } from 'bullmq'
 import dayjs from 'dayjs'
+import Redis from 'ioredis'
 import { PrismaAppointmentMapper } from '../../mappers/prisma-appointment-mapper'
 import { PrismaAppointmentWithClientMapper } from '../../mappers/prisma-appointment-with-client-mapper'
 import { PrismaService } from '../prisma.service'
@@ -26,6 +28,9 @@ import { PrismaService } from '../prisma.service'
 export class PrismaAppointmentsRepository implements AppointmentsRepository {
   constructor(
     private readonly prisma: PrismaService,
+
+    @InjectRedis() private readonly redis: Redis,
+
     @InjectQueue('whatsapp-reminders') private remindersQueue: Queue,
   ) {}
 
@@ -101,12 +106,21 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
   async markReminderAsSended(
     appointmentId: string,
-    reminder: ReminderTypes,
+    type: ReminderTypes,
   ): Promise<void> {
-    await this.prisma.appointmentReminder.create({
-      data: {
+    await this.prisma.appointmentReminder.upsert({
+      where: {
+        appointmentId_type: {
+          appointmentId,
+          type,
+        },
+      },
+      update: {
+        sentAt: new Date(),
+      },
+      create: {
         appointmentId,
-        type: reminder,
+        type,
         sentAt: new Date(),
       },
     })
@@ -216,6 +230,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
   ): Promise<Appointment | null> {
     const appointment = await this.prisma.appointment.findFirst({
       where: { calendarEvent: { googleEventId } },
+      include: {
+        evaluation: true,
+        reminders: true,
+      },
     })
 
     if (!appointment) {
@@ -227,6 +245,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
 
   async findMany(params: { page: number }): Promise<Appointment[]> {
     const appointments = await this.prisma.appointment.findMany({
+      include: {
+        evaluation: true,
+        reminders: true,
+      },
       take: 10,
       skip: params?.page ? (params.page - 1) * 10 : 0,
     })
@@ -243,12 +265,11 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       where: {
         id,
       },
+      include: {
+        evaluation: true,
+        reminders: true,
+      },
     })
-
-    console.log(
-      'PrismaAppointmentsRepository.findById: appointment raw from DB',
-      appointment,
-    )
 
     if (!appointment) {
       return null
@@ -265,6 +286,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         professionalId,
+      },
+      include: {
+        evaluation: true,
+        reminders: true,
       },
     })
 
@@ -354,6 +379,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       },
       include: {
         evaluation: true,
+        reminders: true,
         client: {
           include: {
             user: {
@@ -373,15 +399,6 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const appointmentsWithUser = appointments.filter(
       (a) => a.client && a.client.user,
     )
-
-    if (appointmentsWithUser.length !== appointments.length) {
-      const missingIds = appointments
-        .filter((a) => !a.client || !a.client.user)
-        .map((a) => a.id)
-      console.warn(
-        `PrismaAppointmentsRepository.findManyByProfessionalId: ${missingIds.length} appointment(s) missing client.user: ${missingIds.join(', ')}`,
-      )
-    }
 
     return appointmentsWithUser.map((raw) =>
       PrismaAppointmentWithClientMapper.toDomain(raw),
@@ -448,6 +465,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       where: {
         clientId,
       },
+      include: {
+        evaluation: true,
+        reminders: true,
+      },
       take: 10,
       skip: params.page ? (params.page - 1) * 10 : 0,
     })
@@ -465,6 +486,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
         startDateTime: startDate,
         endDateTime: endDate,
       },
+      include: {
+        evaluation: true,
+        reminders: true,
+      },
     })
 
     if (appointments.length === 0) {
@@ -481,6 +506,10 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const appointments = await this.prisma.appointment.findMany({
       where: {
         status,
+      },
+      include: {
+        evaluation: true,
+        reminders: true,
       },
       take: 10,
       skip: params.page ? (params.page - 1) * 10 : 0,

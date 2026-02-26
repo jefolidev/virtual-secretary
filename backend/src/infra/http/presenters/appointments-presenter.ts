@@ -16,6 +16,7 @@ export class AppointmentsPresenter {
             end_hour: appointment.rescheduleDateTime.end,
           }
         : {},
+      reminders: appointment.reminders,
       agreed_price: appointment.agreedPrice,
       google_meet_link: appointment.googleMeetLink,
       status: appointment.status,

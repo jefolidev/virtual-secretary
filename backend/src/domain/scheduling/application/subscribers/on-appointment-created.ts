@@ -33,8 +33,6 @@ export class OnAppointmentCreated implements EventHandler {
         appointmentId: appointment.id.toString(),
       })
 
-      console.log(result)
-
       if (result.isLeft()) {
         console.warn(
           `[OnAppointmentCreated] Failed to create calendar event for appointment ${appointment.id.toString()}:`,

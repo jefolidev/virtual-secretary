@@ -34,8 +34,6 @@ export class OnAppointmentScheduled implements EventHandler {
       appointment.professionalId.toString(),
     )
 
-    console.log(JSON.stringify(professional?.notificationSettings))
-
     const user = await this.userRepository.findByProfessionalId(
       appointment.professionalId.toString(),
     )

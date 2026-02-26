@@ -1,4 +1,6 @@
 import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
+import { EvaluationPresenter } from './evaluation-presenter'
+import { RemindersPresenter } from './reminders-presenter'
 
 export class AppointmentWithClientPresenter {
   static toHTTP(data: AppointmentWithClient) {
@@ -11,13 +13,18 @@ export class AppointmentWithClientPresenter {
         googleMeetLink: data.appointment.googleMeetLink ?? null,
         rescheduleDateTime: data.appointment.rescheduleDateTime ?? null,
         status: data.appointment.status,
-        evaluation: data.appointment.evaluation ?? null,
+        evaluation: data.appointment.evaluation
+          ? EvaluationPresenter.toHTTP(data.appointment.evaluation)
+          : null,
         agreedPrice: data.appointment.agreedPrice,
         paymentStatus: data.appointment.paymentStatus,
         paymentExpiresAt: data.appointment.paymentExpiresAt ?? null,
         currentTransactionId: data.appointment.currentTransactionId ?? null,
         startDateTime: data.appointment.startDateTime,
         endDateTime: data.appointment.endDateTime,
+        reminders: data.appointment.reminders
+          ? data.appointment.reminders.map(RemindersPresenter.toHTTP)
+          : null,
         startedAt: data.appointment.startedAt ?? null,
         totalElapsedMs: data.appointment.totalElapsedMs ?? null,
         createdAt: data.appointment.createdAt,

@@ -1,8 +1,10 @@
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
+import { InjectRedis } from '@nestjs-modules/ioredis'
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq'
 import { Job, Queue } from 'bullmq'
+import Redis from 'ioredis'
 import { WhatsappService } from '../whatsapp.service'
 
 @Processor('whatsapp-reminders')
@@ -12,6 +14,8 @@ export class WhatsappRemindersProcessor extends WorkerHost {
     private appointmentRepository: AppointmentsRepository,
     private userRepository: UserRepository,
     private whatsappService: WhatsappService,
+
+    @InjectRedis() private readonly redis: Redis,
 
     @InjectQueue('whatsapp-reminders') private remindersQueue: Queue,
   ) {
@@ -64,9 +68,17 @@ Confirme sua presença enviando *confirmar*, ou *cancelar* para cancelar.
 
 Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será considerado como não confirmado. Se precisar reagendar ou cancelar, por favor, entre em contato conosco. Obrigado!`,
           )
+
           await this.appointmentRepository.markReminderAsSended(
             appointment.id.toString(),
             'D1_REMINDER',
+          )
+
+          this.redis.set(
+            `whatsapp-pending-confirmation-${user.whatsappNumber}`,
+            appointment.id.toString(),
+            'EX',
+            7 * 24 * 60 * 60,
           )
         } catch (err) {
           console.error(

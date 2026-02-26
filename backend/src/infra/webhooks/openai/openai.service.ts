@@ -211,7 +211,6 @@ ${message}
 
     try {
       let content = response.choices[0].message.content
-      console.log(content)
       const match = content!.match(/\{[\s\S]*\}/)
       if (match) content = match[0]
       const result = content ? JSON.parse(content) : null

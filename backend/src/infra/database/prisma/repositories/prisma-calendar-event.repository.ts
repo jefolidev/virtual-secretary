@@ -216,8 +216,6 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
       where: { id: eventId },
     })
 
-    console.log(eventId)
-    console.log('Existing event:', existing)
 
     if (!existing) {
       throw new Error('Calendar event not found')

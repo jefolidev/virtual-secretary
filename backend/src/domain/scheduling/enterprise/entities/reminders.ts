@@ -6,7 +6,7 @@ export type ReminderTypes = 'D1_REMINDER' | 'T2H_REMINDER' | 'T30M_REMINDER'
 
 export interface ReminderProps {
   appointmentId: string
-  type?: ReminderTypes
+  type?: ReminderTypes | null
   sentAt: Date | null
   createdAt: Date | null
 }
@@ -17,7 +17,7 @@ export class Reminders extends Entity<ReminderProps> {
   }
 
   get type() {
-    return this.props.type
+    return this.props.type || null
   }
 
   get sentAt() {

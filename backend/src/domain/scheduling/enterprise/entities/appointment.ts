@@ -43,7 +43,7 @@ export interface AppointmentProps {
   googleCalendarEventId?: string | null
 
   evaluation: Evaluation | null | undefined
-  reminders: Reminders | null
+  reminders: Reminders[] | null
 
   rescheduleDateTime?: { start: Date; end: Date }
   syncWithGoogleCalendar: boolean
@@ -101,10 +101,10 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   }
 
   get reminders() {
-    return this.props.reminders || null
+    return this.props.reminders || []
   }
 
-  set reminders(reminders: Reminders | null) {
+  set reminders(reminders: Reminders[] | null) {
     this.props.reminders = reminders
     this.touch()
   }

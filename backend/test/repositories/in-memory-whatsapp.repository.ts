@@ -6,7 +6,6 @@ export class InMemoryWhatsappRepository implements WhatsappRepository {
 
   async sendMessage(to: string, message: string): Promise<string> {
     this.messages.push({ to, message })
-    console.log(this.messages)
     return message
   }
 

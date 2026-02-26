@@ -93,9 +93,6 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
         professional.professionalId!.toString(),
       )
 
-    console.log(
-      `Schedule configuration found: ${professionalScheduleConfiguration ? 'YES' : 'NO'}`,
-    )
 
     return professionalScheduleConfiguration
   }
@@ -405,11 +402,6 @@ Por favor, informe o nome completo do profissional com quem deseja agendar a con
     }
 
     if (!startDateTime) {
-      console.log(
-        `Asking for date time, current data: ${JSON.stringify(
-          session.contextData.data,
-        )}`,
-      )
       return this.askDateTime(session)
     }
 

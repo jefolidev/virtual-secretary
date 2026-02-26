@@ -31,7 +31,6 @@ export class SessionService {
       },
     })
 
-    console.log('session found by whatsapp:', session)
 
     if (!session) {
       session = await this.prisma.session.create({
