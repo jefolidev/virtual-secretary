@@ -2,6 +2,7 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronUp,
+  CircleCheck,
   Clock,
   DollarSign,
   MapPin,
@@ -11,12 +12,16 @@ import {
   XCircle,
 } from 'lucide-react'
 
+import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
+import type {
+  AppointmentModalities,
+  AppointmentsStatus,
+  PaymentStatus,
+} from '@/api/schemas/fetch-professional-schedules.dto'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getStatusLabel } from '@/pages/schedule/calendar/utils/status-utils'
 import { ModalityIcon } from './components/modality-icon'
 import { StatusIcon } from './components/status-icon'
-import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
-import type { AppointmentsStatus, AppointmentModalities, PaymentStatus } from '@/api/schemas/fetch-professional-schedules.dto'
 
 interface SessionHistoryItemProps {
   session: FetchProfessionalSchedulesResponse
@@ -30,17 +35,27 @@ export function SessionHistoryItem({
   onToggleExpand,
 }: SessionHistoryItemProps) {
   const { appointment, address, name } = session
+  const { reminders, evaluation } = appointment
 
-  function getStatusColor(status: AppointmentsStatus, isLabel: boolean = false) {
-    if (status === 'COMPLETED') return isLabel ? 'text-green-500' : 'bg-green-500'
+  function getStatusColor(
+    status: AppointmentsStatus,
+    isLabel: boolean = false,
+  ) {
+    if (status === 'COMPLETED')
+      return isLabel ? 'text-green-500' : 'bg-green-500'
     if (status === 'CANCELLED') return isLabel ? 'text-red-500' : 'bg-red-500'
-    if (status === 'RESCHEDULED') return isLabel ? 'text-blue-500' : 'bg-blue-500'
+    if (status === 'RESCHEDULED')
+      return isLabel ? 'text-blue-500' : 'bg-blue-500'
     return isLabel ? 'text-orange-500' : 'bg-orange-500'
   }
 
-  function getModalityColor(modality: AppointmentModalities, isLabel: boolean = false) {
+  function getModalityColor(
+    modality: AppointmentModalities,
+    isLabel: boolean = false,
+  ) {
     if (modality === 'ONLINE') return isLabel ? 'text-blue-500' : 'bg-blue-500'
-    if (modality === 'IN_PERSON') return isLabel ? 'text-purple-500' : 'bg-purple-500'
+    if (modality === 'IN_PERSON')
+      return isLabel ? 'text-purple-500' : 'bg-purple-500'
     return isLabel ? 'text-gray-500' : 'bg-gray-500'
   }
 
@@ -50,16 +65,24 @@ export function SessionHistoryItem({
     return 'Não Pago'
   }
 
-  function getPaymentColor(paymentStatus: PaymentStatus, isLabel: boolean = false) {
-    if (paymentStatus === 'SUCCEEDED') return isLabel ? 'text-green-500' : 'bg-green-500'
-    if (paymentStatus === 'PENDING') return isLabel ? 'text-yellow-500' : 'bg-yellow-500'
+  function getPaymentColor(
+    paymentStatus: PaymentStatus,
+    isLabel: boolean = false,
+  ) {
+    if (paymentStatus === 'SUCCEEDED')
+      return isLabel ? 'text-green-500' : 'bg-green-500'
+    if (paymentStatus === 'PENDING')
+      return isLabel ? 'text-yellow-500' : 'bg-yellow-500'
     return isLabel ? 'text-gray-500' : 'bg-gray-500'
   }
 
   return (
     <div className="bg-foreground/1 rounded-lg border border-foreground/5 overflow-hidden hover:bg-muted/40 dark:hover:bg-muted/10 transition-colors">
       {/* Header - Always Visible */}
-      <div onClick={onToggleExpand} className="p-4 cursor-pointer transition-colors">
+      <div
+        onClick={onToggleExpand}
+        className="p-4 cursor-pointer transition-colors"
+      >
         <div className="flex items-center gap-4">
           {/* Status Indicator Bar */}
           <div className="flex flex-col gap-1">
@@ -85,23 +108,31 @@ export function SessionHistoryItem({
                 {name}
               </h3>
               <p className="text-sm text-muted-foreground mt-0.5">
-                {new Date(appointment.startDateTime).toLocaleDateString('pt-BR', {
-                  day: '2-digit',
-                  month: 'short',
-                  year: 'numeric',
-                })}{' '}
+                {new Date(appointment.startDateTime).toLocaleDateString(
+                  'pt-BR',
+                  {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
+                  },
+                )}{' '}
                 •{' '}
-                {new Date(appointment.startDateTime).toLocaleTimeString('pt-BR', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
+                {new Date(appointment.startDateTime).toLocaleTimeString(
+                  'pt-BR',
+                  {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  },
+                )}
               </p>
             </div>
 
             {/* Modality */}
             <div className="flex items-center gap-2.5">
               <ModalityIcon modality={appointment.modality} />
-              <span className={`text-sm text-accent-foreground ${getModalityColor(appointment.modality, true)}`}>
+              <span
+                className={`text-sm text-accent-foreground ${getModalityColor(appointment.modality, true)}`}
+              >
                 {appointment.modality === 'ONLINE' ? 'Online' : 'Presencial'}
               </span>
             </div>
@@ -109,15 +140,21 @@ export function SessionHistoryItem({
             {/* Session Status */}
             <div className="flex items-center gap-2">
               <StatusIcon status={appointment.status} />
-              <span className={`text-sm text-muted-foreground font-medium ${getStatusColor(appointment.status, true)}`}>
+              <span
+                className={`text-sm text-muted-foreground font-medium ${getStatusColor(appointment.status, true)}`}
+              >
                 {getStatusLabel(appointment.status)}
               </span>
             </div>
 
             {/* Payment Status */}
             <div className="flex items-center gap-2">
-              <div className={`w-2 h-2 rounded-full ${getPaymentColor(appointment.paymentStatus)}`} />
-              <span className={`text-sm text-muted-foreground font-medium ${getPaymentColor(appointment.paymentStatus, true)}`}>
+              <div
+                className={`w-2 h-2 rounded-full ${getPaymentColor(appointment.paymentStatus)}`}
+              />
+              <span
+                className={`text-sm text-muted-foreground font-medium ${getPaymentColor(appointment.paymentStatus, true)}`}
+              >
                 {getPaymentStatus(appointment.paymentStatus)}
               </span>
             </div>
@@ -127,7 +164,9 @@ export function SessionHistoryItem({
               <p className="text-sm font-semibold text-foreground">
                 R$ {appointment.agreedPrice.toFixed(2)}
               </p>
-              <p className="text-xs text-muted-foreground capitalize mt-0.5">PIX</p>
+              <p className="text-xs text-muted-foreground capitalize mt-0.5">
+                PIX
+              </p>
             </div>
 
             {/* Expand Button */}
@@ -152,21 +191,25 @@ export function SessionHistoryItem({
                 <h4 className="text-sm font-semibold text-foreground mb-3">
                   Dados do Agendamento
                 </h4>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-muted-foreground/5 rounded-lg">
+                <div className="space-y-3 flex gap-2.5">
+                  <div className="flex items-start gap-3 p-3 bg-muted-foreground/5 rounded-lg w-full h-full">
                     <Clock className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs text-muted-foreground">Duração</p>
-                      <p className="text-sm font-medium text-foreground">50 minutos</p>
+                      <p className="text-sm font-medium text-foreground">
+                        50 minutos
+                      </p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-3 bg-muted-foreground/5 rounded-lg">
+                  <div className="flex items-start gap-3 p-3 bg-muted-foreground/5 rounded-lg w-full h-full">
                     {appointment.modality === 'ONLINE' ? (
                       <>
                         <Video className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs text-muted-foreground">Link da Reunião</p>
+                          <p className="text-xs text-muted-foreground">
+                            Link da Reunião
+                          </p>
                           <a
                             href={appointment.googleMeetLink || ''}
                             target="_blank"
@@ -181,7 +224,9 @@ export function SessionHistoryItem({
                       <>
                         <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                         <div>
-                          <p className="text-xs text-muted-foreground">Endereço</p>
+                          <p className="text-xs text-muted-foreground">
+                            Endereço
+                          </p>
                           <p className="text-sm font-medium text-foreground">
                             {address.props.addressLine1}
                           </p>
@@ -201,7 +246,9 @@ export function SessionHistoryItem({
                   <div className="flex items-start gap-3 p-3 bg-muted-foreground/5 rounded-lg">
                     <DollarSign className="w-4 h-4 text-foreground/40 mt-0.5 shrink-0" />
                     <div className="flex-1">
-                      <p className="text-xs text-foreground/40">Valor Cobrado</p>
+                      <p className="text-xs text-foreground/40">
+                        Valor Cobrado
+                      </p>
                       <p className="text-sm font-medium text-accent-foreground">
                         R$ {appointment.agreedPrice.toFixed(2)}
                       </p>
@@ -211,7 +258,9 @@ export function SessionHistoryItem({
                   <div className="p-3 bg-muted-foreground/5 rounded-lg flex flex-col justify-center">
                     <div className="flex items-center gap-2 mb-1">
                       <CheckCircle className="w-4 h-4" />
-                      <p className="text-xs text-foreground/40">Status do Pagamento</p>
+                      <p className="text-xs text-foreground/40">
+                        Status do Pagamento
+                      </p>
                     </div>
                     <p className="text-sm font-medium ml-6">
                       {getPaymentStatus(appointment.paymentStatus)}
@@ -237,20 +286,58 @@ export function SessionHistoryItem({
                     <span className="text-sm text-accent-foreground">
                       Cliente{' '}
                       <strong>
-                        {appointment.status === 'CONFIRMED' ? 'confirmou' : 'não confirmou'}
+                        {appointment.status === 'CONFIRMED'
+                          ? 'confirmou'
+                          : 'não confirmou'}
                       </strong>{' '}
                       a presença
                     </span>
                   </div>
 
                   <div className="border-t border-gray-200 pt-3">
-                    <p className="text-xs text-foreground/40 mb-2">Lembretes Enviados:</p>
+                    <p className="text-xs text-foreground/40 mb-2">
+                      Lembretes Enviados:
+                    </p>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-accent-foreground">T-2h (2 horas antes)</span>
+                        {reminders && reminders[0]?.type === 'D1_REMINDER' ? (
+                          <CircleCheck className="text-green-500" size={14} />
+                        ) : (
+                          <XCircle className="text-red-500" size={14} />
+                        )}
+                        <span className="text-accent-foreground ">
+                          <strong>24h</strong>
+                          <p className="ml-1.5 text-xs inline text-accent-foreground/30">
+                            24 horas antes
+                          </p>
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm">
-                        <span className="text-accent-foreground">T-30min (30 minutos antes)</span>
+                        {reminders && reminders[0]?.type === 'T2H_REMINDER' ? (
+                          <CircleCheck className="text-green-500" size={14} />
+                        ) : (
+                          <XCircle className="text-red-500" size={14} />
+                        )}
+                        <span className="text-accent-foreground">
+                          <strong>2h</strong>
+                          <p className="ml-1.5 text-xs inline text-accent-foreground/30">
+                            2 horas antes
+                          </p>
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        {' '}
+                        {reminders && reminders[0]?.type === 'T2H_REMINDER' ? (
+                          <CircleCheck className="text-green-500" size={14} />
+                        ) : (
+                          <XCircle className="text-red-500" size={14} />
+                        )}
+                        <span className="text-accent-foreground">
+                          <strong>30min </strong>
+                          <p className="ml-1.5 text-xs inline text-accent-foreground/30">
+                            30 minutos antes
+                          </p>
+                        </span>
                       </div>
                     </div>
                   </div>

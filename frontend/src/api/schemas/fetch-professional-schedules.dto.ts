@@ -48,6 +48,18 @@ export const appointments = z.object({
     .nullable(),
 
   agreedPrice: z.number(),
+  reminders: z
+    .array(
+      z.object({
+        appointmentId: z.uuid(),
+        type: z
+          .enum(['D1_REMINDER', 'T2H_REMINDER', 'T30M_REMINDER'])
+          .optional(),
+        sentAt: z.date(),
+        createdAt: z.date().nullish(),
+      }),
+    )
+    .nullish(),
   paymentStatus: paymentStatusEnum,
   paymentExpiresAt: z.date().nullable(),
   currentTransactionId: z.string().nullable(),
