@@ -98,6 +98,7 @@ export class FlowService {
   ) {
     if (!user) {
       if (session.currentFlow === 'registration') {
+      }
 
       const registrationSession: ConversationSession<'registration'> = {
         ...session,
