@@ -1,5 +1,5 @@
 import { api } from '../axios'
-import type { FetchProfessionalSchedulesListResponse, FetchProfessionalSchedulesResponse } from './appointments/dto'
+import type { FetchProfessionalSchedulesListResponse } from './appointments/dto'
 
 export type FetchScheduleByProfesionalIdStatus =
   | 'SCHEDULED'
@@ -39,6 +39,22 @@ export type FetchScheduleByProfessionalIdFilters = {
 }
 
 export const appointmentsServices = {
+  createAppointment: async (data: {
+    professionalId: string
+    clientId: string
+    modality: 'IN_PERSON' | 'ONLINE'
+    startDateTime: Date
+    syncWithGoogleCalendar: boolean
+  }) => {
+    try {
+      const response = await api.post('/appointments/schedule', data)
+      return response.data
+    } catch (error) {
+      console.error('Erro ao criar agendamento:', error)
+      throw error
+    }
+  },
+
   fetchAppointmentsByProfessional: async (
     professionalId: string,
     page?: number,

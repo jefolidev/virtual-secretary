@@ -1,7 +1,6 @@
 import { appointmentsServices } from '@/api/endpoints/appointments'
 import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
 import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,9 +20,7 @@ import { formatFullAddress } from '@/utils/format-address'
 import { formatPhoneNumber } from '@/utils/format-phone'
 import { VideoCameraIcon } from '@phosphor-icons/react'
 import {
-  Bell,
   Clock,
-  CreditCard,
   MapPin,
   Monitor,
   Pause,
@@ -33,6 +30,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
+import { RescheduleModal } from './components/reschedule-modal'
 
 interface AppointmentModalProps {
   schedule: FetchProfessionalSchedulesResponse | null
@@ -204,9 +202,17 @@ export function AppointmentModal({
   }
 
   const isPaymentPaid = schedule?.appointment.paymentStatus === 'SUCCEEDED'
+
   const isCompleted =
     currentStatus === 'COMPLETED' ||
     schedule?.appointment.status === 'COMPLETED'
+
+  const isCanceled =
+    currentStatus === 'CANCELLED' ||
+    schedule?.appointment.status === 'CANCELLED' ||
+    schedule.appointment.status === 'NO_SHOW' ||
+    currentStatus === 'NO_SHOW'
+
   const completedElapsedSeconds = schedule?.appointment.totalElapsedMs
     ? Math.floor(schedule.appointment.totalElapsedMs / 1000)
     : timer.elapsedTime
@@ -226,8 +232,9 @@ export function AppointmentModal({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Header - Nome e Status */}
+
           <div className="flex items-center justify-between bg-muted/20 p-4 rounded-lg">
             <div className="flex items-center gap-3">
               <div
@@ -262,89 +269,14 @@ export function AppointmentModal({
               </Select>
             </div>
           </div>
+
           {/* Grid de colunas - Modalidade e Data/Hora */}
-          <div className="grid grid-cols-3 md:grid-cols-3 gap-6 items-center">
-            {/* Modalidade */}
-            <div className="flex items-center gap-3 p-3 rounded-lg">
-              <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                {schedule?.appointment.modality === 'IN_PERSON' ? (
-                  <MapPin className="h-5 w-5 text-zinc-600" />
-                ) : (
-                  <Monitor className="h-5 w-5 text-zinc-600" />
-                )}
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase font-medium">
-                  Modalidade
-                </p>
-                <p className="font-semibold capitalize">
-                  {schedule?.appointment.modality === 'IN_PERSON'
-                    ? 'Presencial'
-                    : 'Online'}
-                </p>
-              </div>
-            </div>
 
-            {schedule?.appointment.modality === 'ONLINE' && (
-              <div className="flex gap-2.5">
-                <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                  <VideoCameraIcon
-                    className="h-5 w-5 text-zinc-600"
-                    weight="bold"
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground uppercase font-medium">
-                    Link
-                  </p>
-                  <a
-                    href={schedule?.appointment.googleMeetLink || ''}
-                    className="font-semibold text-xs text-blue-600 hover:text-blue-700"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Acessar reunião
-                  </a>
-                </div>
-              </div>
-            )}
-
-            {/* Data e Horário */}
-            <div className="flex items-center gap-3 p-3 rounded-lg">
-              <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
-                <Clock className="h-5 w-5 text-zinc-600" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase font-medium">
-                  Data/Horário
-                </p>
-                <p className="font-semibold text-xs">
-                  {new Date(
-                    schedule?.appointment.startDateTime,
-                  ).toLocaleDateString('pt-BR')}
-                </p>
-                <p className="text-xs">
-                  {new Date(
-                    schedule?.appointment.startDateTime,
-                  ).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}{' '}
-                  -{' '}
-                  {new Date(
-                    schedule?.appointment.endDateTime,
-                  ).toLocaleTimeString('pt-BR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </p>
-              </div>
-            </div>
-          </div>{' '}
           {/* FIM DO GRID */}
           <Separator />
+
           {/* Seção de Pagamento */}
-          <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
+          {/* <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
@@ -398,6 +330,164 @@ export function AppointmentModal({
               </Button>
             </div>
           </div>
+
+          <Separator /> */}
+
+          {/*Controles de Sessão */}
+          <div className="p-2 items-center justify-center grid grid-cols-2">
+            <div className="flex flex-col items-center gap-2">
+              <div className="text-center">
+                <p
+                  className={`text-4xl font-sf font-medium ${isCanceled ? 'opacity-60' : ''}`}
+                >
+                  {isCompleted
+                    ? formatTime(completedElapsedSeconds)
+                    : formatTime(timer.elapsedTime)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-2.5">
+                  {isCompleted ? 'Duração da sessão' : 'Tempo de sessão'}
+                </p>
+                {isCompleted && (
+                  <p className="text-sm text-green-600 mt-2">
+                    Sessão concluída
+                  </p>
+                )}
+                {isCanceled && (
+                  <p className="text-xs text-red-600 mt-2 max-w-40 ">
+                    Sessão indisponível por ausência ou cancelamento
+                  </p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                {!isCompleted && !isCanceled ? (
+                  <Button
+                    onClick={handleStartSession}
+                    variant={
+                      timer.isRunning && !timer.isPaused
+                        ? 'secondary'
+                        : 'default'
+                    }
+                    disabled={isCompleted || isCanceled}
+                    className="rounded-full"
+                  >
+                    {timer.isRunning && !timer.isPaused ? (
+                      lastAction === 'resume' ? (
+                        <Pause />
+                      ) : (
+                        <>
+                          <Pause /> Pausar
+                        </>
+                      )
+                    ) : (
+                      <>
+                        <Play className="" />{' '}
+                      </>
+                    )}
+                  </Button>
+                ) : (
+                  <RescheduleModal clientId={schedule?.appointment.clientId} />
+                )}
+                {timer.isRunning && !isCompleted && (
+                  <Button
+                    onClick={handleStopSession}
+                    variant="destructive"
+                    className="rounded-full"
+                  >
+                    <Square className="" />
+                  </Button>
+                )}
+              </div>
+              {schedule.appointment.status === 'SCHEDULED' ||
+                (schedule.appointment.status === 'CONFIRMED' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNoShow}
+                    className="text-red-600 hover:text-red-700 w-full max-w-xs"
+                  >
+                    <UserX className="h-4 w-4 mr-2" /> Paciente ausente
+                  </Button>
+                ))}
+            </div>
+            <div className="m-auto justify-center  items-center">
+              {/* Modalidade */}
+              <div className="flex p-3 gap-2.5">
+                <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
+                  {schedule?.appointment.modality === 'IN_PERSON' ? (
+                    <MapPin className="h-5 w-5 text-zinc-600" />
+                  ) : (
+                    <Monitor className="h-5 w-5 text-zinc-600" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">
+                    Modalidade
+                  </p>
+                  <p className="font-semibold capitalize">
+                    {schedule?.appointment.modality === 'IN_PERSON'
+                      ? 'Presencial'
+                      : 'Online'}
+                  </p>
+                </div>
+              </div>
+
+              {schedule?.appointment.modality === 'ONLINE' && (
+                <div className="flex p-3 gap-2.5">
+                  <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
+                    <VideoCameraIcon
+                      className="h-5 w-5 text-zinc-600"
+                      weight="bold"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase font-medium">
+                      Link
+                    </p>
+                    <a
+                      href={schedule?.appointment.googleMeetLink || ''}
+                      className="font-semibold text-xs text-blue-600 hover:text-blue-700"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Acessar reunião
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              {/* Data e Horário */}
+              <div className="flex items-center gap-3 p-3 rounded-lg">
+                <div className="w-10 h-10 bg-zinc-300 rounded-lg flex items-center justify-center">
+                  <Clock className="h-5 w-5 text-zinc-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase font-medium">
+                    Data/Horário
+                  </p>
+                  <p className="font-semibold text-xs">
+                    {new Date(
+                      schedule?.appointment.startDateTime,
+                    ).toLocaleDateString('pt-BR')}
+                  </p>
+                  <p className="text-xs">
+                    {new Date(
+                      schedule?.appointment.startDateTime,
+                    ).toLocaleTimeString('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}{' '}
+                    -{' '}
+                    {new Date(
+                      schedule?.appointment.endDateTime,
+                    ).toLocaleTimeString('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
           <Separator />
           {/* Informações do Paciente */}
           <div className="space-y-4">
@@ -434,79 +524,18 @@ export function AppointmentModal({
                   </span>
                   <span className="text-[13.5px]">
                     {formatFullAddress({
-                      addressLine1: schedule.address.addressLine1,
-                      addressLine2: schedule.address.addressLine2 || '',
-                      neighborhood: schedule.address.neighborhood,
-                      city: schedule.address.city,
-                      state: schedule.address.state,
-                      postalCode: schedule.address.postalCode,
+                      addressLine1: schedule.address.props.addressLine1,
+                      addressLine2: schedule.address.props.addressLine2 || '',
+                      neighborhood: schedule.address.props.neighborhood,
+                      city: schedule.address.props.city,
+                      state: schedule.address.props.state,
+                      postalCode: schedule.address.props.postalCode,
                       country: 'Brasil',
                       organizationId: null,
                     })}
                   </span>
                 </div>
               </div>
-            </div>
-          </div>
-          <Separator />
-          {/* Footer - Controles de Sessão */}
-          <div className="bg-muted/10 p-4 rounded-lg">
-            <div className="flex flex-col items-center gap-4">
-              <div className="text-center">
-                <p className="text-2xl font-mono font-bold">
-                  {isCompleted
-                    ? formatTime(completedElapsedSeconds)
-                    : formatTime(timer.elapsedTime)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {isCompleted ? 'Duração da sessão' : 'Tempo de sessão'}
-                </p>
-                {isCompleted && (
-                  <p className="text-sm text-green-600 mt-2">
-                    Sessão concluída
-                  </p>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  onClick={handleStartSession}
-                  variant={
-                    timer.isRunning && !timer.isPaused ? 'secondary' : 'default'
-                  }
-                  disabled={isCompleted}
-                >
-                  {timer.isRunning && !timer.isPaused ? (
-                    lastAction === 'resume' ? (
-                      <Pause className="h-4 w-4" />
-                    ) : (
-                      <>
-                        <Pause className="h-4 w-4 mr-2" /> Pausar
-                      </>
-                    )
-                  ) : (
-                    <>
-                      <Play className="h-4 w-4 mr-2" />{' '}
-                      {timer.isPaused ? 'Retomar' : 'Iniciar'} Sessão
-                    </>
-                  )}
-                </Button>
-                {timer.isRunning && !isCompleted && (
-                  <Button onClick={handleStopSession} variant="destructive">
-                    <Square className="h-4 w-4 mr-2" /> Encerrar
-                  </Button>
-                )}
-              </div>
-              {schedule.appointment.status === 'SCHEDULED' ||
-                (schedule.appointment.status === 'CONFIRMED' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleNoShow}
-                    className="text-red-600 hover:text-red-700 w-full max-w-xs"
-                  >
-                    <UserX className="h-4 w-4 mr-2" /> Paciente ausente
-                  </Button>
-                ))}
             </div>
           </div>
         </div>
