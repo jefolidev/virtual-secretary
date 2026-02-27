@@ -43,7 +43,10 @@ export interface CancellationPolicyResponse {
 
 export interface ProfessionalSettings {
   id: string
-  professional: { sessionPrice: number }
+  professional: {
+    sessionPrice: number
+    googleConnectionStatus: 'CONNECTED' | 'DISCONNECTED' | 'ERROR'
+  }
   settings: {
     preferences: ScheduleConfigurationResponse
     cancellationPolicy: CancellationPolicyResponse
@@ -176,19 +179,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth()
   }, [checkAuth])
 
-  const handleLoginWithGoogle = async () => {
-    try {
-      const result = await authServices.loginWithGoogle()
+  const handleLoginWithGoogle = () => {
+    const width = 500
+    const height = 600
+    const left = window.screenX + (window.outerWidth - width) / 2
+    const top = window.screenY + (window.outerHeight - height) / 2
 
-      authToken.set(result.access_token)
+    const popup = window.open(
+      `${import.meta.env.VITE_BACKEND_API_URL}/google/calendar/connect`,
+      'google-auth',
+      `width=${width},height=${height},left=${left},top=${top}`,
+    )
 
-      await checkAuth()
+    const handleMessage = async (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) return
 
-      toast.success('Login realizado com sucesso!')
-    } catch (error) {
-      console.error('Erro no login com Google:', error)
-      toast.error('Erro no login com Google. Por favor, tente novamente.')
+      if (event.data?.type === 'GOOGLE_AUTH_SUCCESS') {
+        window.removeEventListener('message', handleMessage)
+
+        if (event.data?.data?.access_token) {
+          authToken.set(event.data.data.access_token)
+          await checkAuth()
+        }
+
+        // ← dispara evento customizado para o UserProvider escutar
+        window.dispatchEvent(new CustomEvent('google-calendar-connected'))
+        toast.success('Google Calendar conectado com sucesso!')
+      }
+
+      if (event.data?.type === 'GOOGLE_AUTH_ERROR') {
+        window.removeEventListener('message', handleMessage)
+        toast.error(`Erro ao conectar com o Google: ${event.data.error}`)
+      }
     }
+
+    window.addEventListener('message', handleMessage)
   }
 
   const login = async (credentials: LoginCredentials) => {

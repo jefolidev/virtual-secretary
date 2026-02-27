@@ -37,6 +37,19 @@ export function GoogleAuthSuccessPage() {
       return
     }
 
+    const connected = urlParams.get('connected')
+    if (connected === 'true') {
+      setStatus('Google Calendar conectado com sucesso! Fechando janela...')
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage(
+          { type: 'GOOGLE_AUTH_SUCCESS' },
+          window.location.origin,
+        )
+      }
+      setTimeout(() => window.close(), 500)
+      return
+    }
+
     if (token && email && name) {
       setStatus('Autenticação bem-sucedida! Fechando janela...')
 

@@ -22,6 +22,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
+import { Switch } from '@/components/ui/switch'
+
 import { appointmentsServices } from '@/api/endpoints/appointments'
 import {
   Select,
@@ -60,8 +62,13 @@ export function RescheduleModal({ clientId }: RescheduleModalProps) {
   const [hasOverlap, setHasOverlap] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
-  const { user } = useAuth()
-  const { professionalSettings } = useUser()
+  const { user, handleLoginWithGoogle } = useAuth()
+  const { professionalSettings, fetchProfessionalSettings } = useUser()
+
+  const handleConnectGoogle = async () => {
+    await handleLoginWithGoogle()
+    await fetchProfessionalSettings()
+  }
 
   const { settings } = professionalSettings ? professionalSettings : {}
 
@@ -82,6 +89,7 @@ export function RescheduleModal({ clientId }: RescheduleModalProps) {
   const watchedDate = watch('date')
   const watchedStart = watch('startTime')
   const watchedModality = watch('modality')
+  const watchedSync = watch('syncWithGoogleCalendar')
 
   const onSubmit = async (data: RescheduleFormData) => {
     setHasOverlap(false)
@@ -94,7 +102,7 @@ export function RescheduleModal({ clientId }: RescheduleModalProps) {
         professionalId: user?.professional_id || '',
         modality: data.modality,
         startDateTime,
-        syncWithGoogleCalendar: data.syncWithGoogleCalendar || false,
+        syncWithGoogleCalendar: data.syncWithGoogleCalendar,
       })
 
       toast.success(
@@ -216,6 +224,18 @@ export function RescheduleModal({ clientId }: RescheduleModalProps) {
                 </Select>
               </div>
 
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  checked={watchedSync}
+                  onCheckedChange={(checked) => {
+                    reset({ ...watch(), syncWithGoogleCalendar: checked })
+                  }}
+                />
+                <Label htmlFor="sync-with-google-calendar">
+                  Criar consulta no Google Calendar
+                </Label>
+              </div>
+
               {/* ── Summary card ──────────────────────────────────────── */}
               <div className="flex items-center gap-2 mb-2">
                 <Info className="w-4" />
@@ -224,21 +244,36 @@ export function RescheduleModal({ clientId }: RescheduleModalProps) {
                 </span>
               </div>
               <div className="bg-foreground/10 w-full py-6 px-4 rounded-md mb-4">
-                <p className="text-sm text-slate-700">
-                  Paciente: João da Silva
-                </p>
+                <div className="grid grid-cols-2">
+                  <span className="text-sm text-slate-400 font-medium">
+                    Paciente:{' '}
+                    <p className="text-slate-700 inline">João da Silva</p>
+                  </span>
+
+                  <span className=" text-slate-700">
+                    <p className="inline font-medium text-slate-400">
+                      Modalidade:{' '}
+                    </p>
+                    {watchedModality === 'IN_PERSON'
+                      ? 'Presencial'
+                      : watchedModality === 'ONLINE'
+                        ? 'Online'
+                        : '—'}
+                  </span>
+                </div>
+
                 <div className="grid grid-cols-2 gap-1 mt-1">
-                  <span className="text-sm text-slate-700">
+                  <span className="text-sm text-slate-400 font-medium">
                     Início:{' '}
-                    <span className="font-medium">
+                    <span className="font-medium text-slate-700">
                       {watchedDate &&
                         watchedStart &&
                         formatDateTime(watchedDate, watchedStart)}
                     </span>
                   </span>
-                  <span className="text-sm text-slate-700">
+                  <span className="text-sm text-slate-400 font-medium">
                     Fim:{' '}
-                    <span className="font-medium">
+                    <span className="font-medium text-slate-700">
                       {watchedDate &&
                         watchedStart &&
                         formatDateTime(
@@ -253,18 +288,30 @@ export function RescheduleModal({ clientId }: RescheduleModalProps) {
                         )}
                     </span>
                   </span>
-                  <span className=" text-slate-700">
-                    Modalidade:{' '}
-                    {watchedModality === 'IN_PERSON'
-                      ? 'Presencial'
-                      : watchedModality === 'ONLINE'
-                        ? 'Online'
-                        : '—'}
-                  </span>
                 </div>
               </div>
 
               {/* ── Overlap warning ───────────────────────────────────── */}
+              {watchedSync &&
+                professionalSettings?.professional.googleConnectionStatus !==
+                  'CONNECTED' && (
+                  <div className="flex items-start gap-2 rounded-md border border-blue-300 bg-blue-50 px-4 py-3 mb-4">
+                    <Info className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                    <p className="text-sm text-blue-800">
+                      Você está desconectado do Google Calendar. Você conseguirá
+                      criar o agendamento mas não será salvo no seu calendário
+                      do Google.{' '}
+                      <a
+                        onClick={handleConnectGoogle}
+                        className="underline font-medium text-blue-700 hover:text-blue-900"
+                      >
+                        Clique aqui para se conectar
+                      </a>
+                      .
+                    </p>
+                  </div>
+                )}
+
               {hasOverlap && (
                 <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 mb-4">
                   <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />

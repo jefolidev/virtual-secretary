@@ -34,17 +34,17 @@ interface UserContextType {
   updateAccount: (data: UpdateUserAccountData) => Promise<void>
   updateProfessional: (data: UpdateProfessional) => Promise<void>
   updateScheduleConfiguration: (
-    data: UpdateScheduleConfigurationData
+    data: UpdateScheduleConfigurationData,
   ) => Promise<void>
   updateCancellationPolicy: (
-    data: UpdateCancellationPolicyData
+    data: UpdateCancellationPolicyData,
   ) => Promise<void>
 
   updateProfessionalWorkHours: (
-    data: UpdateProfessionalWorkHoursData
+    data: UpdateProfessionalWorkHoursData,
   ) => Promise<void>
   updateProfessionalWorkDays: (
-    data: UpdateProfessionalWorkDaysData
+    data: UpdateProfessionalWorkDaysData,
   ) => Promise<void>
 
   // uploadProfileImage: (file: File) => Promise<string>
@@ -81,7 +81,7 @@ export function UserProvider({ children }: UserProviderProps) {
 
       const settingsData =
         await userServices.getProfessionalNotificationSettings(
-          authUser?.professional_id
+          authUser?.professional_id,
         )
       setNotificationSettings(settingsData)
     } catch (err) {
@@ -127,7 +127,7 @@ export function UserProvider({ children }: UserProviderProps) {
       setError(null)
       const updatedSettings = await userServices.updateProfessional(data)
       setNotificationSettings((prev) =>
-        prev ? { ...prev, ...updatedSettings } : updatedSettings
+        prev ? { ...prev, ...updatedSettings } : updatedSettings,
       )
     } catch (err) {
       setError('Erro ao atualizar configurações de notificação')
@@ -137,7 +137,7 @@ export function UserProvider({ children }: UserProviderProps) {
   }
 
   const updateCancellationPolicy = async (
-    data: UpdateCancellationPolicyData
+    data: UpdateCancellationPolicyData,
   ) => {
     try {
       setError(null)
@@ -152,7 +152,7 @@ export function UserProvider({ children }: UserProviderProps) {
   }
 
   const updateScheduleConfiguration = async (
-    data: UpdateScheduleConfigurationData
+    data: UpdateScheduleConfigurationData,
   ) => {
     try {
       setError(null)
@@ -183,12 +183,12 @@ export function UserProvider({ children }: UserProviderProps) {
   }
 
   const updateProfessionalWorkDays = async (
-    data: UpdateProfessionalWorkDaysData
+    data: UpdateProfessionalWorkDaysData,
   ) => {
     try {
       setError(null)
       const result = await userServices.updateProfessionalWorkDays(
-        data.newDays as DayOfWeek[]
+        data.newDays as DayOfWeek[],
       )
 
       await fetchProfessionalSettings()
@@ -201,36 +201,6 @@ export function UserProvider({ children }: UserProviderProps) {
     }
   }
 
-  // const uploadProfileImage = async (file: File): Promise<string> => {
-  //   try {
-  //     setError(null)
-  //     const { imageUrl } = await userServices.uploadProfileImage(file)
-
-  //     // Refresh auth user data after image upload
-  //     await checkAuth()
-
-  //     return imageUrl
-  //   } catch (err) {
-  //     setError('Erro ao fazer upload da imagem')
-  //     console.error('Erro ao fazer upload:', err)
-  //     throw err
-  //   }
-  // }
-
-  // const deleteProfileImage = async () => {
-  //   try {
-  //     setError(null)
-  //     await userServices.deleteProfileImage()
-
-  //     // Refresh auth user data after image deletion
-  //     await checkAuth()
-  //   } catch (err) {
-  //     setError('Erro ao remover imagem do perfil')
-  //     console.error('Erro ao deletar imagem:', err)
-  //     throw err
-  //   }
-  // }
-
   // Auto-fetch notificationSettings when user is authenticated
   useEffect(() => {
     if (authUser) {
@@ -240,7 +210,20 @@ export function UserProvider({ children }: UserProviderProps) {
     }
   }, [authUser])
 
-  // Auto-fetch professionalSettings when user is authenticated
+  useEffect(() => {
+    const handleGoogleConnected = () => {
+      fetchProfessionalSettings()
+    }
+
+    window.addEventListener('google-calendar-connected', handleGoogleConnected)
+
+    return () => {
+      window.removeEventListener(
+        'google-calendar-connected',
+        handleGoogleConnected,
+      )
+    }
+  }, [])
   useEffect(() => {
     if (authUser?.professional_id) {
       fetchProfessionalSettings()
