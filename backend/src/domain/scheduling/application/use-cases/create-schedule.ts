@@ -1,6 +1,7 @@
 import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { BadRequestError } from '@/core/errors/bad-request'
+import { GoogleNotConnectedError } from '@/core/errors/google-not-connected'
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
@@ -10,11 +11,11 @@ import {
 } from '../../enterprise/entities/appointment'
 import { AppointmentsRepository } from '../repositories/appointments.repository'
 import { ClientRepository } from '../repositories/client.repository'
+import { GoogleCalendarTokenRepository } from '../repositories/google-calendar-token.repository'
 import { ProfessionalRepository } from '../repositories/professional.repository'
 import { ScheduleConfigurationRepository } from '../repositories/schedule-configuration.repository'
 import { InvalidValueError } from './errors/invalid-value-error'
 import { NoDisponibilityError } from './errors/no-disponibility-error'
-import { Reminders } from '../../enterprise/entities/reminders'
 
 interface CreateAppointmentUseCaseProps {
   clientId: string
@@ -26,7 +27,10 @@ interface CreateAppointmentUseCaseProps {
 }
 
 type CreateAppointmentUseCaseResponse = Either<
-  NoDisponibilityError | NotFoundError | InvalidValueError,
+  | NoDisponibilityError
+  | NotFoundError
+  | InvalidValueError
+  | GoogleNotConnectedError,
   {
     appointment: Appointment
   }
@@ -39,6 +43,7 @@ export class CreateAppointmentUseCase {
     private clientsRepository: ClientRepository,
     private professionalRepository: ProfessionalRepository,
     private scheduleConfigurationRepository: ScheduleConfigurationRepository,
+    private googleCalendarTokenRepository: GoogleCalendarTokenRepository,
   ) {}
 
   async execute({
@@ -57,9 +62,18 @@ export class CreateAppointmentUseCase {
     const professional = await this.professionalRepository.findById(
       professionalId.toString(),
     )
-
     if (!professional) {
       return left(new NotFoundError('Professional not found'))
+    }
+
+    if (syncWithGoogleCalendar) {
+      const hasToken = await this.googleCalendarTokenRepository.hasTokens(
+        professionalId.toString(),
+      )
+
+      if (!hasToken || professional.googleConnectionStatus !== 'CONNECTED') {
+        return left(new GoogleNotConnectedError())
+      }
     }
 
     const professionalScheduleConfiguration =

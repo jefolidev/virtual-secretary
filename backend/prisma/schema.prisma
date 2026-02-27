@@ -176,9 +176,16 @@ model Professional {
   scheduleConfigurationId String?                @unique @map("schedule_configuration_id")
   scheduleConfiguration   ScheduleConfiguration?
 
-  googleCalendarTokens GoogleCalendarToken?
+  googleCalendarTokens   GoogleCalendarToken?
+  googleConnectionStatus GoogleConnectionStatus @default(CONNECTED)
 
   @@map("professionals")
+}
+
+enum GoogleConnectionStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
 }
 
 model GoogleCalendarToken {

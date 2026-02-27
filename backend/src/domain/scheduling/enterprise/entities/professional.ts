@@ -12,6 +12,7 @@ export interface ProfessionalProps {
   scheduleConfigurationId?: UniqueEntityId
   googleCalendarEvent: GoogleCalendarEvent | null
   sessionPrice: number
+  googleConnectionStatus: 'CONNECTED' | 'DISCONNECTED' | 'ERROR'
   createdAt: Date
   updatedAt?: Date | null
 }
@@ -61,6 +62,16 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
     this.touch()
   }
 
+  get googleConnectionStatus() {
+    return this.props.googleConnectionStatus
+  }
+
+  set googleConnectionStatus(
+    googleConnectionStatus: 'CONNECTED' | 'DISCONNECTED' | 'ERROR',
+  ) {
+    this.props.googleConnectionStatus = googleConnectionStatus
+  }
+
   get sessionPrice() {
     return this.props.sessionPrice
   }
@@ -98,12 +109,14 @@ export class Professional extends AggregateRoot<ProfessionalProps> {
       | 'scheduleConfigurationId'
       | 'notificationSettings'
       | 'googleCalendarEvent'
+      | 'googleConnectionStatus'
     >,
     id?: UniqueEntityId,
   ) {
     const professional = new Professional(
       {
         ...props,
+        googleConnectionStatus: props.googleConnectionStatus ?? 'CONNECTED',
         googleCalendarEvent: props.googleCalendarEvent || null,
         cancellationPolicyId: props.cancellationPolicyId ?? undefined,
         scheduleConfigurationId: props.scheduleConfigurationId ?? undefined,

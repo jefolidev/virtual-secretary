@@ -11,6 +11,7 @@ export class UserProfessionalWithSettingsPresenter {
       },
       professional: {
         sessionPrice: userProfessional.sessionPrice,
+        googleConnectionStatus: userProfessional.googleConnectionStatus,
       },
       organization: userProfessional.organization
         ? {

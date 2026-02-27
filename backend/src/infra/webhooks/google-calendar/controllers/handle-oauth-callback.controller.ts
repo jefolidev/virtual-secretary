@@ -1,73 +1,63 @@
 import { HandleOAuthCallbackUseCase } from '@/domain/scheduling/application/use-cases/handle-oauth-callback'
 import { Public } from '@/infra/auth/public'
 import { Env } from '@/infra/env/env'
-import {
-  BadRequestException,
-  Controller,
-  Get,
-  Query,
-  Res,
-} from '@nestjs/common'
+import { Controller, Get, Query, Res } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { Response } from 'express'
 
-@Controller('oauth/callback')
-export class HandleOAuthCallbackController {
-  private processedCodes = new Set<string>()
-
+@Controller('/webhooks/google/oauth')
+export class GoogleOAuthCallbackController {
   constructor(
-    private readonly handleAuthCallBackUseCase: HandleOAuthCallbackUseCase,
+    private readonly handleOAuthCallbackUseCase: HandleOAuthCallbackUseCase,
     private readonly configService: ConfigService<Env, true>,
   ) {}
 
+  @Get('/callback')
   @Public()
-  @Get()
-  async handle(
+  async handleCallback(
     @Query('code') code: string,
     @Query('state') state: string,
+    @Query('error') error: string,
     @Res() res: Response,
   ) {
+    const frontendUrl =
+      this.configService.get('FRONTEND_URL', { infer: true }) ||
+      'http://localhost:5173'
+
+    if (error) {
+      return res.redirect(
+        `${frontendUrl}/auth/google/success?error=${encodeURIComponent(error)}`,
+      )
+    }
+
     if (!code || !state) {
-      throw new BadRequestException('Missing code or state parameter')
+      return res.redirect(
+        `${frontendUrl}/auth/google/success?error=missing_params`,
+      )
     }
-
-    // Previne processar o mesmo código duas vezes
-    if (this.processedCodes.has(code)) {
-      const frontendUrl = this.configService.get('FRONTEND_URL')
-      return res.redirect(`${frontendUrl}/oauth-callback?duplicate=true`)
-    }
-
-    // Marca código como processado
-    this.processedCodes.add(code)
-
-    // Remove código do cache após 5 minutos
-    setTimeout(() => this.processedCodes.delete(code), 5 * 60 * 1000)
 
     let professionalId: string
+
     try {
-      const stateData = JSON.parse(state)
-      professionalId = stateData.professionalId
-    } catch (error) {
-      throw new BadRequestException('Invalid state parameter')
+      const parsed = JSON.parse(state)
+      professionalId = parsed.professionalId
+    } catch {
+      return res.redirect(
+        `${frontendUrl}/auth/google/success?error=invalid_state`,
+      )
     }
 
-    const result = await this.handleAuthCallBackUseCase.execute({
+    const result = await this.handleOAuthCallbackUseCase.execute({
       code,
       professionalId,
     })
 
-    const frontendUrl = this.configService.get('FRONTEND_URL')
-
     if (result.isLeft()) {
-      // Redireciona para o frontend com erro
       return res.redirect(
-        `${frontendUrl}/oauth-callback?error=${encodeURIComponent(result.value || 'Unknown error')}`,
+        `${frontendUrl}/auth/google/success?error=${encodeURIComponent(result.value)}`,
       )
     }
 
-    // Redireciona para o frontend com sucesso
-    return res.redirect(
-      `${frontendUrl}/oauth-callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}&email=${encodeURIComponent(result.value.googleAccountEmail)}`,
-    )
+    return res.redirect(`${frontendUrl}/auth/google/success?connected=true`)
   }
 }

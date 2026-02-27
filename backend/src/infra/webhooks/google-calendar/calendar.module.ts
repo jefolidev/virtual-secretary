@@ -12,15 +12,15 @@ import { CheckGoogleConnectionController } from './controllers/check-google-conn
 import { GetAuthUrlController } from './controllers/get-auth-url.controller'
 import { GetEventsController } from './controllers/get-events.controller'
 import { GoogleAuthController } from './controllers/google-auth.controller'
-import { HandleOAuthCallbackController } from './controllers/handle-oauth-callback.controller'
 import { CryptographyModule } from '@/infra/cryptography/cryptography.module'
+import { GoogleOAuthCallbackController } from './controllers/handle-oauth-callback.controller'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
   controllers: [
     GetAuthUrlController,
     GetEventsController,
-    HandleOAuthCallbackController,
+    GoogleOAuthCallbackController,
     CheckGoogleConnectionController,
     GoogleAuthController,
   ],

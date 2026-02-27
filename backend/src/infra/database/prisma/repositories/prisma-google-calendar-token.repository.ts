@@ -24,13 +24,17 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
 
     const redirectUri = this.configService.get('GOOGLE_REDIRECT_URI')
 
-
     this.oauth2Client = new google.auth.OAuth2({
       redirectUri,
       clientId: this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
       clientSecret: this.configService.get('GOOGLE_CALENDAR_SECRET'),
     })
+  }
 
+  async findByProfessionalId(professionalId: string) {
+    return this.prisma.googleCalendarToken.findUnique({
+      where: { professionalId },
+    })
   }
 
   async getAuthUrl(professionalId: string): Promise<string> {
@@ -77,7 +81,6 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
       throw error
     }
 
-    // Set credentials BEFORE making API calls
     this.oauth2Client.setCredentials({
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
@@ -85,7 +88,6 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
       expiry_date: tokens.expiry_date,
     })
 
-    // Try to get user email, but don't fail if it doesn't work
     let googleAccountEmail = 'unknown'
     try {
       const oauth2 = google.oauth2({ version: 'v2', auth: this.oauth2Client })
@@ -94,6 +96,11 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
     } catch (error) {
       console.warn('Failed to get user email from Google:', error)
     }
+
+    const beforeStatus = await this.prisma.professional.findUnique({
+      where: { id: professionalId },
+      select: { googleConnectionStatus: true },
+    })
 
     await this.prisma.googleCalendarToken.upsert({
       where: { professionalId },
@@ -121,6 +128,10 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
       },
     })
 
+    await this.prisma.professional.update({
+      where: { id: professionalId },
+      data: { googleConnectionStatus: 'CONNECTED' },
+    })
     return googleAccountEmail
   }
 
@@ -130,5 +141,16 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
     })
 
     return !!token
+  }
+
+  async invalidateTokens(professionalId: string): Promise<void> {
+    await this.prisma.googleCalendarToken.delete({
+      where: { professionalId },
+    })
+
+    await this.prisma.professional.update({
+      where: { id: professionalId },
+      data: { googleConnectionStatus: 'ERROR' },
+    })
   }
 }

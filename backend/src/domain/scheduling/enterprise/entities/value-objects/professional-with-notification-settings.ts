@@ -5,6 +5,7 @@ import { NotificationSettings } from './notification-settings'
 export interface ProfessionalWithNotificationSettingsProps {
   professionalId: UniqueEntityId
   notificationSettings: NotificationSettings | null
+  googleConnectionStatus?: 'CONNECTED' | 'ERROR' | 'DISCONNECTED'
   createdAt: Date
   updatedAt?: Date | null
 }

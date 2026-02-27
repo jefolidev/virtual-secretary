@@ -15,6 +15,17 @@ import { PrismaUserProfessionalWithSettingsMapper } from '../../mappers/prisma-u
 export class PrismaProfessionalRepository implements ProfessionalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  async markGoogleConnectionAsInvalid(professionalId: string): Promise<void> {
+    console.log(
+      '[markGoogleConnectionAsInvalid] CALLED FOR:',
+      professionalId,
+      new Error().stack,
+    )
+    await this.prisma.professional.update({
+      where: { id: professionalId },
+      data: { googleConnectionStatus: 'ERROR' },
+    })
+  }
   async findByProfessionalIdWithNotificationSettings(
     professionalId: string,
   ): Promise<ProfessionalWithNotificationSettings | null> {
@@ -158,9 +169,7 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
     id: string,
   ): Promise<UserProfessionalWithSettings | null> {
     const professional = await this.prisma.professional.findFirst({
-      where: {
-        id,
-      },
+      where: { id },
       include: {
         user: true,
         cancellationPolicy: true,

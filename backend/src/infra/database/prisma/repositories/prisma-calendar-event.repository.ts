@@ -10,6 +10,7 @@ import {
   PrismaCalendarEventWithAppointment,
 } from '../../mappers/prisma-calendar-event-mapper'
 import { PrismaService } from '../prisma.service'
+import { InvalidGrantError } from '@/core/errors/invalid-grand-error'
 
 @Injectable()
 export class PrismaCalendarEventRepository implements GoogleCalendarEventRepository {
@@ -122,12 +123,9 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
 
     const shouldCreateMeet = appointment.modality === 'ONLINE'
 
-    // Garantir que exista um registro local (ou atualizá-lo) antes de criar o evento
-    // Usamos upsert para reservar o `appointmentId` e o `id` do evento do domínio.
     const placeholder = await this.prisma.calendarEvent.upsert({
       where: { appointmentId: appointmentId },
       create: {
-        // Use appointmentId as the CalendarEvent.id so both ids coincide
         id: appointmentId,
         appointmentId: appointmentId,
         professionalId: appointment.professionalId,
@@ -148,43 +146,59 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
     })
 
     // Criar evento no Google Calendar
-    const googleEvent = await this.calendar.events.insert({
-      calendarId: 'primary',
-      conferenceDataVersion: shouldCreateMeet ? 1 : 0,
-      requestBody: {
-        summary: calendarEvent.summary,
-        description: calendarEvent.description,
-        start: {
-          dateTime: calendarEvent.startDateTime.toISOString(),
-          timeZone: 'America/Sao_Paulo',
-        },
-        end: {
-          dateTime: calendarEvent.endDateTime.toISOString(),
-          timeZone: 'America/Sao_Paulo',
-        },
-        ...(shouldCreateMeet && {
-          conferenceData: {
-            createRequest: {
-              requestId: `meet-${appointmentId}-${Date.now()}`,
-              conferenceSolutionKey: {
-                type: 'hangoutsMeet',
+    let googleEvent: calendar_v3.Schema$Event
+
+    try {
+      const response = await this.calendar.events.insert({
+        calendarId: 'primary',
+        conferenceDataVersion: shouldCreateMeet ? 1 : 0,
+        requestBody: {
+          summary: calendarEvent.summary,
+          description: calendarEvent.description,
+          start: {
+            dateTime: calendarEvent.startDateTime.toISOString(),
+            timeZone: 'America/Sao_Paulo',
+          },
+          end: {
+            dateTime: calendarEvent.endDateTime.toISOString(),
+            timeZone: 'America/Sao_Paulo',
+          },
+          ...(shouldCreateMeet && {
+            conferenceData: {
+              createRequest: {
+                requestId: `meet-${appointmentId}-${Date.now()}`,
+                conferenceSolutionKey: {
+                  type: 'hangoutsMeet',
+                },
               },
             },
-          },
-        }),
-      },
-    })
+          }),
+        },
+      })
 
-    const meetLink = googleEvent.data.conferenceData?.entryPoints?.find(
+      googleEvent = response.data
+    } catch (error) {
+      await this.prisma.calendarEvent.update({
+        where: { id: placeholder.id },
+        data: { syncStatus: 'ERROR' },
+      })
+
+      if ((error as any)?.response?.data?.error === 'invalid_grant') {
+        throw new InvalidGrantError()
+      }
+
+      throw error
+    }
+
+    const meetLink = googleEvent.conferenceData?.entryPoints?.find(
       (entry) => entry.entryPointType === 'video',
     )?.uri
 
-    // Atualizar o registro local com os dados retornados pelo Google
     const updated = await this.prisma.calendarEvent.update({
       where: { id: placeholder.id },
       data: {
-        googleEventId: googleEvent.data.id || '',
-        googleEventLink: googleEvent.data.htmlLink || '',
+        googleEventId: googleEvent.id || '',
+        googleEventLink: googleEvent.htmlLink || '',
         googleMeetLink: meetLink || null,
         summary: calendarEvent.summary || '',
         description: calendarEvent.description || null,
@@ -201,7 +215,6 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
       meetLink: updated.googleMeetLink || undefined,
     }
   }
-
   async updateEvent(
     professionalId: string,
     eventId: string,
@@ -215,7 +228,6 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
     const existing = await this.prisma.calendarEvent.findUnique({
       where: { id: eventId },
     })
-
 
     if (!existing) {
       throw new Error('Calendar event not found')

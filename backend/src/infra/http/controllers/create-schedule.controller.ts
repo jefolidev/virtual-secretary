@@ -1,3 +1,4 @@
+import { GoogleNotConnectedError } from '@/core/errors/google-not-connected'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
@@ -13,6 +14,7 @@ import {
   ForbiddenException,
   NotFoundException,
   Post,
+  UnprocessableEntityException,
   UsePipes,
 } from '@nestjs/common'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
@@ -38,18 +40,30 @@ export class CreateScheduleController {
     body: CreateScheduleBodySchema,
     @CurrentUser() user: UserPayload,
   ) {
-    const { professionalId, modality, startDateTime, syncWithGoogleCalendar } =
-      body
+    const {
+      clientId,
+      professionalId,
+      modality,
+      startDateTime,
+      syncWithGoogleCalendar,
+    } = body
 
-    const client = await this.clientRepository.findByUserId(user.sub)
+    let client = await this.clientRepository.findByUserId(user.sub)
 
-    if (!client) {
+    if (!client && !clientId) {
       throw new NotFoundException()
+    }
+
+    // After — same guard, but assert the resolved value so the type is narrowed
+    const resolvedClientId = client?.id.toString() ?? clientId
+
+    if (!resolvedClientId) {
+      throw new NotFoundException('Client not found')
     }
 
     const result = await this.createScheduleUseCase.execute({
       professionalId,
-      clientId: client.id.toString(),
+      clientId: resolvedClientId,
       modality,
       startDateTime,
       syncWithGoogleCalendar,
@@ -64,6 +78,8 @@ export class CreateScheduleController {
           throw new ConflictException(error.message)
         case NotAllowedError:
           throw new ForbiddenException(error.message)
+        case GoogleNotConnectedError:
+          throw new UnprocessableEntityException(error.message)
         default:
           throw new BadRequestException(error?.message ?? 'Bad Request')
       }

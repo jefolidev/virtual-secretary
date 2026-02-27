@@ -8,7 +8,7 @@ export abstract class ProfessionalRepository {
   abstract findMany(params?: PaginationParams): Promise<Professional[]>
   abstract findById(id: string): Promise<Professional | null>
   abstract findByUserId(id: string): Promise<Professional | null>
-  
+
   abstract findByProfessionalIdWithNotificationSettings(
     professionalId: string,
   ): Promise<ProfessionalWithNotificationSettings | null>
@@ -22,5 +22,8 @@ export abstract class ProfessionalRepository {
     professionalId: string,
     cancellationPolicyId: string,
   ): Promise<void>
+
+  abstract markGoogleConnectionAsInvalid(professionalId: string): Promise<void>
+
   abstract save(professional: Professional): Promise<void>
 }

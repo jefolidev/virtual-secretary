@@ -5,6 +5,7 @@ export class ProfessionalsPresenter {
     return {
       id: professional.id.toString(),
       sessionPrice: professional.sessionPrice,
+      googleConnectionStatus: professional.googleConnectionStatus,
       createdAt: professional.createdAt,
       updatedAt: professional.updatedAt,
     }

@@ -8,6 +8,7 @@ export const createScheduleBodySchema = z.object({
   ),
   startDateTime: z.coerce.date(),
   syncWithGoogleCalendar: z.boolean().default(false),
+  clientId: z.uuid().optional(),
 })
 
 export type CreateScheduleBodySchema = z.infer<typeof createScheduleBodySchema>

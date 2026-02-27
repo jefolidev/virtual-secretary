@@ -1,3 +1,4 @@
+import { InvalidGrantError } from '@/core/errors/invalid-grand-error'
 import { DomainEvents } from '@/core/events/domain-events'
 import { EventHandler } from '@/core/events/event-handler'
 import { Injectable } from '@nestjs/common'
@@ -24,7 +25,6 @@ export class OnAppointmentCreated implements EventHandler {
       console.log(
         `[OnAppointmentCreated] Skipping Google Calendar sync for appointment ${appointment.id.toString()}`,
       )
-
       return
     }
 
@@ -34,18 +34,20 @@ export class OnAppointmentCreated implements EventHandler {
       })
 
       if (result.isLeft()) {
-        console.warn(
-          `[OnAppointmentCreated] Failed to create calendar event for appointment ${appointment.id.toString()}:`,
-          result.value?.message || 'Unknown error',
-        )
-      } else {
-        console.log(
-          `[OnAppointmentCreated] Calendar event created successfully: ${result.value.eventLink}`,
-        )
+        if (result.value instanceof InvalidGrantError) {
+          console.warn(
+            `[OnAppointmentCreated] Google Calendar sync failed for appointment ${appointment.id.toString()} — token invalid or expired. Professional ${appointment.professionalId.toString()} should reconnect from settings.`,
+          )
+          return
+        }
       }
+
+      // console.log(
+      //   `[OnAppointmentCreated] Calendar event created successfully: ${result.value.eventLink}`,
+      // )
     } catch (error) {
       console.error(
-        `[OnAppointmentCreated] Failed to create Google Calendar event:`,
+        `[OnAppointmentCreated] Unexpected error creating Google Calendar event:`,
         error,
       )
     }

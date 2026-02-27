@@ -1,5 +1,7 @@
 import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
+import { GoogleNotConnectedError } from '@/core/errors/google-not-connected'
+import { InvalidGrantError } from '@/core/errors/invalid-grand-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
 import { Injectable } from '@nestjs/common'
 import { GoogleCalendarEvent } from '../../enterprise/entities/google-calendar-event'
@@ -14,8 +16,8 @@ export interface CreateCalendarEventUseCaseRequest {
 }
 
 export type CreateCalendarEventUseCaseResponse = Either<
-  NotFoundError,
-  { eventId: string; eventLink: string }
+  NotFoundError | InvalidGrantError,
+  { eventId: string; eventLink: string; meetLink?: string }
 >
 
 @Injectable()
@@ -37,18 +39,14 @@ export class CreateCalendarEventUseCase {
       return left(new NotFoundError('Appointment not found'))
     }
 
-    // 2. Verificar se profissional tem Google Calendar conectado
     const hasGoogleConnected =
       await this.googleCalendarTokenRepository.hasTokens(
         appointment.professionalId.toString(),
       )
 
+    // ← was fetched but never used before
     if (!hasGoogleConnected) {
-      return left(
-        new Error(
-          `Professional ${appointment.professionalId.toString()} has not connected Google Calendar`,
-        ),
-      )
+      return left(new GoogleNotConnectedError())
     }
 
     const professional = await this.professionalRepository.findById(
@@ -57,6 +55,10 @@ export class CreateCalendarEventUseCase {
 
     if (!professional) {
       return left(new NotFoundError('Professional not found'))
+    }
+
+    if (professional.googleConnectionStatus !== 'CONNECTED') {
+      return left(new GoogleNotConnectedError())
     }
 
     const user = await this.userRepository.findByClientId(
@@ -98,10 +100,19 @@ ${
       new UniqueEntityId(appointmentId),
     )
 
-    const repositoryEvent = await this.googleCalendarEventRepository.create(
-      appointmentId,
-      event,
-    )
+    let repositoryEvent: { id: string; htmlLink: string; meetLink?: string }
+
+    try {
+      repositoryEvent = await this.googleCalendarEventRepository.create(
+        appointmentId,
+        event,
+      )
+    } catch (error) {
+      if (error instanceof InvalidGrantError) {
+        return left(error)
+      }
+      throw error
+    }
 
     event.googleEventLink = repositoryEvent.htmlLink
 

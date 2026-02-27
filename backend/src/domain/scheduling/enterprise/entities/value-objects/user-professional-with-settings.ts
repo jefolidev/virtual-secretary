@@ -11,6 +11,7 @@ export interface UserProfessionalWithSettingsProps {
   email: string
   whatsappNumber: string
   sessionPrice: number
+  googleConnectionStatus: 'CONNECTED' | 'DISCONNECTED' | 'ERROR'
   organization: Organization | null
   googleCalendarTokens: GoogleCalendarToken | undefined
   scheduleConfiguration: ScheduleConfiguration | undefined
@@ -34,6 +35,10 @@ export class UserProfessionalWithSettings extends ValueObject<UserProfessionalWi
 
   get whatsappNumber() {
     return this.props.whatsappNumber
+  }
+
+  get googleConnectionStatus() {
+    return this.props.googleConnectionStatus
   }
 
   get sessionPrice() {
