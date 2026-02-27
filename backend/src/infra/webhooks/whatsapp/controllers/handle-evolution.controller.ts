@@ -95,9 +95,10 @@ export class HandleEvolutionController {
             if (replyIntent === 'unknown') {
               return this.whatsappRepository.sendMessage(
                 user.whatsappNumber,
-                `Não entendi bem sua resposta 😅\n\nVocê ainda tem uma consulta aguardando confirmação. Por favor, responda:\n\n✅ *confirmar* — para confirmar sua consulta\n❌ *cancelar* — para cancelar\n🔄 *reagendar* — para remarcar`,
+                `Não entendi bem sua resposta 😅\n\nVocê ainda tem uma consulta aguardando confirmação. Por favor, responda:\n\n✅ *Confirmar* — para confirmar sua consulta\n❌ *Cancelar* — para cancelar\n🔄 *Reagendar* — para remarcar`,
               )
             }
+            
             return this.whatsappService.handleConfirmAppointment(
               message,
               user.whatsappNumber,

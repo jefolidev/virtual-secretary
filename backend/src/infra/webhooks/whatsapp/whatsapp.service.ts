@@ -6,6 +6,7 @@ import { Env } from '@/infra/env/env'
 import { EnvEvolution } from '@/infra/env/evolution/env-evolution'
 import { ConversationFlow } from '@/infra/flow/types'
 import { SessionService } from '@/infra/sessions/session.service'
+import { InjectRedis } from '@nestjs-modules/ioredis'
 import { InjectQueue } from '@nestjs/bullmq'
 import { CACHE_MANAGER } from '@nestjs/cache-manager'
 import { BadRequestException, Inject, Injectable } from '@nestjs/common'
@@ -13,6 +14,7 @@ import { ConfigService } from '@nestjs/config'
 import { Queue } from 'bullmq'
 import { Cache } from 'cache-manager'
 import dayjs from 'dayjs'
+import Redis from 'ioredis'
 import { OpenAiService } from '../openai/openai.service'
 import {
   ConversationContext,
@@ -40,6 +42,8 @@ export class WhatsappService {
 
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    @InjectRedis() private readonly redis: Redis,
+
     @InjectQueue('whatsapp-reminders')
     private readonly remindersQueue: Queue,
   ) {
@@ -693,6 +697,7 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
           `Consulta confirmada para ${dayjs(appointment.startDateTime).format('DD/MM/YYYY [às] HH:mm')}. Obrigado!`,
         )
         await this.clearPendingConfirmation(cleanNumber)
+
         try {
           const now = Date.now()
           const startTime = new Date(appointment.startDateTime).getTime()
@@ -824,10 +829,20 @@ variações regionais do português brasileiro. Analise a INTENÇÃO, não as pa
   async markPendingConfirmation(
     whatsappNumber: string,
     appointmentId: string,
-    ttlHours = 12,
+    ttlHours = 168, // 7 days so user can confirm anytime
   ) {
     const key = `whatsapp-pending-confirmation-${whatsappNumber}`
-    await this.cacheManager.set(key, appointmentId, 1000 * 60 * 60 * ttlHours)
+    await this.redis.set(key, appointmentId, 'EX', 60 * 60 * ttlHours)
+  }
+
+  async getPendingConfirmation(whatsappNumber: string) {
+    const key = `whatsapp-pending-confirmation-${whatsappNumber}`
+    return await this.redis.get(key)
+  }
+
+  async clearPendingConfirmation(whatsappNumber: string) {
+    const key = `whatsapp-pending-confirmation-${whatsappNumber}`
+    return await this.redis.del(key)
   }
 
   async setPendingCancelJob(
@@ -850,16 +865,6 @@ variações regionais do português brasileiro. Analise a INTENÇÃO, não as pa
 
   async clearPendingCancelJob(whatsappNumber: string) {
     const key = `whatsapp-pending-confirmation-job-${whatsappNumber}`
-    await this.cacheManager.del(key)
-  }
-
-  async getPendingConfirmation(whatsappNumber: string) {
-    const key = `whatsapp-pending-confirmation-${whatsappNumber}`
-    return (await this.cacheManager.get<string | null>(key)) || null
-  }
-
-  async clearPendingConfirmation(whatsappNumber: string) {
-    const key = `whatsapp-pending-confirmation-${whatsappNumber}`
     await this.cacheManager.del(key)
   }
 
