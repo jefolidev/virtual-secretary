@@ -11,6 +11,10 @@ export const notificationServices = {
   },
 
   readNotification: async (notificationId: string): Promise<void> => {
-    await api.patch(`/notifications/${notificationId}/read`)
+    try {
+      await api.patch(`/notifications/${notificationId}/read`)
+    } catch (error) {
+      console.error('Failed to mark notification as read', error)
+    }
   },
 }

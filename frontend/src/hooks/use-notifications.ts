@@ -17,6 +17,7 @@ function getToastMessage(n: Notification) {
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([])
+  
   const knownIds = useRef<Set<string>>(new Set())
   const isFirstPoll = useRef(true)
 
