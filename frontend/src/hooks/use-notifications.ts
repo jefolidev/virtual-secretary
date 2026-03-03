@@ -17,7 +17,7 @@ function getToastMessage(n: Notification) {
 
 export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([])
-  
+
   const knownIds = useRef<Set<string>>(new Set())
   const isFirstPoll = useRef(true)
 
@@ -55,9 +55,6 @@ export function useNotifications() {
             } else {
               toast(msg.title, { description: msg.description })
             }
-
-            // Mark as read in background so it doesn't show again
-            notificationServices.readNotification(n.id).catch(() => {})
           }
         }
       } catch {

@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        run: npm test -- --runInBand
+
+  deploy:
+    needs: build-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && secrets.EASY_PANEL_DEPLOY_WEBHOOK != ''
+    steps:
+      - name: Notify Easy Panel to deploy
+        run: |
+          echo "Triggering Easy Panel deploy webhook..."
+          curl -s -X POST "${{ secrets.EASY_PANEL_DEPLOY_WEBHOOK }}" -H 'Content-Type: application/json' -d '{"ref":"main"}'
