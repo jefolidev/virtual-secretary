@@ -23,4 +23,19 @@ export class InMemorySendNotificationRepository implements NotificationsReposito
 
     this.items[itemIndex] = notification
   }
+
+  async findManyByRecipientId(
+    recipientId: string,
+    params?: { unreadOnly?: boolean; limit?: number },
+  ): Promise<Notification[]> {
+    let notifications = this.items.filter(
+      (item) => item.recipientId.toString() === recipientId,
+    )
+
+    if (params?.unreadOnly) {
+      notifications = notifications.filter((item) => !item.readAt)
+    }
+
+    return notifications.slice(0, params?.limit ?? 50)
+  }
 }

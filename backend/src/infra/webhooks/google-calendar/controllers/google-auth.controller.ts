@@ -1,4 +1,4 @@
-import { AuthenticateWithGoogleUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user-with-google'
+import { AuthenticateWithSyncedGoogleUseCase } from '@/domain/scheduling/application/use-cases/authenticate-with-synced-google'
 import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { AuthGuard } from '@nestjs/passport'
@@ -15,7 +15,7 @@ interface RequestWithUser extends Request {
 export class GoogleAuthController {
   constructor(
     private readonly configService: ConfigService<Env, true>,
-    private readonly authenticateWithGoogleUseCase: AuthenticateWithGoogleUseCase,
+    private readonly authenticateWithSyncedGoogleUseCase: AuthenticateWithSyncedGoogleUseCase,
   ) {}
 
   @Public()
@@ -33,7 +33,7 @@ export class GoogleAuthController {
 
     const frontendUrl = this.configService.get('FRONTEND_URL')
 
-    const result = await this.authenticateWithGoogleUseCase.execute({
+    const result = await this.authenticateWithSyncedGoogleUseCase.execute({
       email: googleUser.email,
       firstName: googleUser.firstName,
       lastName: googleUser.lastName,
@@ -54,14 +54,14 @@ export class GoogleAuthController {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: ONE_DAY_IN_MS, // 7 days
+      maxAge: ONE_DAY_IN_MS,
     })
 
     res.cookie('user_data', JSON.stringify(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: ONE_DAY_IN_MS, // 7 days
+      maxAge: ONE_DAY_IN_MS,
     })
 
     const redirectUrl =

@@ -1,10 +1,12 @@
 import { makeAppointment } from '@test/factories/make-appointment'
 import { makeClient } from '@test/factories/make-client'
 import { makeProfessional } from '@test/factories/make-professional'
+import { makeProfessionalUser } from '@test/factories/make-user'
 import { InMemoryAppointmentRepository } from '@test/repositories/in-memory-appointments.repository'
 import { InMemoryClientRepository } from '@test/repositories/in-memory-client.repository'
 import { InMemoryProfessionalRepository } from '@test/repositories/in-memory-professional.repository'
 import { InMemorySendNotificationRepository } from '@test/repositories/in-memory-send-notification.repository'
+import { InMemoryUserRepository } from '@test/repositories/in-memory-user.repository'
 import type { MockInstance } from 'vitest'
 import { beforeEach, describe, it, vi } from 'vitest'
 import {
@@ -17,6 +19,7 @@ import { OnAppointmentConfirmed } from './on-appointment-confirmed'
 let inMemoryAppointmentRepository: InMemoryAppointmentRepository
 let inMemoryProfessionalRepository: InMemoryProfessionalRepository
 let inMemoryClientRepository: InMemoryClientRepository
+let inMemoryUserRepository: InMemoryUserRepository
 let inMemorySendNotificationRepository: InMemorySendNotificationRepository
 let sendNotificationUseCase: SendNotificationUseCase
 
@@ -30,12 +33,13 @@ describe('On Appointment Confirmed', () => {
   beforeEach(() => {
     inMemoryProfessionalRepository = new InMemoryProfessionalRepository()
     inMemoryClientRepository = new InMemoryClientRepository()
+    inMemoryUserRepository = new InMemoryUserRepository()
     inMemoryAppointmentRepository = new InMemoryAppointmentRepository()
     inMemorySendNotificationRepository =
       new InMemorySendNotificationRepository()
     sendNotificationUseCase = new SendNotificationUseCase(
       inMemorySendNotificationRepository,
-      inMemoryProfessionalRepository, 
+      inMemoryProfessionalRepository,
     )
 
     sendNotificationExecuteSpy = vi.spyOn(sendNotificationUseCase, 'execute')
@@ -43,16 +47,19 @@ describe('On Appointment Confirmed', () => {
     new OnAppointmentConfirmed(
       inMemoryProfessionalRepository,
       inMemoryClientRepository,
-      sendNotificationUseCase
+      inMemoryUserRepository,
+      sendNotificationUseCase,
     )
   })
 
   it('should send a notification when appointment be confirmed', async () => {
     const professional = makeProfessional()
     const client = makeClient()
+    const user = makeProfessionalUser({ professionalId: professional.id })
 
     await inMemoryProfessionalRepository.create(professional)
     await inMemoryClientRepository.create(client)
+    await inMemoryUserRepository.create(user)
 
     const appointment = makeAppointment({
       clientId: client.id,

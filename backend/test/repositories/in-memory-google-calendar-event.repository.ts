@@ -1,4 +1,7 @@
-import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
+import {
+  CalendarEventChange,
+  GoogleCalendarEventRepository,
+} from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
 import { GoogleCalendarEvent } from '@/domain/scheduling/enterprise/entities/google-calendar-event'
 
 export class InMemoryGoogleCalendarEventRepository implements GoogleCalendarEventRepository {
@@ -65,6 +68,15 @@ export class InMemoryGoogleCalendarEventRepository implements GoogleCalendarEven
     }
   }
 
+  async save(calendarEvent: GoogleCalendarEvent): Promise<void> {
+    const index = this.items.findIndex(
+      (item) => item.id.toString() === calendarEvent.id.toString(),
+    )
+    if (index >= 0) {
+      this.items[index] = calendarEvent
+    }
+  }
+
   async updateEvent(
     professionalId: string,
     eventId: string,
@@ -93,7 +105,14 @@ export class InMemoryGoogleCalendarEventRepository implements GoogleCalendarEven
     const hasToken = this.items.some(
       (item) => item.professionalId.toString() === professionalId,
     )
-    
+
     return hasToken
+  }
+
+  async listChangedEvents(
+    _professionalId: string,
+    syncToken: string,
+  ): Promise<{ changes: CalendarEventChange[]; nextSyncToken: string }> {
+    return { changes: [], nextSyncToken: syncToken }
   }
 }

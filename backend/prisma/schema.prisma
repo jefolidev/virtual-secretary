@@ -198,6 +198,11 @@ model GoogleCalendarToken {
   scope              String?
   googleAccountEmail String? @map("google_account_email")
 
+  watchChannelId  String?   @unique @map("watch_channel_id")
+  watchResourceId String?   @map("watch_resource_id")
+  watchExpiration DateTime? @map("watch_expiration")
+  syncToken       String?   @map("sync_token")
+
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime? @updatedAt @map("updated_at")
 
@@ -485,6 +490,8 @@ enum NotificationType {
   FIRST_REMINDER
   FINAL_REMINDER
   USER_CONFIRMATION
+  CALENDAR_SYNC_UPDATED
+  CALENDAR_SYNC_CANCELLED
 }
 
 enum WeekDays {

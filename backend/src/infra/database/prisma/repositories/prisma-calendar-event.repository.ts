@@ -1,4 +1,8 @@
-import { GoogleCalendarEventRepository } from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
+import { InvalidGrantError } from '@/core/errors/invalid-grand-error'
+import {
+  CalendarEventChange,
+  GoogleCalendarEventRepository,
+} from '@/domain/scheduling/application/repositories/google-calendar-event.repository'
 import { GoogleCalendarEvent } from '@/domain/scheduling/enterprise/entities/google-calendar-event'
 import { Env } from '@/infra/env/env'
 import { Injectable, NotFoundException } from '@nestjs/common'
@@ -6,11 +10,10 @@ import { ConfigService } from '@nestjs/config'
 import type { OAuth2Client } from 'google-auth-library'
 import { calendar_v3, google } from 'googleapis'
 import {
-  PrismaCalendarEventMapper,
-  PrismaCalendarEventWithAppointment,
+    PrismaCalendarEventMapper,
+    PrismaCalendarEventWithAppointment,
 } from '../../mappers/prisma-calendar-event-mapper'
 import { PrismaService } from '../prisma.service'
-import { InvalidGrantError } from '@/core/errors/invalid-grand-error'
 
 @Injectable()
 export class PrismaCalendarEventRepository implements GoogleCalendarEventRepository {
@@ -220,11 +223,6 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
     eventId: string,
     data: Partial<GoogleCalendarEvent>,
   ): Promise<{ id: string; htmlLink: string }> {
-    const prismaData = PrismaCalendarEventMapper.toPrisma(
-      data as GoogleCalendarEvent,
-    )
-
-    // Buscar o evento primeiro para checar autorização e existência
     const existing = await this.prisma.calendarEvent.findUnique({
       where: { id: eventId },
     })
@@ -236,6 +234,56 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
     if (existing.professionalId !== professionalId) {
       throw new Error('Calendar event not found or not authorized')
     }
+
+    const token = await this.prisma.googleCalendarToken.findUnique({
+      where: { professionalId },
+    })
+
+    if (token && existing.googleEventId) {
+      this.oauth2Client.setCredentials({
+        access_token: token.accessToken,
+        refresh_token: token.refreshToken,
+        token_type: token.tokenType,
+        expiry_date: Number(token.expiryDate),
+      })
+
+      try {
+        await this.calendar.events.patch({
+          calendarId: 'primary',
+          eventId: existing.googleEventId,
+          requestBody: {
+            ...(data.summary !== undefined && { summary: data.summary }),
+            ...(data.startDateTime !== undefined && {
+              start: {
+                dateTime: data.startDateTime.toISOString(),
+                timeZone: 'America/Sao_Paulo',
+              },
+            }),
+            ...(data.endDateTime !== undefined && {
+              end: {
+                dateTime: data.endDateTime.toISOString(),
+                timeZone: 'America/Sao_Paulo',
+              },
+            }),
+            ...(data.description !== undefined && {
+              description: data.description,
+            }),
+          },
+        })
+      } catch (error) {
+        if ((error as any)?.response?.data?.error === 'invalid_grant') {
+          throw new InvalidGrantError()
+        }
+        console.warn(
+          '[updateEvent] Failed to update Google Calendar event:',
+          error,
+        )
+      }
+    }
+
+    const prismaData = PrismaCalendarEventMapper.toPrisma(
+      data as GoogleCalendarEvent,
+    )
 
     const updated = await this.prisma.calendarEvent.update({
       where: { id: eventId },
@@ -255,8 +303,91 @@ export class PrismaCalendarEventRepository implements GoogleCalendarEventReposit
   }
 
   async delete(id: string): Promise<void> {
+    const existing = await this.prisma.calendarEvent.findUnique({
+      where: { id },
+    })
+
+    if (existing && existing.googleEventId) {
+      const token = await this.prisma.googleCalendarToken.findUnique({
+        where: { professionalId: existing.professionalId },
+      })
+
+      if (token) {
+        this.oauth2Client.setCredentials({
+          access_token: token.accessToken,
+          refresh_token: token.refreshToken,
+          token_type: token.tokenType,
+          expiry_date: Number(token.expiryDate),
+        })
+
+        try {
+          await this.calendar.events.delete({
+            calendarId: 'primary',
+            eventId: existing.googleEventId,
+          })
+        } catch (error) {
+          const status = (error as any)?.response?.status
+          if (status === 410 || status === 404) {
+            // Already deleted from Google Calendar — proceed with DB deletion
+          } else if (
+            (error as any)?.response?.data?.error === 'invalid_grant'
+          ) {
+            console.warn(
+              '[delete] Google token expired; skipping Google Calendar deletion',
+            )
+          } else {
+            console.warn(
+              '[delete] Failed to delete Google Calendar event:',
+              error,
+            )
+          }
+        }
+      }
+    }
+
     await this.prisma.calendarEvent.delete({
       where: { id },
     })
+  }
+
+  async listChangedEvents(
+    professionalId: string,
+    syncToken: string,
+  ): Promise<{ changes: CalendarEventChange[]; nextSyncToken: string }> {
+    const token = await this.prisma.googleCalendarToken.findUnique({
+      where: { professionalId },
+    })
+
+    if (!token) {
+      throw new Error('Professional has not connected Google Calendar')
+    }
+
+    this.oauth2Client.setCredentials({
+      access_token: token.accessToken,
+      refresh_token: token.refreshToken,
+      token_type: token.tokenType,
+      expiry_date: Number(token.expiryDate),
+    })
+
+    const response = await this.calendar.events.list({
+      calendarId: 'primary',
+      syncToken,
+      showDeleted: true,
+    })
+
+    const changes: CalendarEventChange[] = (response.data.items || [])
+      .filter((event) => !!event.id)
+      .map((event) => ({
+        googleEventId: event.id!,
+        status: event.status || 'confirmed',
+        startDateTime:
+          event.start?.dateTime ?? event.start?.date ?? undefined,
+        endDateTime: event.end?.dateTime ?? event.end?.date ?? undefined,
+      }))
+
+    return {
+      changes,
+      nextSyncToken: response.data.nextSyncToken || syncToken,
+    }
   }
 }

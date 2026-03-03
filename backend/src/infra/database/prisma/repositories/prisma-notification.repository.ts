@@ -42,4 +42,20 @@ export class PrismaNotificationsRepository implements NotificationsRepository {
       data,
     })
   }
+
+  async findManyByRecipientId(
+    recipientId: string,
+    params?: { unreadOnly?: boolean; limit?: number },
+  ): Promise<Notification[]> {
+    const notifications = await this.prisma.notification.findMany({
+      where: {
+        recipientId,
+        ...(params?.unreadOnly ? { readAt: null } : {}),
+      },
+      orderBy: { sentAt: 'desc' },
+      take: params?.limit ?? 50,
+    })
+
+    return notifications.map(PrismaNotificationMapper.toDomain)
+  }
 }

@@ -6,6 +6,7 @@ import { AppointmentCreatedEvent } from '../events/appointment-created-event'
 import { CanceledAppointmentEvent } from '../events/canceled-appointment'
 import { ConfirmedAppointmentEvent } from '../events/confirmed-appointment'
 import { FinishedAppointmentEvent } from '../events/finished-appointment'
+import { RescheduledAppointmentEvent } from '../events/rescheduled-appointment'
 import { ScheduledAppointmentEvent } from '../events/scheduled-appointment-event'
 import { Reminders } from './reminders'
 
@@ -239,6 +240,24 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
 
     this.props.rescheduleDateTime = rescheduleDateTime
     this.props.status = 'RESCHEDULED'
+    this.touch()
+
+    this.addDomainEvent(new RescheduledAppointmentEvent(this))
+  }
+
+  /**
+   * Updates appointment times when the change originates from Google Calendar.
+   * Directly mutates startDateTime/endDateTime (and rescheduleDateTime if set)
+   * without firing any domain event, preventing a circular sync loop.
+   */
+  public syncFromGoogleCalendar(times: { start: Date; end: Date }) {
+    this.props.startDateTime = times.start
+    this.props.endDateTime = times.end
+
+    if (this.props.rescheduleDateTime) {
+      this.props.rescheduleDateTime = times
+    }
+
     this.touch()
   }
 

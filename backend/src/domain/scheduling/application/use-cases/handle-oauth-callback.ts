@@ -1,6 +1,7 @@
 import { Either, left, right } from '@/core/either'
 import { Injectable } from '@nestjs/common'
 import { GoogleCalendarTokenRepository } from '../repositories/google-calendar-token.repository'
+import { RegisterCalendarWatchUseCase } from './register-calendar-watch'
 
 export interface HandleOAuthCallbackUseCaseRequest {
   code: string
@@ -14,7 +15,10 @@ export type HandleOAuthCallbackUseCaseResponse = Either<
 
 @Injectable()
 export class HandleOAuthCallbackUseCase {
-  constructor(private tokenRepository: GoogleCalendarTokenRepository) {}
+  constructor(
+    private tokenRepository: GoogleCalendarTokenRepository,
+    private registerCalendarWatch: RegisterCalendarWatchUseCase,
+  ) {}
 
   async execute({
     code,
@@ -25,6 +29,14 @@ export class HandleOAuthCallbackUseCase {
         professionalId,
         code,
       )
+
+      // Auto-register push notifications — non-blocking, degraded mode if it fails
+      this.registerCalendarWatch.execute({ professionalId }).catch((error) => {
+        console.warn(
+          `[HandleOAuthCallbackUseCase] Failed to register calendar watch for professional ${professionalId}:`,
+          error,
+        )
+      })
 
       return right({
         googleAccountEmail,

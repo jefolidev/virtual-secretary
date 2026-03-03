@@ -51,9 +51,9 @@ export class InMemoryUserRepository implements UserRepository {
         return !!user.whatsappNumber
       })
 
-      users = filtered.map((user) =>
+      user = filtered.map((u) =>
         UserClientWhatsappAppointments.create({
-          user,
+          user: u,
           client: null,
           whatsappContact: null,
           appointments: [],
@@ -63,15 +63,15 @@ export class InMemoryUserRepository implements UserRepository {
 
     const contacts: WhatsappContact[] = [] // In-memory repo doesn't store whatsapp contacts
 
-    if (users.length === 0 && contacts.length === 0) return null
+    if (user.length === 0 && contacts.length === 0) return null
 
-    if (users.length > 0) {
+    if (user.length > 0) {
       if (order === 'name') {
-        users.sort((a, b) =>
+        user.sort((a, b) =>
           (a.user?.name || '').localeCompare(b.user?.name || ''),
         )
       } else if (order === 'more_appointments') {
-        users.sort((a, b) => {
+        user.sort((a, b) => {
           const ac = a?.appointments ? a.appointments.length : 0
           const bc = b?.appointments ? b.appointments.length : 0
           return bc - ac
@@ -80,7 +80,7 @@ export class InMemoryUserRepository implements UserRepository {
     }
 
     return {
-      registred: users,
+      registred: user,
       unlinked: contacts,
     }
   }

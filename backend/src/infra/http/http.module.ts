@@ -1,3 +1,5 @@
+import { FetchProfessionalNotificationsUseCase } from '@/domain/notifications/application/use-cases/fetch-professional-notifications'
+import { ReadNotificationUseCase } from '@/domain/notifications/application/use-cases/read-notification'
 import { AddProfessionalToOrganizationUseCase } from '@/domain/organization/application/use-cases/add-professional-to-organization'
 import { CreateOrganizationUseCase } from '@/domain/organization/application/use-cases/create-organization'
 import { FetchOrganizationByIdUseCase } from '@/domain/organization/application/use-cases/fetch-organization-by-id'
@@ -32,12 +34,14 @@ import { ForgotPasswordUseCase } from '@/domain/scheduling/application/use-cases
 import { HandleOAuthCallbackUseCase } from '@/domain/scheduling/application/use-cases/handle-oauth-callback'
 import { LogoutUseCase } from '@/domain/scheduling/application/use-cases/logout'
 import { PauseAppointmentUseCase } from '@/domain/scheduling/application/use-cases/pause-appointment'
+import { RegisterCalendarWatchUseCase } from '@/domain/scheduling/application/use-cases/register-calendar-watch'
 import { RegisterUserUseCase } from '@/domain/scheduling/application/use-cases/register-user'
 import { RescheduleAppointmentUseCase } from '@/domain/scheduling/application/use-cases/reschedule-appointment'
 import { StartAppointmentUseCase } from '@/domain/scheduling/application/use-cases/start-appointment'
 import { Module } from '@nestjs/common'
 import { CryptographyModule } from '../cryptography/cryptography.module'
 import { DatabaseModule } from '../database/database.module'
+import { GoogleOAuthCallbackController } from '../webhooks/google-calendar/controllers/handle-oauth-callback.controller'
 import { AddProfessionalToOrganizationController } from './controllers/add-professional-to-organization.controller'
 import { AuthenticateController } from './controllers/authenticate.controller'
 import { CancelAppointmentController } from './controllers/cancel-appointment.controller'
@@ -62,19 +66,20 @@ import { FetchClientController } from './controllers/fetch-clients.controller'
 import { FetchOrganizationByIdController } from './controllers/fetch-organization-by-id.controller'
 import { FetchOrganizationController } from './controllers/fetch-organizations.controller'
 import { FetchProfessionalWithNotificationSettingsController } from './controllers/fetch-professional-notification-settings.controller'
+import { FetchProfessionalNotificationsController } from './controllers/fetch-professional-notifications.controller'
 import { FetchProfessionalSettingsController } from './controllers/fetch-professional-settings.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { FetchUsersContactsController } from './controllers/fetch-users-contacts.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
+import { GoogleOAuthInitController } from './controllers/google-oauth-init.controller'
 import { LogoutController } from './controllers/logout.controller'
 import { MeController } from './controllers/me.controller'
 import { PauseAppointmentController } from './controllers/pause-appointment.controller'
+import { ReadNotificationController } from './controllers/read-notification.controller'
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
 import { RescheduleAppointmentController } from './controllers/reschedule-appointment.controller'
 import { StartAppointmentController } from './controllers/start-appointment.controller'
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
-import { GoogleOAuthCallbackController } from '../webhooks/google-calendar/controllers/handle-oauth-callback.controller'
-import { GoogleOAuthInitController } from './controllers/google-oauth-init.controller'
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -103,14 +108,16 @@ import { GoogleOAuthInitController } from './controllers/google-oauth-init.contr
     FetchOrganizationController,
     FetchOrganizationByIdController,
     FetchProfessionalController,
+    FetchProfessionalNotificationsController,
     FetchProfessionalSettingsController,
     FetchProfessionalWithNotificationSettingsController,
     ForgotPasswordController,
-    GoogleOAuthCallbackController, // ← novo
-    GoogleOAuthInitController, // ← novo
+    GoogleOAuthCallbackController,
+    GoogleOAuthInitController,
     LogoutController,
     MeController,
     PauseAppointmentController,
+    ReadNotificationController,
     RemoveProfessionalFromOrganizationController,
     RescheduleAppointmentController,
     StartAppointmentController,
@@ -140,15 +147,18 @@ import { GoogleOAuthInitController } from './controllers/google-oauth-init.contr
     FetchAvailableSlotsUseCase,
     FetchClientsUseCase,
     FetchOrganizationByIdUseCase,
+    FetchProfessionalNotificationsUseCase,
     FetchProfessionalUseCase,
     FetchProfessionalWithNotificationSettingsUseCase,
     FetchProfessionalScheduleSettingsUseCase,
     FetchScheduleByClientIdUseCase,
     FetchScheduleByProfessionalIdUseCase,
     ForgotPasswordUseCase,
-    HandleOAuthCallbackUseCase, // ← novo
+    HandleOAuthCallbackUseCase,
     LogoutUseCase,
     PauseAppointmentUseCase,
+    ReadNotificationUseCase,
+    RegisterCalendarWatchUseCase,
     RegisterUserUseCase,
     RemoveProfessionalFromOrganizationUseCase,
     RescheduleAppointmentUseCase,

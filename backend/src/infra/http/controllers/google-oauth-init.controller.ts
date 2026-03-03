@@ -2,6 +2,7 @@ import { GoogleCalendarTokenRepository } from '@/domain/scheduling/application/r
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { CurrentUser } from '@/infra/auth/current-user-decorator'
 import { UserPayload } from '@/infra/auth/jwt.strategy'
+import { Public } from '@/infra/auth/public'
 import { Controller, Get, Res } from '@nestjs/common'
 import { Response } from 'express'
 
@@ -13,6 +14,7 @@ export class GoogleOAuthInitController {
   ) {}
 
   @Get('/connect')
+  @Public()
   async connect(
     @CurrentUser() { sub: userId }: UserPayload,
     @Res() res: Response,

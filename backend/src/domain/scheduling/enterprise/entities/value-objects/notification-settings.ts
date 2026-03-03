@@ -13,6 +13,8 @@ export type NotificationType =
   | 'FIRST_REMINDER'
   | 'USER_CONFIRMATION'
   | 'FINAL_REMINDER'
+  | 'CALENDAR_SYNC_UPDATED'
+  | 'CALENDAR_SYNC_CANCELLED'
 
 interface NotificationSettingsProps {
   enabledTypes: NotificationType[]

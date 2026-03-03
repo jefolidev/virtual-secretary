@@ -20,6 +20,7 @@ export const envSchema = z.object({
   API_URI: z.string().optional().default('http://localhost:'),
   FRONTEND_URL: z.string().optional().default('http://localhost:5173'),
   GOOGLE_REDIRECT_URI: z.string().optional(),
+  GOOGLE_WEBHOOK_URL: z.string().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>

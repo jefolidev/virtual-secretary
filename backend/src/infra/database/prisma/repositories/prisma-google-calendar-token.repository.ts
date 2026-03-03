@@ -1,15 +1,19 @@
-import { GoogleCalendarTokenRepository } from '@/domain/scheduling/application/repositories/google-calendar-token.repository'
+import {
+    GoogleCalendarTokenRepository,
+    WatchChannelData,
+} from '@/domain/scheduling/application/repositories/google-calendar-token.repository'
 import { Env } from '@/infra/env/env'
 import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import * as crypto from 'crypto'
 import type { OAuth2Client } from 'google-auth-library'
-import { google } from 'googleapis'
+import { calendar_v3, google } from 'googleapis'
 import { PrismaService } from '../prisma.service'
 
 @Injectable()
 export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenRepository {
   private oauth2Client: OAuth2Client
+  private calendar: calendar_v3.Calendar
 
   constructor(
     private readonly prisma: PrismaService,
@@ -29,6 +33,8 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
       clientId: this.configService.get('GOOGLE_CALENDAR_CLIENT_ID'),
       clientSecret: this.configService.get('GOOGLE_CALENDAR_SECRET'),
     })
+
+    this.calendar = google.calendar({ version: 'v3', auth: this.oauth2Client })
   }
 
   async findByProfessionalId(professionalId: string) {
@@ -152,5 +158,142 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
       where: { id: professionalId },
       data: { googleConnectionStatus: 'ERROR' },
     })
+  }
+
+  async registerWatch(
+    professionalId: string,
+    webhookUrl: string,
+  ): Promise<WatchChannelData> {
+    const token = await this.prisma.googleCalendarToken.findUnique({
+      where: { professionalId },
+    })
+
+    if (!token) {
+      throw new Error('Professional has not connected Google Calendar')
+    }
+
+    this.oauth2Client.setCredentials({
+      access_token: token.accessToken,
+      refresh_token: token.refreshToken,
+      token_type: token.tokenType,
+      expiry_date: Number(token.expiryDate),
+    })
+
+    const channelId = crypto.randomUUID()
+
+    const watchResponse = await this.calendar.events.watch({
+      calendarId: 'primary',
+      requestBody: {
+        id: channelId,
+        type: 'web_hook',
+        address: webhookUrl,
+      },
+    })
+
+    const expiration = new Date(Number(watchResponse.data.expiration))
+    const resourceId = watchResponse.data.resourceId || ''
+
+    // Paginate until we reach the last page, which carries nextSyncToken
+    let syncToken = ''
+    let pageToken: string | undefined = undefined
+    do {
+      const listResponse = await this.calendar.events.list({
+        calendarId: 'primary',
+        maxResults: 250,
+        pageToken,
+      })
+      if (listResponse.data.nextSyncToken) {
+        syncToken = listResponse.data.nextSyncToken
+        break
+      }
+      pageToken = listResponse.data.nextPageToken ?? undefined
+    } while (pageToken)
+
+    const watchData: WatchChannelData = {
+      channelId,
+      resourceId,
+      expiration,
+      syncToken,
+    }
+
+    await this.saveWatchChannel(professionalId, watchData)
+
+    return watchData
+  }
+
+  async findByChannelId(channelId: string): Promise<{
+    professionalId: string
+    accessToken: string
+    refreshToken: string
+    tokenType: string
+    expiryDate: bigint | null
+    syncToken: string | null
+    watchChannelId: string | null
+    watchExpiration: Date | null
+  } | null> {
+    const token = await this.prisma.googleCalendarToken.findUnique({
+      where: { watchChannelId: channelId },
+    })
+
+    if (!token) return null
+
+    return {
+      professionalId: token.professionalId,
+      accessToken: token.accessToken,
+      refreshToken: token.refreshToken,
+      tokenType: token.tokenType,
+      expiryDate: token.expiryDate,
+      syncToken: token.syncToken,
+      watchChannelId: token.watchChannelId,
+      watchExpiration: token.watchExpiration,
+    }
+  }
+
+  async findByGoogleEmail(
+    email: string,
+  ): Promise<{ professionalId: string; syncToken: string | null } | null> {
+    const token = await this.prisma.googleCalendarToken.findFirst({
+      where: { googleAccountEmail: email },
+      select: { professionalId: true, syncToken: true },
+    })
+
+    return token ?? null
+  }
+
+  async saveWatchChannel(
+    professionalId: string,
+    data: WatchChannelData,
+  ): Promise<void> {
+    await this.prisma.googleCalendarToken.update({
+      where: { professionalId },
+      data: {
+        watchChannelId: data.channelId,
+        watchResourceId: data.resourceId,
+        watchExpiration: data.expiration,
+        syncToken: data.syncToken,
+      },
+    })
+  }
+
+  async updateSyncToken(
+    professionalId: string,
+    syncToken: string,
+  ): Promise<void> {
+    await this.prisma.googleCalendarToken.update({
+      where: { professionalId },
+      data: { syncToken },
+    })
+  }
+
+  async findExpiringWatches(beforeDate: Date): Promise<string[]> {
+    const tokens = await this.prisma.googleCalendarToken.findMany({
+      where: {
+        watchChannelId: { not: null },
+        watchExpiration: { lte: beforeDate },
+      },
+      select: { professionalId: true },
+    })
+
+    return tokens.map((t) => t.professionalId)
   }
 }

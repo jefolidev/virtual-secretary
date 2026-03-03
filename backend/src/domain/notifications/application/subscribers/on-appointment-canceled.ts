@@ -2,6 +2,7 @@ import { DomainEvents } from '@/core/events/domain-events'
 import type { EventHandler } from '@/core/events/event-handler'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
+import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { CanceledAppointmentEvent } from '@/domain/scheduling/enterprise/events/canceled-appointment'
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
@@ -12,6 +13,7 @@ export class OnAppointmentCanceled implements EventHandler {
   constructor(
     private professionalRepository: ProfessionalRepository,
     private clientRepository: ClientRepository,
+    private userRepository: UserRepository,
     private sendNotification: SendNotificationUseCase,
   ) {
     this.setupSubscriptions()
@@ -28,7 +30,7 @@ export class OnAppointmentCanceled implements EventHandler {
     appointment,
   }: CanceledAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
-      appointment.professionalId.toString().toString(),
+      appointment.professionalId.toString(),
     )
 
     const client = await this.clientRepository.findById(
@@ -36,8 +38,14 @@ export class OnAppointmentCanceled implements EventHandler {
     )
 
     if (professional && client) {
+      const professionalUser = await this.userRepository.findByProfessionalId(
+        professional.id.toString(),
+      )
+
+      if (!professionalUser) return
+
       await this.sendNotification.execute({
-        recipientId: professional.id.toString(),
+        recipientId: professionalUser.id.toString(),
         title: `Consulta cancelada`,
         content: `O paciente cancelou a consulta do dia ${dayjs(
           appointment.startDateTime,
