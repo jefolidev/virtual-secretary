@@ -22,9 +22,6 @@ export class OnAppointmentCreated implements EventHandler {
     const { appointment } = event
 
     if (!appointment.syncWithGoogleCalendar) {
-      console.log(
-        `[OnAppointmentCreated] Skipping Google Calendar sync for appointment ${appointment.id.toString()}`,
-      )
       return
     }
 
@@ -41,10 +38,6 @@ export class OnAppointmentCreated implements EventHandler {
           return
         }
       }
-
-      // console.log(
-      //   `[OnAppointmentCreated] Calendar event created successfully: ${result.value.eventLink}`,
-      // )
     } catch (error) {
       console.error(
         `[OnAppointmentCreated] Unexpected error creating Google Calendar event:`,
