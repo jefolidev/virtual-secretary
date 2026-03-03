@@ -36,13 +36,13 @@ export class Evaluation extends AggregateRoot<EvaluationProps> {
   }
 
   static create(
-    props: Omit<EvaluationProps, 'createdAt'>,
+    props: Omit<EvaluationProps, 'createdAt'> & { createdAt?: Date },
     id?: UniqueEntityId,
   ): Evaluation {
     const evaluation = new Evaluation(
       {
         ...props,
-        createdAt: new Date(),
+        createdAt: props.createdAt ?? new Date(),
       },
       id,
     )

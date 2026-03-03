@@ -1,3 +1,4 @@
+import { GetEvaluationStatsUseCase } from '@/domain/evaluation/application/use-case/get-evaluation-stats'
 import { FetchProfessionalNotificationsUseCase } from '@/domain/notifications/application/use-cases/fetch-professional-notifications'
 import { ReadNotificationUseCase } from '@/domain/notifications/application/use-cases/read-notification'
 import { AddProfessionalToOrganizationUseCase } from '@/domain/organization/application/use-cases/add-professional-to-organization'
@@ -71,6 +72,7 @@ import { FetchProfessionalSettingsController } from './controllers/fetch-profess
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
 import { FetchUsersContactsController } from './controllers/fetch-users-contacts.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
+import { GetEvaluationStatsController } from './controllers/get-evaluation-stats.controller'
 import { GoogleOAuthInitController } from './controllers/google-oauth-init.controller'
 import { LogoutController } from './controllers/logout.controller'
 import { MeController } from './controllers/me.controller'
@@ -112,6 +114,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchProfessionalSettingsController,
     FetchProfessionalWithNotificationSettingsController,
     ForgotPasswordController,
+    GetEvaluationStatsController,
     GoogleOAuthCallbackController,
     GoogleOAuthInitController,
     LogoutController,
@@ -153,6 +156,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     FetchProfessionalScheduleSettingsUseCase,
     FetchScheduleByClientIdUseCase,
     FetchScheduleByProfessionalIdUseCase,
+    GetEvaluationStatsUseCase,
     ForgotPasswordUseCase,
     HandleOAuthCallbackUseCase,
     LogoutUseCase,

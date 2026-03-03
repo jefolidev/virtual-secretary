@@ -398,3 +398,38 @@ GET {{baseUrl}}/webhooks/calendar/google/auth/google
 # @name google_auth_callback
 # Google OAuth callback (automatic redirect from Google)
 GET {{baseUrl}}/webhooks/calendar/google/auth/callback
+
+###
+
+ # Estatísticas de hoje
+GET {{baseUrl}}/professionals/196f181f-b0ea-4ea6-8e46-1064bbee8451/evaluations/stats?period=today
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+### 
+
+# Últimos 7 dias
+GET {{baseUrl}}/professionals/196f181f-b0ea-4ea6-8e46-1064bbee8451/evaluations/stats?period=7days
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# Últimos 30 dias com nota mínima 8
+GET {{baseUrl}}/professionals/196f181f-b0ea-4ea6-8e46-1064bbee8451/evaluations/stats?period=30days&minScore=8
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# Range customizado (ignora period se fornecido)
+GET {{baseUrl}}/professionals/196f181f-b0ea-4ea6-8e46-1064bbee8451/evaluations/stats?from=2026-01-01&to=2026-03-01
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+
+# Todas as avaliações
+GET {{baseUrl}}/professionals/196f181f-b0ea-4ea6-8e46-1064bbee8451/evaluations/stats?period=all
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
