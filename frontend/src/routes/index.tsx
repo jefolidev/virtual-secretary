@@ -4,6 +4,7 @@ import { GoogleAuthSuccessPage } from '@/pages/auth/google/success'
 import { ListClientsPage } from '@/pages/clients/list-clients'
 import { SessionHistory } from '@/pages/clients/session-history'
 import { LoginPage } from '@/pages/login'
+import { NotificationsPage } from '@/pages/notifications'
 import { OAuthCallbackPage } from '@/pages/oauth-callback'
 import { ScheduleCalendarPage } from '@/pages/schedule/calendar'
 import { SettingsPage } from '@/pages/settings'
@@ -127,6 +128,10 @@ export const router = createBrowserRouter([
           {
             path: `/${ScreensEnum.FINANCE}`,
             element: <div>Financeiro</div>,
+          },
+          {
+            path: `/${ScreensEnum.NOTIFICATIONS}/`,
+            element: <NotificationsPage />,
           },
           // Clinic Settings
           {

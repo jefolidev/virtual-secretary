@@ -22,7 +22,6 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/contexts/auth-context'
-import { useNotifications } from '@/hooks/use-notifications'
 import { ThemeProvider, useTheme } from '@/hooks/use-theme'
 import { UserProvider } from '@/hooks/use-user'
 import {
@@ -39,11 +38,12 @@ import {
   Settings,
   Star,
   Sun,
-  Users
+  Users,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
 import { NotificationDropdown } from './components/notification-dropdown'
+import { ScreensEnum } from './types/screens'
 
 const menuItems = [
   {
@@ -99,13 +99,11 @@ function AppContent() {
 
   const [expandedMenus, setExpandedMenus] = useState<string[]>([])
 
-  // Estado persistente da sidebar
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     const saved = localStorage.getItem('sidebar-open')
     return saved !== null ? JSON.parse(saved) : true
   })
 
-  // Salvar estado da sidebar no localStorage
   useEffect(() => {
     localStorage.setItem('sidebar-open', JSON.stringify(sidebarOpen))
   }, [sidebarOpen])
@@ -128,11 +126,9 @@ function AppContent() {
     )
   }
 
-  // Rotas que não devem mostrar a sidebar
   const publicRoutes = ['/login', '/signup']
   const isPublicRoute = publicRoutes.includes(location.pathname)
 
-  // Se for rota pública, só renderiza o Outlet sem sidebar
   if (isPublicRoute) {
     return <Outlet />
   }
@@ -292,16 +288,21 @@ function AppContent() {
                     <div className="py-1">
                       <DropdownMenuItem asChild className="mx-1">
                         <Link
-                          to="/settings"
+                          to={`/${ScreensEnum.SETTINGS}/`}
                           className="flex items-center gap-2 px-2 py-1.5"
                         >
                           <Settings className="h-4 w-4" />
                           Configurações
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuItem className="mx-1 flex items-center gap-2 px-2 py-1.5">
-                        <Bell className="h-4 w-4" />
-                        <span>Notificações</span>
+                      <DropdownMenuItem asChild className="mx-1">
+                        <Link
+                          to={`/${ScreensEnum.NOTIFICATIONS}`}
+                          className="flex items-center gap-2 px-2 py-1.5"
+                        >
+                          <Bell className="h-4 w-4" />
+                          <span>Notificações</span>
+                        </Link>
                       </DropdownMenuItem>
                     </div>
                     <Separator />

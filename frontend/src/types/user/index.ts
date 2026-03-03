@@ -1,3 +1,5 @@
+import type { NotificationType } from "@/api/endpoints/notifications/dto"
+
 export interface User {
   id: string
   email: string
@@ -10,14 +12,6 @@ export interface User {
   createdAt: string
   updatedAt: string
 }
-
-export type NotificationType =
-  | 'NEW_APPOINTMENT'
-  | 'CANCELLATION'
-  | 'CONFIRMATION'
-  | 'DAILY_SUMMARY'
-  | 'CONFIRMED_LIST'
-  | 'PAYMENT_STATUS'
 
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6
 
