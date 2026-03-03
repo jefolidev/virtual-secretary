@@ -22,6 +22,7 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { useAuth } from '@/contexts/auth-context'
+import { useNotifications } from '@/hooks/use-notifications'
 import { ThemeProvider, useTheme } from '@/hooks/use-theme'
 import { UserProvider } from '@/hooks/use-user'
 import {
@@ -38,10 +39,11 @@ import {
   Settings,
   Star,
   Sun,
-  Users,
+  Users
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useLocation } from 'react-router'
+import { NotificationDropdown } from './components/notification-dropdown'
 
 const menuItems = [
   {
@@ -236,85 +238,88 @@ function AppContent() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>
-          <div className="p-1 group-data-[collapsible=icon]:p-1">
-            {user && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <div className="cursor-pointer hover:bg-accent rounded-md p-1 transition-colors group-data-[collapsible=icon]:p-1 group-data-[collapsible=icon]:rounded-full">
-                    <div className="flex items-center gap-1.5 group-data-[collapsible=icon]:justify-center">
-                      <Avatar className="w-6 h-6 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8">
-                        <AvatarFallback
-                          className={`text-white text-xs font-medium group-data-[collapsible=icon]:text-sm ${
+        <SidebarFooter className="pr-2.5">
+          {user && (
+            <div className="p-1 group-data-[collapsible=icon]:p-1">
+              <div className="flex flex-nowrap items-center group-data-[collapsible=icon]:gap-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="cursor-pointer hover:bg-accent rounded-md p-1 transition-colors group-data-[collapsible=icon]:p-1 group-data-[collapsible=icon]:rounded-full">
+                      <div className="flex items-center gap-1.5 group-data-[collapsible=icon]:justify-center">
+                        <Avatar className="w-6 h-6 group-data-[collapsible=icon]:w-8 group-data-[collapsible=icon]:h-8">
+                          <AvatarFallback
+                            className={`text-white text-xs font-medium group-data-[collapsible=icon]:text-sm ${
+                              theme === 'dark' ? 'bg-blue-500' : 'bg-purple-600'
+                            }`}
+                            title={user.name}
+                          >
+                            {user.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
+                          <p className="text-xs font-medium truncate">
+                            {user.name}
+                          </p>
+                        </div>
+                        <div className="flex flex-col group-data-[collapsible=icon]:hidden">
+                          <ChevronUp className="h-1.5 w-1.5" />
+                          <ChevronDown className="h-1.5 w-1.5" />
+                        </div>
+                      </div>
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64 ml-16">
+                    <div className="px-3 py-2">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold ${
                             theme === 'dark' ? 'bg-blue-500' : 'bg-purple-600'
                           }`}
-                          title={user.name}
                         >
                           {user.name.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0 group-data-[collapsible=icon]:hidden">
-                        <p className="text-xs font-medium truncate">
-                          {user.name}
-                        </p>
-                      </div>
-                      <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-                        <ChevronUp className="h-1.5 w-1.5" />
-                        <ChevronDown className="h-1.5 w-1.5" />
-                      </div>
-                    </div>
-                  </div>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-64 ml-16">
-                  <div className="px-3 py-2">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold ${
-                          theme === 'dark' ? 'bg-blue-500' : 'bg-purple-600'
-                        }`}
-                      >
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">
-                          {user.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {user.email}
-                        </p>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">
+                            {user.name}
+                          </p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <Separator />
-                  <div className="py-1">
-                    <DropdownMenuItem asChild className="mx-1">
-                      <Link
-                        to="/settings"
-                        className="flex items-center gap-2 px-2 py-1.5"
+                    <Separator />
+                    <div className="py-1">
+                      <DropdownMenuItem asChild className="mx-1">
+                        <Link
+                          to="/settings"
+                          className="flex items-center gap-2 px-2 py-1.5"
+                        >
+                          <Settings className="h-4 w-4" />
+                          Configurações
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="mx-1 flex items-center gap-2 px-2 py-1.5">
+                        <Bell className="h-4 w-4" />
+                        <span>Notificações</span>
+                      </DropdownMenuItem>
+                    </div>
+                    <Separator />
+                    <div className="py-1">
+                      <DropdownMenuItem
+                        onClick={logout}
+                        className="mx-1 flex items-center gap-2 px-2 py-1.5 "
                       >
-                        <Settings className="h-4 w-4" />
-                        Configurações
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="mx-1 flex items-center gap-2 px-2 py-1.5">
-                      <Bell className="h-4 w-4" />
-                      <span>Notificações</span>
-                    </DropdownMenuItem>
-                  </div>
-                  <Separator />
-                  <div className="py-1">
-                    <DropdownMenuItem
-                      onClick={logout}
-                      className="mx-1 flex items-center gap-2 px-2 py-1.5 "
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Sair
-                    </DropdownMenuItem>
-                  </div>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
+                        <LogOut className="h-4 w-4" />
+                        Sair
+                      </DropdownMenuItem>
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <NotificationDropdown />
+              </div>
+            </div>
+          )}
         </SidebarFooter>
       </Sidebar>
 

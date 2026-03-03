@@ -1,22 +1,20 @@
 import { appointmentsServices } from '@/api/endpoints/appointments'
 import type { FetchProfessionalSchedulesListResponse } from '@/api/endpoints/appointments/dto'
 import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/contexts/auth-context'
 import { useProfessional } from '@/contexts/professional-context'
+import { useQuery } from '@tanstack/react-query'
 import { Calendar as CalendarIcon } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { CalendarToolbar } from './components/calendar-toolbar'
 import { WeekScheduleGrid } from './components/week-schedule-grid'
 import type { CalendarFilters, ViewMode } from './types'
 import { getWeekDays } from './utils'
 
 export function ScheduleCalendarPage() {
-  const { user } = useAuth()
-
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedPatient, setSelectedPatient] = useState('all')
-
-  const viewMode: ViewMode = 'week'
 
   const [filters, setFilters] = useState<CalendarFilters>({
     showAgendado: true,
@@ -29,8 +27,12 @@ export function ScheduleCalendarPage() {
     showCancelado: true,
   })
 
+  const { user } = useAuth()
+
+  const viewMode: ViewMode = 'week'
   const {
     currentProfessionalSchedules,
+    isProfessionalContextLoading,
     handleSetIsProfessionalContextLoading,
     handleSetCurrentProfessionalSchedules,
   } = useProfessional()
@@ -73,8 +75,6 @@ export function ScheduleCalendarPage() {
         })
       }
 
-      console.log('agendamentos carregados:', allAppointments)
-
       handleSetCurrentProfessionalSchedules(allAppointments)
     } catch (error) {
       console.error('Erro ao buscar horários do profissional:', error)
@@ -83,9 +83,15 @@ export function ScheduleCalendarPage() {
     }
   }, [])
 
-  useEffect(() => {
-    handleFetchProfessionalSchedules()
-  }, [])
+  useQuery({
+    queryKey: ['professionalSchedules', user?.professional_id],
+    queryFn: handleFetchProfessionalSchedules,
+    refetchInterval: 30_000,
+  })
+
+  // useEffect(() => {
+  //   handleFetchProfessionalSchedules()
+  // }, [])
 
   const navigateDate = (direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate)
@@ -122,7 +128,11 @@ export function ScheduleCalendarPage() {
           <div className="flex items-center gap-3 shrink-0 pb-2">
             <CalendarIcon className="h-5 w-5 text-primary" />
             <span className="text-2xl font-bold">
-              {currentProfessionalSchedules?.length ?? 0}
+              {isProfessionalContextLoading ? (
+                <Skeleton className="h-6 w-12" />
+              ) : (
+                (currentProfessionalSchedules?.length ?? 0)
+              )}
             </span>
             <span className="text-muted-foreground">agendamentos totais</span>
           </div>
@@ -133,6 +143,7 @@ export function ScheduleCalendarPage() {
               viewMode={viewMode}
               selectedPatient={selectedPatient}
               filters={filters}
+              isLoading={isProfessionalContextLoading}
               uniquePatients={uniquePatients}
               onDateNavigate={navigateDate}
               onGoToToday={goToToday}

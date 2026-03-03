@@ -62,11 +62,11 @@ export function RescheduleModal({ clientId }: RescheduleModalProps) {
   const [hasOverlap, setHasOverlap] = useState(false)
   const [isOpen, setIsOpen] = useState(false)
 
-  const { user, handleLoginWithGoogle } = useAuth()
+  const { user, syncWithGoogle } = useAuth()
   const { professionalSettings, fetchProfessionalSettings } = useUser()
 
   const handleConnectGoogle = async () => {
-    await handleLoginWithGoogle()
+    await syncWithGoogle()
     await fetchProfessionalSettings()
   }
 

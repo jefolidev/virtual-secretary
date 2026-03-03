@@ -3,6 +3,7 @@ import type {
   FetchProfessionalSchedulesListResponse,
   FetchProfessionalSchedulesResponse,
 } from '@/api/endpoints/appointments/dto'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useState } from 'react'
 import { useAuth } from './auth-context'
 
@@ -65,20 +66,24 @@ export function ProfessionalProvider({
     setIsProfessionalContextLoading(loading)
   }
 
-  return (
-    <ProfessionalContext.Provider
-      value={{
-        isProfessionalContextLoading,
-        currentProfessionalSchedules,
-        totalPages,
+  const queryClient = new QueryClient()
 
-        handleFetchProfessionalSchedules,
-        handleSetCurrentProfessionalSchedules,
-        handleSetIsProfessionalContextLoading,
-      }}
-    >
-      {children}
-    </ProfessionalContext.Provider>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ProfessionalContext.Provider
+        value={{
+          isProfessionalContextLoading,
+          currentProfessionalSchedules,
+          totalPages,
+
+          handleFetchProfessionalSchedules,
+          handleSetCurrentProfessionalSchedules,
+          handleSetIsProfessionalContextLoading,
+        }}
+      >
+        {children}
+      </ProfessionalContext.Provider>
+    </QueryClientProvider>
   )
 }
 

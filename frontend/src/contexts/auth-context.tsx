@@ -149,6 +149,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (credentials: LoginCredentials) => Promise<void>
+  syncWithGoogle: () => Promise<void>
   handleLoginWithGoogle: () => Promise<void>
   signup: (data: SignupData) => Promise<RegisterResponse>
   logout: () => void
@@ -179,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth()
   }, [checkAuth])
 
-  const handleLoginWithGoogle = () => {
+  const syncWithGoogle = async () => {
     const width = 500
     const height = 600
     const left = window.screenX + (window.outerWidth - width) / 2
@@ -214,6 +215,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     window.addEventListener('message', handleMessage)
+  }
+
+  const handleLoginWithGoogle = async () => {
+    const data = await authServices.loginWithGoogle()
+
+    if (data?.access_token) {
+      authToken.set(data.access_token)
+      await checkAuth()
+    }
+
+    toast.success('Login realizado com sucesso!')
   }
 
   const login = async (credentials: LoginCredentials) => {
@@ -293,6 +305,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signup,
         logout,
         checkAuth,
+        syncWithGoogle,
         handleLoginWithGoogle,
       }}
     >
