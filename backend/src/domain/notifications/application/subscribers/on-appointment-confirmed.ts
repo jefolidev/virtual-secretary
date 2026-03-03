@@ -4,7 +4,6 @@ import { ClientRepository } from '@/domain/scheduling/application/repositories/c
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { ConfirmedAppointmentEvent } from '@/domain/scheduling/enterprise/events/confirmed-appointment'
-import { ScheduledAppointmentEvent } from '@/domain/scheduling/enterprise/events/scheduled-appointment-event'
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
 import { SendNotificationUseCase } from '../use-cases/send-notification'
@@ -29,9 +28,24 @@ export class OnAppointmentConfirmed implements EventHandler {
 
   private async sendConfirmedAppointmentNotification({
     appointment,
-  }: ScheduledAppointmentEvent) {
+  }: ConfirmedAppointmentEvent) {
     const professional = await this.professionalRepository.findById(
       appointment.professionalId.toString(),
+    )
+
+    const user = await this.userRepository.findByProfessionalId(
+      appointment.professionalId.toString(),
+    )
+
+    if (!user) {
+      console.error(
+        `[OnAppointmentConfirmed] User not found for professionalId: ${appointment.professionalId.toString()}`,
+      )
+      return
+    }
+
+    const userClient = await this.userRepository.findByClientId(
+      appointment.clientId.toString(),
     )
 
     const client = await this.clientRepository.findById(
@@ -39,18 +53,14 @@ export class OnAppointmentConfirmed implements EventHandler {
     )
 
     if (professional && client) {
-      const professionalUser = await this.userRepository.findByProfessionalId(
-        professional.id.toString(),
-      )
-
-      if (!professionalUser) return
-
       await this.sendNotification.execute({
-        recipientId: professionalUser.id.toString(),
+        recipientId: user.id.toString(),
         title: `Consulta confirmada`,
-        content: `O paciente confirmou a consulta do dia ${dayjs(
+        content: `${userClient?.name ?? 'O paciente'} confirmou a consulta do dia ${dayjs(
           appointment.startDateTime,
-        ).format('DD/MM/YYYY')}.`,
+        ).format('DD/MM/YYYY')} às ${dayjs(appointment.startDateTime).format(
+          'HH:mm',
+        )}.`,
         reminderType: 'CONFIRMATION',
       })
     }

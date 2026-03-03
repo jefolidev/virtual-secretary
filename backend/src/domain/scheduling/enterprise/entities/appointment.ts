@@ -283,7 +283,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.addDomainEvent(new ConfirmedAppointmentEvent(this))
   }
 
-  public cancel() {
+  public cancel(source?: 'google-calendar' | 'system') {
     if (this.isCompletedOrInProgress()) {
       throw new Error('Cannot cancel a completed or in progress appointment')
     }
@@ -295,7 +295,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
     this.props.status = 'CANCELLED'
     this.touch()
 
-    this.addDomainEvent(new CanceledAppointmentEvent(this))
+    this.addDomainEvent(new CanceledAppointmentEvent(this, source || 'system'))
   }
 
   public start() {

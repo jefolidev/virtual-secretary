@@ -10,6 +10,7 @@ import { GetAuthUrlUseCase } from '@/domain/scheduling/application/use-cases/get
 import { HandleCalendarPushNotificationUseCase } from '@/domain/scheduling/application/use-cases/handle-calendar-push-notification'
 import { HandleOAuthCallbackUseCase } from '@/domain/scheduling/application/use-cases/handle-oauth-callback'
 import { RegisterCalendarWatchUseCase } from '@/domain/scheduling/application/use-cases/register-calendar-watch'
+import { SendNotificationUseCase } from '@/domain/notifications/application/use-cases/send-notification'
 import { GoogleAuthStrategy } from '@/infra/auth/google-auth.strategy'
 import { CryptographyModule } from '@/infra/cryptography/cryptography.module'
 import { DatabaseModule } from '@/infra/database/database.module'
@@ -42,6 +43,7 @@ import { RenewCalendarWatchService } from './renew-calendar-watch.service'
     AuthenticateWithSyncedGoogleUseCase,
     RegisterCalendarWatchUseCase,
     HandleCalendarPushNotificationUseCase,
+    SendNotificationUseCase,
     OnAppointmentCreated,
     OnAppointmentCanceledSync,
     OnAppointmentRescheduled,

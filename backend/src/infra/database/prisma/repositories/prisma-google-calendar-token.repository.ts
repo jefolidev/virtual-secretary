@@ -1,6 +1,6 @@
 import {
-    GoogleCalendarTokenRepository,
-    WatchChannelData,
+  GoogleCalendarTokenRepository,
+  WatchChannelData,
 } from '@/domain/scheduling/application/repositories/google-calendar-token.repository'
 import { Env } from '@/infra/env/env'
 import { Injectable } from '@nestjs/common'
@@ -288,8 +288,15 @@ export class PrismaGoogleCalendarTokenRepository implements GoogleCalendarTokenR
   async findExpiringWatches(beforeDate: Date): Promise<string[]> {
     const tokens = await this.prisma.googleCalendarToken.findMany({
       where: {
-        watchChannelId: { not: null },
-        watchExpiration: { lte: beforeDate },
+        OR: [
+          // Watch exists but is expiring soon
+          {
+            watchChannelId: { not: null },
+            watchExpiration: { lte: beforeDate },
+          },
+          // Has a token (Google connected) but no watch registered yet
+          { watchChannelId: null },
+        ],
       },
       select: { professionalId: true },
     })

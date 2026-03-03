@@ -235,7 +235,7 @@ model CalendarEvent {
 
 model NotificationSettings {
   id                    String             @id @default(uuid())
-  enabledTypes          NotificationType[] @default([CONFIRMATION, CANCELLATION]) @map("enabled_types")
+  enabledTypes          NotificationType[] @default([CONFIRMATION, CANCELLATION, CALENDAR_SYNC_CANCELLED, CALENDAR_SYNC_UPDATED]) @map("enabled_types")
   reminderBeforeMinutes Int                @default(10) @map("reminder_before_minutes")
   dailySummaryTime      String             @default("12:00") @map("daily_summary_time")
 

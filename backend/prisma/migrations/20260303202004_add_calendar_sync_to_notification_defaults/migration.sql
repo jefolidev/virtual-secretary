@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "notification_settings" ALTER COLUMN "enabled_types" SET DEFAULT ARRAY['CONFIRMATION', 'CANCELLATION', 'CALENDAR_SYNC_CANCELLED', 'CALENDAR_SYNC_UPDATED']::"NotificationType"[];

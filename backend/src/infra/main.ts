@@ -18,7 +18,17 @@ async function bootstrap() {
     origin: corsOrigin.split(',').map((origin) => origin.trim()),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-goog-channel-id',
+      'x-goog-resource-id',
+      'x-goog-resource-state',
+      'x-goog-resource-uri',
+      'x-goog-message-number',
+      'x-goog-changed',
+    ],
+    exposedHeaders: ['*'],
   })
 
   app.use(cookieParser())

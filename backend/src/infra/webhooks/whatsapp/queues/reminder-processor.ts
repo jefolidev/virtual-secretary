@@ -58,20 +58,34 @@ export class WhatsappRemindersProcessor extends WorkerHost {
     }
 
     switch (job.name) {
-      case 'send-24h-reminder':
-        try {
-          await this.whatsappService.sendMessage(
-            user.whatsappNumber,
-            `Olá ${user.name}! Esta é uma mensagem automática para lembrá-lo do seu compromisso agendado para *${appointment.startDateTime.toLocaleString()}*, com o(a) doutor(a) *${professional.name}*.
-            
-Confirme sua presença enviando *confirmar*, ou *cancelar* para cancelar.
+      case 'send-24h-reminder': {
+        const now = Date.now()
+        const appointmentTime = appointment.startDateTime.getTime()
 
-Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será considerado como não confirmado. Se precisar reagendar ou cancelar, por favor, entre em contato conosco. Obrigado!`,
-          )
+        const cancellationPolicy =
+          await this.prisma.cancellationPolicy.findFirst({
+            where: {
+              professionalId: appointment.professionalId.toString(),
+            },
+          })
 
-          await this.appointmentRepository.markReminderAsSended(
-            appointment.id.toString(),
-            'D1_REMINDER',
+        const minNoticeHours =
+          cancellationPolicy?.minHoursBeforeCancellation ?? 3
+        const minNoticeMs = minNoticeHours * 60 * 60 * 1000
+
+        const confirmationDeadline = new Date(appointmentTime - minNoticeMs)
+        const timeUntilDeadline = confirmationDeadline.getTime() - now
+
+        const appointmentDateStr =
+          appointment.startDateTime.toLocaleString('pt-BR')
+
+        // If there's still time before the confirmation deadline, schedule
+        // the auto-cancel job. Always send the confirmation message regardless.
+        if (timeUntilDeadline > 0) {
+          await this.remindersQueue.add(
+            'auto-cancel-timeout',
+            { appointmentId: appointment.id.toString() },
+            { delay: timeUntilDeadline },
           )
 
           this.redis.set(
@@ -80,12 +94,45 @@ Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será
             'EX',
             7 * 24 * 60 * 60,
           )
+        }
+
+        const deadlineStr = confirmationDeadline.toLocaleTimeString('pt-BR', {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+        const isToday =
+          confirmationDeadline.toDateString() === new Date().toDateString()
+        const deadlineLabel =
+          timeUntilDeadline > 0
+            ? isToday
+              ? `hoje às *${deadlineStr}*`
+              : `*${confirmationDeadline.toLocaleDateString('pt-BR')} às ${deadlineStr}*`
+            : null
+
+        const deadlineClause = deadlineLabel
+          ? `\n\nCaso não responda até ${deadlineLabel}, o compromisso será considerado como não confirmado.`
+          : ''
+
+        try {
+          await this.whatsappService.sendMessage(
+            user.whatsappNumber,
+            `Olá ${user.name}! Esta é uma mensagem automática para lembrá-lo do seu compromisso agendado para *${appointmentDateStr}*, com o(a) doutor(a) *${professional.name}*.
+
+Confirme sua presença enviando *confirmar*, ou *cancelar* para cancelar.${deadlineClause}
+
+Se precisar reagendar ou cancelar, por favor, entre em contato conosco. Obrigado!`,
+          )
         } catch (err) {
           console.error(
-            '[WhatsappRemindersProcessor] Error sending 24h reminder:',
+            '[WhatsappRemindersProcessor] Error sending 24h reminder message:',
             err,
           )
         }
+
+        await this.appointmentRepository.markReminderAsSended(
+          appointment.id.toString(),
+          'D1_REMINDER',
+        )
 
         try {
           await this.whatsappService.markPendingConfirmation(
@@ -96,6 +143,7 @@ Caso não responda em até 12 horas a partir dessa mensagem, o compromisso será
           console.error('Erro ao marcar pending confirmation:', err)
         }
         break
+      }
 
       case 'send-2h-reminder':
         if (appointment.status !== 'CONFIRMED') {

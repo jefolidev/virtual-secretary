@@ -17,8 +17,8 @@ import dayjs from 'dayjs'
 import Redis from 'ioredis'
 import { OpenAiService } from '../openai/openai.service'
 import {
-  ConversationContext,
-  ConversationStatus,
+    ConversationContext,
+    ConversationStatus,
 } from '../openai/types/conversations-flow'
 import { openAiFunctions } from '../openai/types/openai-functions'
 import { CreateClientBodyDTO } from './dto/create-client.dto'
@@ -690,7 +690,7 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
 
     switch (intent) {
       case 'confirm':
-        appointment.status = 'CONFIRMED'
+        appointment.confirm()
         await this.appointmentRepository.save(appointment)
         await this.sendMessage(
           cleanNumber,

@@ -3,18 +3,18 @@ import { PaginationParams } from '@/core/repositories/pagination-params'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { FetchScheduleByProfesionalIdFilters } from '@/domain/scheduling/application/use-cases/fetch-schedule-by-professional-id'
 import {
-  Appointment,
-  AppointmentModalityType,
-  AppointmentStatusType,
+    Appointment,
+    AppointmentModalityType,
+    AppointmentStatusType,
 } from '@/domain/scheduling/enterprise/entities/appointment'
 import { ReminderTypes } from '@/domain/scheduling/enterprise/entities/reminders'
 import { AppointmentWithClient } from '@/domain/scheduling/enterprise/entities/value-objects/appointment-with-client'
 import { InjectRedis } from '@nestjs-modules/ioredis'
 import { InjectQueue } from '@nestjs/bullmq'
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    NotFoundException,
 } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { Queue } from 'bullmq'
@@ -43,6 +43,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       const overlapping = await tx.appointment.findFirst({
         where: {
           professionalId: data.professionalId,
+          status: { not: 'CANCELLED' },
           OR: [
             {
               startDateTime: { lte: data.startDateTime },
@@ -65,14 +66,26 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       }
 
       const consultationTime = new Date(data.startDateTime).getTime()
+      const timeUntilAppointment = consultationTime - Date.now()
 
-      let delay24h = consultationTime - 24 * 60 * 60 * 1000 - Date.now()
-      if (delay24h <= 0) delay24h = 0
+      // Fire the D1 confirmation reminder at different lead times depending on
+      // how far away the appointment is:
+      //   > 24 h  → send 24 h before
+      //   12–24 h → send 6 h before
+      //   < 12 h  → send 4 h before (immediately if < 4 h away)
+      let delayD1: number
+      if (timeUntilAppointment > 24 * 60 * 60 * 1000) {
+        delayD1 = timeUntilAppointment - 24 * 60 * 60 * 1000
+      } else if (timeUntilAppointment > 12 * 60 * 60 * 1000) {
+        delayD1 = Math.max(0, timeUntilAppointment - 6 * 60 * 60 * 1000)
+      } else {
+        delayD1 = Math.max(0, timeUntilAppointment - 4 * 60 * 60 * 1000)
+      }
 
       await this.remindersQueue.add(
         'send-24h-reminder',
         { appointmentId: appointment.id.toString() },
-        { delay: delay24h },
+        { delay: delayD1 },
       )
 
       let delay2h = consultationTime - 2 * 60 * 60 * 1000 - Date.now()

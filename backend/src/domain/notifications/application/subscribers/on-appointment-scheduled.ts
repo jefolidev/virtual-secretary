@@ -44,6 +44,16 @@ export class OnAppointmentScheduled implements EventHandler {
       )
     }
 
+    const userClient = await this.userRepository.findByClientId(
+      appointment.clientId.toString(),
+    )
+
+    if (!userClient) {
+      throw new NotFoundError(
+        `User not found for clientId: ${appointment.clientId.toString()}`,
+      )
+    }
+
     const client = await this.clientRepository.findById(
       appointment.clientId.toString(),
     )
@@ -52,7 +62,7 @@ export class OnAppointmentScheduled implements EventHandler {
       await this.sendNotification.execute({
         recipientId: user.id?.toString(),
         title: `Nova consulta agendada`,
-        content: `O paciente agendou uma consulta para ${dayjs(
+        content: `O paciente ${userClient.name} agendou uma consulta para ${dayjs(
           appointment.startDateTime,
         ).format('DD/MM/YYYY')} às ${dayjs(appointment.startDateTime).format(
           'hh:mm',

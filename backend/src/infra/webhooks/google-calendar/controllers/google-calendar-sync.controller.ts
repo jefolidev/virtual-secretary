@@ -4,6 +4,8 @@ import { Controller, Headers, HttpCode, Post } from '@nestjs/common'
 
 @Controller('calendar/sync')
 export class GoogleCalendarSyncController {
+  private processingChannels = new Set<string>()
+
   constructor(
     private handleCalendarPushNotification: HandleCalendarPushNotificationUseCase,
   ) {}
@@ -16,19 +18,31 @@ export class GoogleCalendarSyncController {
     @Headers('x-goog-resource-state') resourceState: string,
   ) {
     if (!channelId || !resourceState) {
-      return
+      return { success: true }
     }
 
-    // Fire-and-forget — Google requires a fast 200 OK response
-    this.handleCalendarPushNotification
-      .execute({ channelId, resourceState })
-      .catch((error) => {
-        console.error(
-          '[GoogleCalendarSyncController] Error handling push notification:',
-          error,
-        )
-      })
+    if (this.processingChannels.has(channelId)) {
+      return { success: true }
+    }
 
-    return
+    this.processingChannels.add(channelId)
+
+    setImmediate(() => {
+      this.handleCalendarPushNotification
+        .execute({ channelId, resourceState })
+        .catch((error) => {
+          console.error(
+            '[GoogleCalendarSyncController] Error handling push notification:',
+            error?.message || error,
+          )
+        })
+        .finally(() => {
+          setTimeout(() => {
+            this.processingChannels.delete(channelId)
+          }, 5000)
+        })
+    })
+
+    return { success: true }
   }
 }
