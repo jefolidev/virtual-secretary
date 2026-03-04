@@ -297,7 +297,7 @@ export function SatisfactionAnalytics() {
       </div>
 
       {/* Body */}
-      <div className="max-w-7xl mx-auto px-6 py-4">
+      <div className="mx-auto px-6 py-4">
         {error && (
           <Alert variant="destructive" className="mb-6">
             <AlertCircle className="size-4" />
