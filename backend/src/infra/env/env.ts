@@ -21,6 +21,10 @@ export const envSchema = z.object({
   FRONTEND_URL: z.string().optional().default('http://localhost:5173'),
   GOOGLE_REDIRECT_URI: z.string().optional(),
   GOOGLE_WEBHOOK_URL: z.string().optional(),
+  MERCADO_PAGO_PUBLIC_KEY: z.string(),
+  MERCADO_PAGO_ACCESS_TOKEN: z.string(),
+  MERCADO_PAGO_WEBHOOK_URL: z.string().optional().default(''),
+  MERCADO_PAGO_TEST_PAYER_EMAIL: z.string().optional().default(''),
 })
 
 export type Env = z.infer<typeof envSchema>

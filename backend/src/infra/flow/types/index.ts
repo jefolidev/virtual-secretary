@@ -40,8 +40,13 @@ export interface AppointmentContext {
     modality?: 'ONLINE' | 'IN_PERSON'
     startDateTime?: Date
     clientId?: string
+    appointmentId?: string
 
+    // payment
+    paymentMethod?: 'PIX' | 'CARD'
+    transactionId?: string
     paymentStatus?: 'PAID' | 'PENDING' | 'CANCELLED'
+    checkoutUrl?: string
   }>
 }
 
@@ -58,6 +63,8 @@ export enum AppointmentFlowSteps {
   DECLINE_APPOINTMENT = 'DECLINE_APPOINTMENT',
   CANCELED = 'CANCELED',
   CHANGE_DATA = 'CHANGE_DATA',
+  ASK_PAYMENT_METHOD = 'ASK_PAYMENT_METHOD',
+  AWAITING_PAYMENT = 'AWAITING_PAYMENT',
 }
 
 export interface RegistrationContext {

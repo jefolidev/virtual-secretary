@@ -1,5 +1,6 @@
 import { NotificationsRepository } from '@/domain/notifications/application/repositories/notification.repository'
 import { OrganizationRepository } from '@/domain/organization/application/repositories/organization.repository'
+import { TransactionRepository } from '@/domain/payments/application/repositories/transaction.repository'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 
 import { AddressRepository } from '@/domain/scheduling/application/repositories/address.repository'
@@ -37,6 +38,7 @@ import { PrismaScheduleConfigurationRepository } from './prisma/repositories/pri
 import { PrismaUserRepository } from './prisma/repositories/prisma-user.repository'
 import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-whatsapp-conntact.repository'
 import { PrismaWhatsappRepository } from './prisma/repositories/prisma-whatsapp.repository'
+import { PrismaTransactionRepository } from './prisma/repositories/prisma-transaction.repository'
 
 @Module({
   imports: [
@@ -123,6 +125,10 @@ import { PrismaWhatsappRepository } from './prisma/repositories/prisma-whatsapp.
       provide: WhatsappRepository,
       useClass: PrismaWhatsappRepository,
     },
+    {
+      provide: TransactionRepository,
+      useClass: PrismaTransactionRepository,
+    },
   ],
   exports: [
     CacheModule,
@@ -141,6 +147,7 @@ import { PrismaWhatsappRepository } from './prisma/repositories/prisma-whatsapp.
     WhatsappContactRepository,
     WhatsappRepository,
     EvaluationRepository,
+    TransactionRepository,
   ],
 })
 export class DatabaseModule {}

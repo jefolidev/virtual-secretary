@@ -1,6 +1,7 @@
 import { GetEvaluationStatsUseCase } from '@/domain/evaluation/application/use-case/get-evaluation-stats'
 import { FetchProfessionalNotificationsUseCase } from '@/domain/notifications/application/use-cases/fetch-professional-notifications'
 import { ReadNotificationUseCase } from '@/domain/notifications/application/use-cases/read-notification'
+import { InitiateNewTransactionUseCase } from '@/domain/payments/application/use-case/initiate-new-transaction'
 import { AddProfessionalToOrganizationUseCase } from '@/domain/organization/application/use-cases/add-professional-to-organization'
 import { CreateOrganizationUseCase } from '@/domain/organization/application/use-cases/create-organization'
 import { FetchOrganizationByIdUseCase } from '@/domain/organization/application/use-cases/fetch-organization-by-id'
@@ -42,6 +43,7 @@ import { StartAppointmentUseCase } from '@/domain/scheduling/application/use-cas
 import { Module } from '@nestjs/common'
 import { CryptographyModule } from '../cryptography/cryptography.module'
 import { DatabaseModule } from '../database/database.module'
+import { MercadoPagoModule } from '../webhooks/mercado-pago/mercado-pago.module'
 import { GoogleOAuthCallbackController } from '../webhooks/google-calendar/controllers/handle-oauth-callback.controller'
 import { AddProfessionalToOrganizationController } from './controllers/add-professional-to-organization.controller'
 import { AuthenticateController } from './controllers/authenticate.controller'
@@ -84,7 +86,7 @@ import { StartAppointmentController } from './controllers/start-appointment.cont
 import { UpdateOrganizationController } from './controllers/update-organization.controller'
 
 @Module({
-  imports: [DatabaseModule, CryptographyModule],
+  imports: [DatabaseModule, CryptographyModule, MercadoPagoModule],
   controllers: [
     AddProfessionalToOrganizationController,
     AuthenticateController,
@@ -169,6 +171,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     StartAppointmentUseCase,
     UpdateOrganizationUseCase,
     FetchUsersContactsUseCase,
+    InitiateNewTransactionUseCase,
   ],
 })
 export class HttpModule {}

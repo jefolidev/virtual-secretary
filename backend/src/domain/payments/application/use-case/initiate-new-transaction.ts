@@ -2,73 +2,98 @@ import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
-import type { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
-import { faker } from '@faker-js/faker'
-import type { ClientRepository } from '../../../scheduling/application/repositories/client.repository'
+import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
+import { Injectable } from '@nestjs/common'
+import { ClientRepository } from '../../../scheduling/application/repositories/client.repository'
 import {
-  type PaymentProvider,
+  type PaymentMethod,
   Transaction,
 } from '../../enterprise/entities/transaction'
-import type { TransactionRepository } from '../repositories/transaction.repository'
+import { PaymentGateway } from '../gateway/payment-gateway'
+import { TransactionRepository } from '../repositories/transaction.repository'
 import { InvalidAmountError } from './errors/invalid-amount'
 
 export interface InitiateNewTransactionUseCaseRequest {
   appointmentId: string
   clientId: string
   amount: number
-  paymentProviderType: PaymentProvider
+  paymentMethod: PaymentMethod
+  payerEmail: string
 }
 
 export type InitiateNewTransactionUseCaseResponse = Either<
   NotAllowedError | NotFoundError | InvalidAmountError,
-  {
-    transactionId: string
-    paymentLinkUrl: string
-  }
+  { transactionId: string; method: PaymentMethod; checkoutUrl: string }
 >
 
+@Injectable()
 export class InitiateNewTransactionUseCase {
   constructor(
     private readonly appointmentRepository: AppointmentsRepository,
     private readonly transactionRepository: TransactionRepository,
-    private readonly clientRepository: ClientRepository
+    private readonly clientRepository: ClientRepository,
+    private readonly paymentGateway: PaymentGateway,
   ) {}
 
   async execute({
     amount,
     appointmentId,
     clientId,
-    paymentProviderType,
+    paymentMethod,
+    payerEmail,
   }: InitiateNewTransactionUseCaseRequest): Promise<InitiateNewTransactionUseCaseResponse> {
-    const appointment = await this.appointmentRepository.findById(
-      appointmentId.toString()
-    )
-
+    const appointment = await this.appointmentRepository.findById(appointmentId)
     if (!appointment) return left(new NotFoundError('Appointment not found.'))
 
-    const client = await this.clientRepository.findById(clientId.toString())
-
+    const client = await this.clientRepository.findById(clientId)
     if (!client) return left(new NotFoundError('Client not found.'))
 
-    if (appointment?.clientId !== client.id) return left(new NotAllowedError())
+    if (appointment.clientId.toString() !== client.id.toString())
+      return left(new NotAllowedError())
 
     if (!amount || amount <= 0)
       return left(
-        new InvalidAmountError('Curret transaction amount is invalid.')
+        new InvalidAmountError('Current transaction amount is invalid.'),
       )
 
+    const paymentMethodIdMap = {
+      PIX: 'pix',
+      CREDIT_CARD: 'credit_card',
+      DEBIT_CARD: 'debit_card',
+    } as const
+
+    const { preferenceId, checkoutUrl } =
+      await this.paymentGateway.createPreference({
+        externalReference: appointmentId,
+        title: 'Consulta',
+        amount,
+        payerEmail,
+        paymentMethodId: paymentMethodIdMap[paymentMethod],
+      })
+
     const transaction = Transaction.create({
-      amount,
       appointmentId: new UniqueEntityId(appointmentId),
       clientId: new UniqueEntityId(clientId),
-      provider: paymentProviderType,
+      method: paymentMethod,
+      amount,
+      feeAmount: 0,
+      providerPaymentId: preferenceId,
+      providerStatus: 'pending',
+      providerStatusDetail: '',
+      externalReference: appointmentId,
+      lastFourDigits: null,
+      cardBrand: null,
+      installments: null,
+      failureReason: null,
+      metadata: {},
     })
 
     await this.transactionRepository.create(transaction)
 
     return right({
       transactionId: transaction.id.toString(),
-      paymentLinkUrl: faker.internet.url(),
+      method: paymentMethod,
+      checkoutUrl,
     })
   }
 }

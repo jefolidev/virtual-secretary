@@ -28,6 +28,7 @@ export type PaymentStatus =
   | 'SUCCEEDED'
   | 'FAILED'
   | 'REFUNDED'
+  | 'NO_PAID'
 
 export interface AppointmentProps {
   clientId: UniqueEntityId

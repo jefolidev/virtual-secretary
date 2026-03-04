@@ -1,8 +1,12 @@
+import { HandlePaymentWebhookUseCase } from '@/domain/payments/application/use-case/handle-payment-webhook'
 import { Module } from '@nestjs/common'
 import { RouterModule } from '@nestjs/core'
+import { DatabaseModule } from '../database/database.module'
 import { FlowModule } from '../flow/flow.module'
 import { SessionModule } from '../sessions/session.module'
 import { CalendarModule } from './google-calendar/calendar.module'
+import { MercadoPagoWebhookController } from './mercado-pago/mercado-pago.controller'
+import { MercadoPagoModule } from './mercado-pago/mercado-pago.module'
 import { OpenAIModule } from './openai/openai.module'
 import { WhatsappModule } from './whatsapp/whatsapp.module'
 
@@ -13,6 +17,8 @@ import { WhatsappModule } from './whatsapp/whatsapp.module'
     SessionModule,
     FlowModule,
     CalendarModule,
+    DatabaseModule,
+    MercadoPagoModule,
     // Define o prefixo /webhooks para todos os módulos filhos
     RouterModule.register([
       {
@@ -25,6 +31,8 @@ import { WhatsappModule } from './whatsapp/whatsapp.module'
       },
     ]),
   ],
+  controllers: [MercadoPagoWebhookController],
+  providers: [HandlePaymentWebhookUseCase],
   exports: [
     OpenAIModule,
     WhatsappModule,

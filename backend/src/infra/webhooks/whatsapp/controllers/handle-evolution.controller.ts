@@ -83,11 +83,6 @@ export class HandleEvolutionController {
           const pendingScheduleConfirmation =
             await this.whatsappService.getPendingConfirmation(whatsappNumber)
 
-          console.log(
-            'Pending schedule confirmation:',
-            pendingScheduleConfirmation,
-          )
-
           if (pendingScheduleConfirmation) {
             const replyIntent =
               await this.whatsappService.parseScheduleConfirmationReply(message)
@@ -98,7 +93,7 @@ export class HandleEvolutionController {
                 `Não entendi bem sua resposta 😅\n\nVocê ainda tem uma consulta aguardando confirmação. Por favor, responda:\n\n✅ *Confirmar* — para confirmar sua consulta\n❌ *Cancelar* — para cancelar\n🔄 *Reagendar* — para remarcar`,
               )
             }
-            
+
             return this.whatsappService.handleConfirmAppointment(
               message,
               user.whatsappNumber,

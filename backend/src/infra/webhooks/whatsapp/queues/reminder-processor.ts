@@ -1,3 +1,4 @@
+import { TransactionRepository } from '@/domain/payments/application/repositories/transaction.repository'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { PrismaService } from '@/infra/database/prisma/prisma.service'
@@ -14,6 +15,7 @@ export class WhatsappRemindersProcessor extends WorkerHost {
     private appointmentRepository: AppointmentsRepository,
     private userRepository: UserRepository,
     private whatsappService: WhatsappService,
+    private transactionRepository: TransactionRepository,
 
     @InjectRedis() private readonly redis: Redis,
 
@@ -59,6 +61,36 @@ export class WhatsappRemindersProcessor extends WorkerHost {
 
     switch (job.name) {
       case 'send-24h-reminder': {
+        // Se o pagamento não foi confirmado, cancelar o agendamento
+        if (appointment.paymentStatus !== 'SUCCEEDED') {
+          const transaction =
+            await this.transactionRepository.findByExternalReference(
+              appointment.id.toString(),
+            )
+
+          if (transaction) {
+            transaction.markAsFailed()
+            await this.transactionRepository.save(transaction)
+          }
+
+          appointment.paymentStatus = 'NO_PAID'
+          appointment.cancel()
+          await this.appointmentRepository.save(appointment)
+
+          try {
+            await this.whatsappService.sendMessage(
+              user.whatsappNumber,
+              `Olá ${user.name}, seu agendamento para *${appointment.startDateTime.toLocaleString('pt-BR')}* com o(a) Dr(a). *${professional.name}* foi *cancelado por falta de pagamento*.\n\nSe desejar reagendar, entre em contato conosco.`,
+            )
+          } catch (err) {
+            console.error(
+              '[WhatsappRemindersProcessor] Error sending no-payment cancellation message:',
+              err,
+            )
+          }
+          break
+        }
+
         const now = Date.now()
         const appointmentTime = appointment.startDateTime.getTime()
 

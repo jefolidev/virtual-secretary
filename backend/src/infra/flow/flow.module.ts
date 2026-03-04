@@ -1,6 +1,8 @@
+import { InitiateNewTransactionUseCase } from '@/domain/payments/application/use-case/initiate-new-transaction'
 import { CreateAppointmentUseCase } from '@/domain/scheduling/application/use-cases/create-schedule'
 import { Module } from '@nestjs/common'
 import { DatabaseModule } from '../database/database.module'
+import { MercadoPagoModule } from '../webhooks/mercado-pago/mercado-pago.module'
 import { OpenAIModule } from '../webhooks/openai/openai.module'
 import { FlowService } from './flow.service'
 import { AppointmentFlowService } from './flows/appointment-flow.service'
@@ -14,7 +16,7 @@ import { RegistrationFlowService } from './flows/registration-flow.service'
     RegistrationFlowService,
     GeneralFlowService,
   ],
-  imports: [DatabaseModule, OpenAIModule],
+  imports: [DatabaseModule, OpenAIModule, MercadoPagoModule],
   providers: [
     FlowService,
     AppointmentFlowService,
@@ -22,6 +24,7 @@ import { RegistrationFlowService } from './flows/registration-flow.service'
     GeneralFlowService,
 
     CreateAppointmentUseCase,
+    InitiateNewTransactionUseCase,
   ],
 })
 export class FlowModule {}

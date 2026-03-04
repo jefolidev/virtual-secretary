@@ -2,28 +2,44 @@ import { Entity } from '@/core/entities/entity'
 import type { Optional } from '@/core/entities/types/optional'
 import type { UniqueEntityId } from '@/core/entities/unique-entity-id'
 
-export type TransactionStatus = 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
+export type TransactionStatus =
+  | 'PENDING'
+  | 'PAID'
+  | 'FAILED'
+  | 'REFUNDED'
+  | 'PROCESSING'
 
-export type PaymentProvider =
-  | 'PIX'
-  | 'CREDIT_CARD'
-  | 'DEBIT_CARD'
-  | 'EXTERNAL_GATEWAY'
-  | 'CASH'
+export type PaymentMethod = 'PIX' | 'CREDIT_CARD' | 'DEBIT_CARD'
 
 export interface TransactionProps {
   clientId: UniqueEntityId
   appointmentId: UniqueEntityId
+
+  providerPaymentId: string
+  providerStatus: string
+  providerStatusDetail: string
+
+  externalReference: string
+
+  lastFourDigits: string | null
+  cardBrand: string | null
+  installments: number | null
+
+  pixExpiresAt?: Date
+  pixCopyPaste?: string
+  pixQrCodeURL?: string
+
   amount: number
+  feeAmount: number
 
-  provider: PaymentProvider
+  failureReason: string | null
+  metadata: Record<string, any>
+
   status: TransactionStatus
-
-  externalPaymentId: string
-  linkUrl: string | null
+  method: PaymentMethod
 
   createdAt: Date
-  updatedAt?: Date
+  paidAt?: Date | null
 }
 
 export class Transaction extends Entity<TransactionProps> {
@@ -35,13 +51,72 @@ export class Transaction extends Entity<TransactionProps> {
     return this.props.appointmentId
   }
 
+  get providerPaymentId() {
+    return this.props.providerPaymentId
+  }
+
+  get providerStatus() {
+    return this.props.providerStatus
+  }
+
+  get providerStatusDetail() {
+    return this.props.providerStatusDetail
+  }
+
+  get externalReference() {
+    return this.props.externalReference
+  }
+
+  get lastFourDigits() {
+    return this.props.lastFourDigits
+  }
+
+  get installments() {
+    return this.props.installments
+  }
+
+  get pixExpiresAt() {
+    return this.props.pixExpiresAt
+  }
+
+  get pixCopyPaste() {
+    return this.props.pixCopyPaste
+  }
+
+  get pixQrCodeURL() {
+    return this.props.pixQrCodeURL
+  }
+
+  get feeAmount() {
+    return this.props.feeAmount
+  }
+
+  get failureReason() {
+    return this.props.failureReason
+  }
+
+  get metadata() {
+    return this.props.metadata
+  }
+
+  get method() {
+    return this.props.method
+  }
+
+  get paidAt() {
+    return this.props.paidAt
+  }
+
+  get cardBrand() {
+    return this.props.cardBrand
+  }
+
   get amount() {
     return this.props.amount
   }
 
   set amount(amount: number) {
     this.props.amount = amount
-    this.touch()
   }
 
   get status() {
@@ -50,41 +125,18 @@ export class Transaction extends Entity<TransactionProps> {
 
   set status(status: TransactionStatus) {
     this.props.status = status
-    this.touch()
-  }
-
-  get externalPaymentId() {
-    return this.props.externalPaymentId
-  }
-
-  get linkUrl() {
-    return this.props.linkUrl
-  }
-
-  set linkUrl(linkUrl: string | null) {
-    this.props.linkUrl = linkUrl
-    this.touch()
-  }
-
-  get provider() {
-    return this.props.provider
   }
 
   get createdAt() {
     return this.props.createdAt
   }
 
-  get updatedAt() {
-    return this.props.updatedAt ?? this.props.createdAt
-  }
 
   public markAsPaid(externalPaymentId: string): void {
     if (this.props.status !== 'PENDING')
       throw new Error('Is not possible pay a transaction that is not pendent.')
 
     this.props.status = 'PAID'
-    this.props.externalPaymentId = externalPaymentId
-    this.touch()
   }
 
   public markAsFailed(): void {
@@ -92,29 +144,24 @@ export class Transaction extends Entity<TransactionProps> {
       throw new Error('The transaction has been failed')
 
     this.props.status = 'FAILED'
-    this.touch()
   }
 
-  private touch() {
-    this.props.updatedAt = new Date()
-  }
-
+ 
   static create(
     props: Optional<
       TransactionProps,
-      'createdAt' | 'status' | 'externalPaymentId' | 'linkUrl'
+      'createdAt' | 'status' | 'paidAt' 
     >,
-    id?: UniqueEntityId
+    id?: UniqueEntityId,
   ) {
     const transaction = new Transaction(
       {
         ...props,
         status: props.status ?? 'PENDING',
-        externalPaymentId: props.externalPaymentId ?? '',
-        linkUrl: props.linkUrl ?? null,
+
         createdAt: props.createdAt ?? new Date(),
       },
-      id
+      id,
     )
 
     return transaction

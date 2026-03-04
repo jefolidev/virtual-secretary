@@ -1,5 +1,7 @@
 import { NotAllowedError } from '@/core/errors/not-allowed-error'
 import { NotFoundError } from '@/core/errors/resource-not-found-error'
+import { TransactionRepository } from '@/domain/payments/application/repositories/transaction.repository'
+import { InitiateNewTransactionUseCase } from '@/domain/payments/application/use-case/initiate-new-transaction'
 import { AppointmentsRepository } from '@/domain/scheduling/application/repositories/appointments.repository'
 import { ClientRepository } from '@/domain/scheduling/application/repositories/client.repository'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
@@ -43,6 +45,8 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
     private readonly openai: OpenAiService,
     private readonly generalFlowService: GeneralFlowService,
     private readonly scheduleAppointmentUseCase: CreateAppointmentUseCase,
+    private readonly initiateTransactionUseCase: InitiateNewTransactionUseCase,
+    private readonly transactionRepository: TransactionRepository,
   ) {
     super(prisma)
   }
@@ -92,7 +96,6 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
       await this.professionalRepository.findByProfessionalIdWithSettings(
         professional.professionalId!.toString(),
       )
-
 
     return professionalScheduleConfiguration
   }
@@ -236,6 +239,12 @@ export class AppointmentFlowService extends FlowServiceUtil<'appointment'> {
       case AppointmentFlowSteps.APPOINTMENT_CONFIRMED:
         const userResponse = data.professionalName?.toLowerCase() || ''
         return this.scheduleAppointment(userResponse, session)
+
+      case AppointmentFlowSteps.ASK_PAYMENT_METHOD:
+        return this.handlePaymentMethodResponse(session, message)
+
+      case AppointmentFlowSteps.AWAITING_PAYMENT:
+        return this.handleAwaitingPayment(session, message)
 
       default:
         return `Desculpe, não entendi sua solicitação. Pode repetir?.`
@@ -578,12 +587,141 @@ Por favor, informe o nome completo do profissional com quem deseja agendar a con
         }. Por favor, tente novamente mais tarde.`
       }
 
-      await this.finishSession(session)
+      const appointmentId = result.value.appointment.id.toString()
+      session.contextData.data.appointmentId = appointmentId
+      session.currentStep = AppointmentFlowSteps.ASK_PAYMENT_METHOD
+      await this.updateSession(session)
 
-      return `✅ *Agendamento confirmado com sucesso!*\n\n🩺 Profissional: ${this.professional.name}\n📅 Data e horário: ${dayjs(startDateTime).locale('pt-br').format('DD/MM/YYYY (dddd) [às] HH:mm')}\n🖥️ Modalidade: ${modality === 'IN_PERSON' ? 'Presencial' : 'Online'}\n💰 Valor: R$${this.professionalSessionPrice?.toFixed(2)}\n\nSe precisar de mais alguma coisa, estou à disposição! Envie "ver meus agendamentos" para ver seus agendamentos e conferir o link para a reunião no Google Meet.`
+      return `✅ *Agendamento confirmado!*\n\n🩺 Profissional: ${this.professional.name}\n📅 Data e horário: ${dayjs(startDateTime).locale('pt-br').format('DD/MM/YYYY (dddd) [às] HH:mm')}\n🖥️ Modalidade: ${modality === 'IN_PERSON' ? 'Presencial' : 'Online'}\n💰 Valor: R$${this.professionalSessionPrice?.toFixed(2)}\n\n🚨 Agora, como deseja realizar o pagamento? Caso não deseje realizar o pagamento agora, o agendamento será cancelado automaticamente em *${dayjs(startDateTime).add(24, 'hour').locale('pt-br').format('DD/MM/YYYY [às] HH:mm')}* por falta de pagamento. Envie a alternativa desejada a qualquer momento nesse período para gerar o link de pagamento.\n\n*1 - PIX*\n*2 - Cartão*`
     } catch (error) {
       console.error('Error scheduling appointment:', error)
       return `Desculpe, ocorreu um erro ao agendar sua consulta. Por favor, tente novamente mais tarde.`
     }
+  }
+
+  private async handlePaymentMethodResponse(
+    session: ConversationSession<'appointment'>,
+    message: string,
+  ) {
+    const lower = message.toLowerCase().trim()
+
+    let method: 'PIX' | 'CARD' | null = null
+    if (lower === '1' || lower.includes('pix')) {
+      method = 'PIX'
+    } else if (
+      lower === '2' ||
+      lower.includes('cartão') ||
+      lower.includes('cartao') ||
+      lower.includes('card') ||
+      lower.includes('crédito') ||
+      lower.includes('credito') ||
+      lower.includes('débito') ||
+      lower.includes('debito')
+    ) {
+      method = 'CARD'
+    }
+
+    if (!method) {
+      return `Por favor, escolha uma das opções de pagamento:\n\n*1 - PIX*\n*2 - Cartão*`
+    }
+
+    session.contextData.data.paymentMethod = method
+    await this.updateSession(session)
+
+    const { appointmentId, startDateTime } = session.contextData.data
+
+    if (!appointmentId) {
+      await this.finishSession(session)
+      return `Desculpe, não foi possível identificar o agendamento. Por favor, entre em contato com o suporte.`
+    }
+
+    if (!this.client) {
+      await this.getClientByUserId(session.userId)
+    }
+
+    if (!this.client) {
+      await this.finishSession(session)
+      return `Desculpe, não consegui identificar seu cadastro como cliente. Por favor, entre em contato com o suporte.`
+    }
+
+    const userRecord = await this.userRepository.findByClientId(
+      this.client.id.toString(),
+    )
+
+    const appointment = await this.appointmentRepository.findById(appointmentId)
+    if (!appointment) {
+      await this.finishSession(session)
+      return `Desculpe, não foi possível encontrar os dados do agendamento. Por favor, entre em contato com o suporte.`
+    }
+
+    const result = await this.initiateTransactionUseCase.execute({
+      appointmentId,
+      clientId: this.client.id.toString(),
+      amount: appointment.agreedPrice,
+      paymentMethod: method === 'CARD' ? 'CREDIT_CARD' : 'PIX',
+      payerEmail:
+        process.env.NODE_ENV === 'production'
+          ? (userRecord?.email ?? '')
+          : process.env.MERCADO_PAGO_TEST_PAYER_EMAIL ||
+            userRecord?.email ||
+            '',
+    })
+
+    if (result.isLeft()) {
+      return `Desculpe, ocorreu um erro ao iniciar o pagamento: ${(result.value as any)?.message ?? 'Erro desconhecido'}. Por favor, tente novamente.`
+    }
+
+    const payment = result.value
+
+    session.contextData.data.transactionId = payment.transactionId
+    session.contextData.data.paymentStatus = 'PENDING'
+    session.contextData.data.checkoutUrl = payment.checkoutUrl
+    session.currentStep = AppointmentFlowSteps.AWAITING_PAYMENT
+    await this.updateSession(session)
+
+    const methodLabel = payment.method === 'PIX' ? 'PIX' : 'Cartão'
+
+    return `💳 *Pagamento via ${methodLabel}*\n\nClique no link abaixo para realizar o pagamento:\n\n${payment.checkoutUrl}\n\nAguardando confirmação do pagamento... Quando pago, você receberá uma confirmação aqui.`
+  }
+
+  private async handleAwaitingPayment(
+    session: ConversationSession<'appointment'>,
+    message: string,
+  ) {
+    const lower = message.toLowerCase().trim()
+
+    if (lower.includes('cancelar') || lower.includes('cancel')) {
+      const { transactionId, appointmentId } = session.contextData.data
+
+      if (transactionId) {
+        const transaction =
+          await this.transactionRepository.findById(transactionId)
+        if (transaction) {
+          transaction.markAsFailed()
+          await this.transactionRepository.save(transaction)
+        }
+      }
+
+      if (appointmentId) {
+        const appointment =
+          await this.appointmentRepository.findById(appointmentId)
+        if (appointment) {
+          appointment.paymentStatus = 'NO_PAID'
+          appointment.cancel()
+          await this.appointmentRepository.save(appointment)
+        }
+      }
+
+      await this.finishSession(session)
+      return `O agendamento foi cancelado por falta de pagamento. Se precisar de algo mais, estou à disposição!`
+    }
+
+    const { checkoutUrl } = session.contextData.data
+
+    if (checkoutUrl) {
+      return `⏳ Aguardando confirmação do pagamento.\n\nLink de pagamento: ${checkoutUrl}\n\nAssim que o pagamento for confirmado, você receberá uma mensagem aqui. Para cancelar, responda *cancelar*.`
+    }
+
+    return `⏳ Aguardando confirmação do pagamento. Assim que confirmado, você receberá uma mensagem aqui. Para cancelar, responda *cancelar*.`
   }
 }
