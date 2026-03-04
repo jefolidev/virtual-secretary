@@ -87,7 +87,7 @@ export function GoogleAuthSuccessPage() {
         }
       } else {
         setTimeout(() => {
-          window.location.href = '/dashboard'
+          window.location.href = '/calendar'
         }, 1000)
       }
     } else {

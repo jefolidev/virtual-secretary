@@ -1,6 +1,21 @@
 import { api } from '../axios'
 import type { FetchProfessionalSchedulesListResponse } from './appointments/dto'
 
+export interface EvaluationStatsResponse {
+  stats: {
+    averageScore: number
+    total: number
+    distribution: Record<string, number>
+    percentages?: Record<string, number>
+    median?: number | null
+    mode?: number | null
+    detractors?: number
+    passives?: number
+    promoters?: number
+    nps?: number
+  }
+}
+
 export type FetchScheduleByProfesionalIdStatus =
   | 'SCHEDULED'
   | 'CONFIRMED'
@@ -100,5 +115,22 @@ export const appointmentsServices = {
       console.error('Erro ao finalizar o agendamento:', error)
       throw error
     }
+  },
+
+  getEvaluationStats: async (
+    professionalId: string,
+    params?: { from?: string; to?: string; minScore?: number },
+  ): Promise<EvaluationStatsResponse> => {
+    const searchParams = new URLSearchParams()
+    if (params?.from) searchParams.set('from', params.from)
+    if (params?.to) searchParams.set('to', params.to)
+    if (params?.minScore !== undefined)
+      searchParams.set('minScore', String(params.minScore))
+
+    const query = searchParams.toString()
+    const response = await api.get(
+      `/professionals/${professionalId}/evaluations/stats${query ? `?${query}` : ''}`,
+    )
+    return response.data
   },
 }

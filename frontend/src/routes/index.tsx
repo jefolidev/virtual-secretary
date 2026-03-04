@@ -1,5 +1,6 @@
 import { App } from '@/app'
 import { useAuth } from '@/contexts/auth-context'
+import { SatisfactionAnalytics } from '@/pages/analytics/satisfaction'
 import { GoogleAuthSuccessPage } from '@/pages/auth/google/success'
 import { ListClientsPage } from '@/pages/clients/list-clients'
 import { SessionHistory } from '@/pages/clients/session-history'
@@ -136,7 +137,7 @@ export const router = createBrowserRouter([
           // Clinic Settings
           {
             path: `/${ScreensEnum.ANALYTICS}/satisfaction`,
-            element: <div>Satisfação</div>,
+            element: <SatisfactionAnalytics />,
           },
           {
             path: `/${ScreensEnum.ANALYTICS}/profits`,

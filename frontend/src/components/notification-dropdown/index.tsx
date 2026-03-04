@@ -15,6 +15,7 @@ import {
   Inbox,
 } from 'lucide-react'
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { Button } from '../ui/button'
 import {
   DropdownMenu,
@@ -225,7 +226,7 @@ export function NotificationDropdown() {
             className="hover:text-green-500 transition-colors "
           >
             <span className="text-xs font-semibold">
-              Ver todas notificações
+              <Link to="/notifications">Ver todas notificações</Link>
             </span>
           </Button>
         </div>
