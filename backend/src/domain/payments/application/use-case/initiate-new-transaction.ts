@@ -10,6 +10,7 @@ import {
   Transaction,
 } from '../../enterprise/entities/transaction'
 import { PaymentGateway } from '../gateway/payment-gateway'
+import { MercadoPagoTokenRepository } from '../repositories/mercado-pago-token.repository'
 import { TransactionRepository } from '../repositories/transaction.repository'
 import { InvalidAmountError } from './errors/invalid-amount'
 
@@ -33,6 +34,7 @@ export class InitiateNewTransactionUseCase {
     private readonly transactionRepository: TransactionRepository,
     private readonly clientRepository: ClientRepository,
     private readonly paymentGateway: PaymentGateway,
+    private readonly mercadoPagoTokenRepository: MercadoPagoTokenRepository,
   ) {}
 
   async execute({
@@ -62,6 +64,11 @@ export class InitiateNewTransactionUseCase {
       DEBIT_CARD: 'debit_card',
     } as const
 
+    const professionalToken =
+      await this.mercadoPagoTokenRepository.findByProfessionalId(
+        appointment.professionalId.toString(),
+      )
+
     const { preferenceId, checkoutUrl } =
       await this.paymentGateway.createPreference({
         externalReference: appointmentId,
@@ -69,6 +76,7 @@ export class InitiateNewTransactionUseCase {
         amount,
         payerEmail,
         paymentMethodId: paymentMethodIdMap[paymentMethod],
+        professionalAccessToken: professionalToken?.accessToken ?? undefined,
       })
 
     const transaction = Transaction.create({

@@ -2,12 +2,12 @@ import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { Professional } from '@/domain/scheduling/enterprise/entities/professional'
 import { NotificationSettings } from '@/domain/scheduling/enterprise/entities/value-objects/notification-settings'
 import {
-  CancellationPolicy as PrismaCancellationPolicy,
-  CalendarEvent as PrismaGoogleCalendarEvent,
-  NotificationSettings as PrismaNotificationSettings,
-  Professional as PrismaProfessional,
-  ScheduleConfiguration as PrismaScheduleConfiguration,
-  User as PrismaUser,
+    CancellationPolicy as PrismaCancellationPolicy,
+    CalendarEvent as PrismaGoogleCalendarEvent,
+    NotificationSettings as PrismaNotificationSettings,
+    Professional as PrismaProfessional,
+    ScheduleConfiguration as PrismaScheduleConfiguration,
+    User as PrismaUser,
 } from '@prisma/client'
 
 type ProfessionalWithNotificationSettings = PrismaProfessional & {

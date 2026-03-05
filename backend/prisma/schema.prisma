@@ -179,6 +179,9 @@ model Professional {
   googleCalendarTokens   GoogleCalendarToken?
   googleConnectionStatus GoogleConnectionStatus @default(CONNECTED)
 
+  mercadoPagoToken             MercadoPagoToken?
+  mercadoPagoConnectionStatus  MercadoPagoConnectionStatus @default(DISCONNECTED) @map("mercado_pago_connection_status")
+
   @@map("professionals")
 }
 
@@ -186,6 +189,29 @@ enum GoogleConnectionStatus {
   CONNECTED
   DISCONNECTED
   ERROR
+}
+
+enum MercadoPagoConnectionStatus {
+  CONNECTED
+  DISCONNECTED
+  ERROR
+}
+
+model MercadoPagoToken {
+  id             String    @id @default(uuid())
+  professionalId String    @unique @map("professional_id")
+  accessToken    String    @map("access_token")
+  refreshToken   String?   @map("refresh_token")
+  publicKey      String?   @map("public_key")
+  mpUserId       String    @map("mp_user_id")
+  expiresAt      DateTime? @map("expires_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @updatedAt @map("updated_at")
+
+  professional Professional @relation(fields: [professionalId], references: [id], onDelete: Cascade)
+
+  @@map("mercado_pago_tokens")
 }
 
 model GoogleCalendarToken {

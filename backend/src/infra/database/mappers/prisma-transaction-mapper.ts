@@ -1,13 +1,13 @@
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import {
-  PaymentMethod,
-  Transaction,
-  type TransactionStatus,
+    PaymentMethod,
+    Transaction,
+    type TransactionStatus,
 } from '@/domain/payments/enterprise/entities/transaction'
 import {
-  PaymentMethods,
-  PaymentStatus,
-  type Transaction as PrismaTransaction,
+    PaymentMethods,
+    PaymentStatus,
+    type Transaction as PrismaTransaction,
 } from '@prisma/client'
 
 function domainStatusToPrisma(status: TransactionStatus): PaymentStatus {
@@ -27,7 +27,7 @@ function prismaStatusToDomain(status: PaymentStatus): TransactionStatus {
     SUCCEEDED: 'PAID',
     FAILED: 'FAILED',
     REFUNDED: 'REFUNDED',
-    PROCESSING: 'PROCESSING',
+    PROCESSING: 'PENDING',
     NO_PAID: 'FAILED',
   }
   return map[status]

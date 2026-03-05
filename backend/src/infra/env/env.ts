@@ -25,6 +25,9 @@ export const envSchema = z.object({
   MERCADO_PAGO_ACCESS_TOKEN: z.string(),
   MERCADO_PAGO_WEBHOOK_URL: z.string().optional().default(''),
   MERCADO_PAGO_TEST_PAYER_EMAIL: z.string().optional().default(''),
+  MERCADO_PAGO_OAUTH_CLIENT_ID: z.string().optional().default(''),
+  MERCADO_PAGO_OAUTH_CLIENT_SECRET: z.string().optional().default(''),
+  MERCADO_PAGO_OAUTH_REDIRECT_URI: z.string().optional().default(''),
 })
 
 export type Env = z.infer<typeof envSchema>

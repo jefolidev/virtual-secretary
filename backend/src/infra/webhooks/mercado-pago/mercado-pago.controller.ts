@@ -1,4 +1,8 @@
 import { HandlePaymentWebhookUseCase } from '@/domain/payments/application/use-case/handle-payment-webhook'
+import { MercadoPagoTokenRepository } from '@/domain/payments/application/repositories/mercado-pago-token.repository'
+import { NotificationsRepository } from '@/domain/notifications/application/repositories/notification.repository'
+import { Notification } from '@/domain/notifications/enterprise/entities/notification'
+import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { UserRepository } from '@/domain/scheduling/application/repositories/user.repository'
 import { Public } from '@/infra/auth/public'
 import { SessionService } from '@/infra/sessions/session.service'
@@ -7,6 +11,7 @@ import { WhatsappService } from '../whatsapp/whatsapp.service'
 
 interface MercadoPagoWebhookBody {
   type: string
+  user_id?: string
   data: {
     id: string
   }
@@ -21,6 +26,8 @@ export class MercadoPagoWebhookController {
     private readonly userRepository: UserRepository,
     private readonly sessionService: SessionService,
     private readonly whatsappService: WhatsappService,
+    private readonly mercadoPagoTokenRepository: MercadoPagoTokenRepository,
+    private readonly notificationsRepository: NotificationsRepository,
   ) {}
 
   @Public()
@@ -34,8 +41,13 @@ export class MercadoPagoWebhookController {
 
       const providerPaymentId = String(body.data.id)
 
+      const professionalToken = body.user_id
+        ? await this.mercadoPagoTokenRepository.findByMpUserId(String(body.user_id))
+        : null
+
       const result = await this.handlePaymentWebhookUseCase.execute({
         providerPaymentId,
+        professionalAccessToken: professionalToken?.accessToken ?? undefined,
       })
 
       if (result.isLeft()) {
@@ -45,7 +57,11 @@ export class MercadoPagoWebhookController {
         return { received: true }
       }
 
-      const { clientId, isPaid, appointmentId } = result.value
+      const { clientId, isPaid, appointmentId, professionalId, status } = result.value
+
+      if (status === 'PENDING') {
+        return { received: true }
+      }
 
       const user = await this.userRepository.findByClientId(clientId)
 
@@ -63,6 +79,17 @@ export class MercadoPagoWebhookController {
           user.whatsappNumber,
           `✅ *Pagamento confirmado!*\n\nSeu pagamento foi recebido com sucesso. Seu agendamento está confirmado!\n\nSe precisar de qualquer informação, estou à disposição.`,
         )
+
+        const professionalUser = await this.userRepository.findByProfessionalId(professionalId)
+        if (professionalUser) {
+          const notification = Notification.create({
+            recipientId: new UniqueEntityId(professionalUser.id.toString()),
+            title: 'Pagamento recebido',
+            content: `O pagamento do agendamento foi confirmado com sucesso.`,
+            reminderType: 'PAYMENT_STATUS',
+          })
+          await this.notificationsRepository.create(notification)
+        }
       } else {
         await this.whatsappService.sendMessage(
           user.whatsappNumber,

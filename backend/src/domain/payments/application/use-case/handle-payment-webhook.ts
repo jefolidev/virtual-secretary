@@ -7,6 +7,7 @@ import { TransactionRepository } from '../repositories/transaction.repository'
 
 export interface HandlePaymentWebhookUseCaseRequest {
   providerPaymentId: string
+  professionalAccessToken?: string
 }
 
 export type HandlePaymentWebhookUseCaseResponse = Either<
@@ -14,6 +15,7 @@ export type HandlePaymentWebhookUseCaseResponse = Either<
   {
     appointmentId: string
     clientId: string
+    professionalId: string
     status: 'PAID' | 'FAILED' | 'PENDING' | 'REFUNDED'
     isPaid: boolean
   }
@@ -29,12 +31,17 @@ export class HandlePaymentWebhookUseCase {
 
   async execute({
     providerPaymentId,
+    professionalAccessToken,
   }: HandlePaymentWebhookUseCaseRequest): Promise<HandlePaymentWebhookUseCaseResponse> {
-    const paymentDetails =
-      await this.paymentGateway.getPaymentDetails(providerPaymentId)
+    const paymentDetails = await this.paymentGateway.getPaymentDetails(
+      providerPaymentId,
+      professionalAccessToken,
+    )
 
     const transaction =
-      await this.transactionRepository.findByExternalReference(paymentDetails.externalReference)
+      await this.transactionRepository.findByExternalReference(
+        paymentDetails.externalReference,
+      )
 
     if (!transaction) {
       return left(new NotFoundError('Transaction not found.'))
@@ -81,6 +88,7 @@ export class HandlePaymentWebhookUseCase {
     return right({
       appointmentId: appointment.id.toString(),
       clientId: appointment.clientId.toString(),
+      professionalId: appointment.professionalId.toString(),
       status: domainStatus,
       isPaid,
     })

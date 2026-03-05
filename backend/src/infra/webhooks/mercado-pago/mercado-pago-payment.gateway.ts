@@ -52,48 +52,48 @@ export class MercadoPagoPaymentGateway implements PaymentGateway {
           ? [{ id: 'bank_transfer' }, { id: 'ticket' }]
           : []
 
-    const response = await this.mercadoPagoService.createPreference({
-      body: {
-        items: [
-          {
-            id: input.externalReference,
-            title: input.title,
-            quantity: 1,
-            unit_price: input.amount,
-            currency_id: 'BRL',
+    const response = await this.mercadoPagoService.createPreference(
+      {
+        body: {
+          items: [
+            {
+              id: input.externalReference,
+              title: input.title,
+              quantity: 1,
+              unit_price: input.amount,
+              currency_id: 'BRL',
+            },
+          ],
+          payer: {
+            email: input.payerEmail,
           },
-        ],
-        payer: {
-          email: input.payerEmail,
+          payment_methods: {
+            excluded_payment_types: excludedTypes,
+          },
+          external_reference: input.externalReference,
+          ...(notificationUrl ? { notification_url: notificationUrl } : {}),
+          ...(this.isProduction
+            ? {
+                back_urls: {
+                  success: `${this.configService.get('FRONTEND_URL')}/payment/success`,
+                  failure: `${this.configService.get('FRONTEND_URL')}/payment/failure`,
+                },
+                auto_return: 'approved' as const,
+              }
+            : {}),
         },
-        payment_methods: {
-          excluded_payment_types: excludedTypes,
-        },
-        external_reference: input.externalReference,
-        ...(notificationUrl ? { notification_url: notificationUrl } : {}),
-        ...(this.isProduction
-          ? {
-              back_urls: {
-                success: `${this.configService.get('FRONTEND_URL')}/payment/success`,
-                failure: `${this.configService.get('FRONTEND_URL')}/payment/failure`,
-              },
-              auto_return: 'approved' as const,
-            }
-          : {}),
       },
-    })
-
+      input.professionalAccessToken,
+    )
 
     return {
       preferenceId: response.id!,
-      checkoutUrl: this.isProduction
-        ? response.init_point!
-        : (response.sandbox_init_point ?? response.init_point!),
+      checkoutUrl: response.init_point!,
     }
   }
 
-  async getPaymentDetails(paymentId: string): Promise<PaymentDetails> {
-    const response = await this.mercadoPagoService.getPayment(paymentId)
+  async getPaymentDetails(paymentId: string, accessToken?: string): Promise<PaymentDetails> {
+    const response = await this.mercadoPagoService.getPayment(paymentId, accessToken)
 
     return {
       paymentId: String(response.id!),

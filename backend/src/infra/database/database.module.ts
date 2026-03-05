@@ -1,5 +1,6 @@
 import { NotificationsRepository } from '@/domain/notifications/application/repositories/notification.repository'
 import { OrganizationRepository } from '@/domain/organization/application/repositories/organization.repository'
+import { MercadoPagoTokenRepository } from '@/domain/payments/application/repositories/mercado-pago-token.repository'
 import { TransactionRepository } from '@/domain/payments/application/repositories/transaction.repository'
 import { ProfessionalRepository } from '@/domain/scheduling/application/repositories/professional.repository'
 
@@ -39,6 +40,7 @@ import { PrismaUserRepository } from './prisma/repositories/prisma-user.reposito
 import { PrismaWhatsappContactRepository } from './prisma/repositories/prisma-whatsapp-conntact.repository'
 import { PrismaWhatsappRepository } from './prisma/repositories/prisma-whatsapp.repository'
 import { PrismaTransactionRepository } from './prisma/repositories/prisma-transaction.repository'
+import { PrismaMercadoPagoTokenRepository } from './prisma/repositories/prisma-mercado-pago-token.repository'
 
 @Module({
   imports: [
@@ -129,6 +131,10 @@ import { PrismaTransactionRepository } from './prisma/repositories/prisma-transa
       provide: TransactionRepository,
       useClass: PrismaTransactionRepository,
     },
+    {
+      provide: MercadoPagoTokenRepository,
+      useClass: PrismaMercadoPagoTokenRepository,
+    },
   ],
   exports: [
     CacheModule,
@@ -148,6 +154,7 @@ import { PrismaTransactionRepository } from './prisma/repositories/prisma-transa
     WhatsappRepository,
     EvaluationRepository,
     TransactionRepository,
+    MercadoPagoTokenRepository,
   ],
 })
 export class DatabaseModule {}

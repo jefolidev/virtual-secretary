@@ -16,16 +16,12 @@ export class PrismaProfessionalRepository implements ProfessionalRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async markGoogleConnectionAsInvalid(professionalId: string): Promise<void> {
-    console.log(
-      '[markGoogleConnectionAsInvalid] CALLED FOR:',
-      professionalId,
-      new Error().stack,
-    )
     await this.prisma.professional.update({
       where: { id: professionalId },
       data: { googleConnectionStatus: 'ERROR' },
     })
   }
+
   async findByProfessionalIdWithNotificationSettings(
     professionalId: string,
   ): Promise<ProfessionalWithNotificationSettings | null> {

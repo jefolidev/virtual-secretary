@@ -26,5 +26,8 @@ export abstract class PaymentGateway {
     input: CreatePaymentPreferenceInput,
   ): Promise<CreatePaymentPreferenceOutput>
 
-  abstract getPaymentDetails(paymentId: string): Promise<PaymentDetails>
+  abstract getPaymentDetails(
+    paymentId: string,
+    accessToken?: string,
+  ): Promise<PaymentDetails>
 }

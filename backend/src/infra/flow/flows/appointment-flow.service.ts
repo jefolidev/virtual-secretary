@@ -659,12 +659,7 @@ Por favor, informe o nome completo do profissional com quem deseja agendar a con
       clientId: this.client.id.toString(),
       amount: appointment.agreedPrice,
       paymentMethod: method === 'CARD' ? 'CREDIT_CARD' : 'PIX',
-      payerEmail:
-        process.env.NODE_ENV === 'production'
-          ? (userRecord?.email ?? '')
-          : process.env.MERCADO_PAGO_TEST_PAYER_EMAIL ||
-            userRecord?.email ||
-            '',
+      payerEmail: userRecord?.email ?? '',
     })
 
     if (result.isLeft()) {

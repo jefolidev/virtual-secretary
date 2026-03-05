@@ -78,6 +78,9 @@ import { GetEvaluationStatsController } from './controllers/get-evaluation-stats
 import { GoogleOAuthInitController } from './controllers/google-oauth-init.controller'
 import { LogoutController } from './controllers/logout.controller'
 import { MeController } from './controllers/me.controller'
+import { MercadoPagoAccountController } from './controllers/mercado-pago-account.controller'
+import { MercadoPagoOAuthCallbackController } from './controllers/mercado-pago-oauth-callback.controller'
+import { MercadoPagoOAuthInitController } from './controllers/mercado-pago-oauth-init.controller'
 import { PauseAppointmentController } from './controllers/pause-appointment.controller'
 import { ReadNotificationController } from './controllers/read-notification.controller'
 import { RemoveProfessionalFromOrganizationController } from './controllers/remove-professional-from-organization.controller'
@@ -121,6 +124,9 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     GoogleOAuthInitController,
     LogoutController,
     MeController,
+    MercadoPagoAccountController,
+    MercadoPagoOAuthCallbackController,
+    MercadoPagoOAuthInitController,
     PauseAppointmentController,
     ReadNotificationController,
     RemoveProfessionalFromOrganizationController,

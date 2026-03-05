@@ -13,6 +13,6 @@ import { MercadoPagoService } from './mercado-pago.service'
       useClass: MercadoPagoPaymentGateway,
     },
   ],
-  exports: [PaymentGateway],
+  exports: [PaymentGateway, MercadoPagoService],
 })
 export class MercadoPagoModule {}
