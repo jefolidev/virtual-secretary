@@ -1,3 +1,4 @@
+import type { NotificationType } from '@/api/endpoints/notifications/dto'
 import {
   Card,
   CardContent,
@@ -7,7 +8,6 @@ import {
 } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { useUser } from '@/hooks/use-user'
-import type { NotificationType } from '@/types/user'
 import { Bell } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'

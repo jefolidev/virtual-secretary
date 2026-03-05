@@ -307,7 +307,7 @@ export function SatisfactionAnalytics() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
-          <Card>
+          <Card className="bg-slate-800">
             <CardHeader>
               <CardTitle className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
                 Total
@@ -325,7 +325,7 @@ export function SatisfactionAnalytics() {
                 </p>
               )}
               <p className="text-xs text-muted-foreground">
-                Avaliações recebidas
+                Total das Avaliações recebidas
               </p>
             </CardContent>
           </Card>

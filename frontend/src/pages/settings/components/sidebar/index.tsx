@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { BellRing, NotepadText, UserCog2 } from 'lucide-react'
+import { BellRing, Link2, NotepadText, UserCog2 } from 'lucide-react'
 import { Link, useLocation } from 'react-router'
 
 // Menu items com mapeamento de seção
@@ -18,6 +18,11 @@ const items = [
     title: 'Consultas',
     path: 'consultations',
     icon: NotepadText,
+  },
+  {
+    title: 'Conexões',
+    path: 'connections',
+    icon: Link2,
   },
 ]
 

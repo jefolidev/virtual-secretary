@@ -1,3 +1,4 @@
+import type { Transaction } from '@/types/transaction'
 import { api } from '../axios'
 import type { FetchProfessionalSchedulesListResponse } from './appointments/dto'
 
@@ -132,5 +133,20 @@ export const appointmentsServices = {
       `/professionals/${professionalId}/evaluations/stats${query ? `?${query}` : ''}`,
     )
     return response.data
+  },
+
+  getAppointmentTransaction: async (
+    appointmentId: string,
+  ): Promise<Transaction> => {
+    try {
+      const response = await api.get(
+        `/appointments/${appointmentId}/transaction`,
+      )
+
+      return response.data.transaction
+    } catch (error) {
+      console.error('Erro ao buscar transação do agendamento:', error)
+      throw error
+    }
   },
 }

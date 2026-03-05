@@ -8,6 +8,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import {
   Select,
   SelectContent,
@@ -16,11 +22,16 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import type { Transaction } from '@/types/transaction'
 import { formatFullAddress } from '@/utils/format-address'
+import { formatCurrency } from '@/utils/format-currency'
 import { formatPhoneNumber } from '@/utils/format-phone'
 import { VideoCameraIcon } from '@phosphor-icons/react'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import {
+  ChevronDown,
   Clock,
+  CreditCard,
   MapPin,
   Monitor,
   Pause,
@@ -29,6 +40,7 @@ import {
   UserX,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 import { getStatusIcon, getStatusStyles } from '../../utils/status-utils'
 import { RescheduleModal } from './components/reschedule-modal'
 
@@ -45,6 +57,15 @@ interface SessionTimer {
   elapsedTime: number // em segundos
 }
 
+const paymentStatusOptions: { value: string; label: string }[] = [
+  { value: 'FAILED', label: 'Não Pago' },
+  { value: 'PENDING', label: 'Pendente' },
+  { value: 'PROCESSING', label: 'Processando' },
+  { value: 'SUCCEEDED', label: 'Pago' },
+  { value: 'PAID', label: 'Pago' },
+  { value: 'REFUNDED', label: 'Reembolsado' },
+]
+
 const statusOptions = [
   { value: 'SCHEDULED', label: 'Agendado' },
   { value: 'CONFIRMED', label: 'Confirmado' },
@@ -56,13 +77,35 @@ const statusOptions = [
   { value: 'CANCELLED', label: 'Cancelado' },
 ]
 
+const paymentStatusColors: Record<string, string> = {
+  PENDING: 'text-yellow-500',
+  PROCESSING: 'text-yellow-500',
+  SUCCEEDED: 'text-green-500',
+  PAID: 'text-green-500',
+  FAILED: 'text-gray-500',
+  REFUNDED: 'text-gray-500',
+}
+
+const paymentStatusBgColors: Record<string, string> = {
+  PENDING: 'bg-yellow-500',
+  PROCESSING: 'bg-yellow-500',
+  SUCCEEDED: 'bg-green-500',
+  PAID: 'bg-green-500',
+  FAILED: 'bg-gray-500',
+  REFUNDED: 'bg-gray-500',
+}
+
 export function AppointmentModal({
   schedule,
   open,
   onOpenChange,
 }: AppointmentModalProps) {
-  const { startAppointment, pauseAppointment, endAppointment } =
-    appointmentsServices
+  const {
+    startAppointment,
+    pauseAppointment,
+    endAppointment,
+    getAppointmentTransaction,
+  } = appointmentsServices
 
   const [currentStatus, setCurrentStatus] =
     useState<Appointment['status']>('IN_PROGRESS')
@@ -76,6 +119,90 @@ export function AppointmentModal({
   const [lastAction, setLastAction] = useState<
     'start' | 'resume' | 'pause' | 'stop' | null
   >(null)
+
+  // Query para buscar a transação do agendamento
+  const { data: appointmentTransaction } = useQuery<Transaction | null>({
+    queryKey: ['appointmentTransaction', schedule?.appointment.id],
+    queryFn: async () => {
+      if (!schedule?.appointment.id) return null
+      try {
+        return await getAppointmentTransaction(schedule.appointment.id)
+      } catch (error) {
+        console.error('Erro ao buscar transação:', error)
+        return null
+      }
+    },
+    enabled: !!schedule?.appointment.id && open,
+    refetchOnWindowFocus: false,
+  })
+
+  // Mutation para iniciar/retomar agendamento
+  const startAppointmentMutation = useMutation({
+    mutationFn: async (appointmentId: string) => {
+      return await startAppointment(appointmentId)
+    },
+    onSuccess: () => {
+      if (!timer.isRunning) {
+        setTimer({
+          isRunning: true,
+          isPaused: false,
+          startTime: new Date(),
+          elapsedTime: 0,
+        })
+        setLastAction('start')
+        toast.success('Sessão iniciada')
+      } else {
+        setTimer((prev) => ({
+          ...prev,
+          isPaused: false,
+          startTime: new Date(Date.now() - prev.elapsedTime * 1000),
+        }))
+        setLastAction('resume')
+        toast.success('Sessão retomada')
+      }
+    },
+    onError: () => {
+      toast.error('Erro ao iniciar/retomar sessão')
+    },
+  })
+
+  // Mutation para pausar agendamento
+  const pauseAppointmentMutation = useMutation({
+    mutationFn: async (appointmentId: string) => {
+      return await pauseAppointment(appointmentId)
+    },
+    onSuccess: () => {
+      setTimer((prev) => ({
+        ...prev,
+        isPaused: true,
+      }))
+      setLastAction('pause')
+      toast.success('Sessão pausada')
+    },
+    onError: () => {
+      toast.error('Erro ao pausar sessão')
+    },
+  })
+
+  // Mutation para finalizar agendamento
+  const endAppointmentMutation = useMutation({
+    mutationFn: async (appointmentId: string) => {
+      return await endAppointment(appointmentId)
+    },
+    onSuccess: () => {
+      setTimer({
+        isRunning: false,
+        isPaused: false,
+        startTime: null,
+        elapsedTime: 0,
+      })
+      setLastAction('stop')
+      toast.success('Sessão finalizada')
+    },
+    onError: () => {
+      toast.error('Erro ao finalizar sessão')
+    },
+  })
 
   useEffect(() => {
     if (schedule?.appointment.status === 'IN_PROGRESS') {
@@ -128,59 +255,33 @@ export function AppointmentModal({
   }
 
   const handleStartSession = async () => {
-    if (!timer.isRunning) {
-      try {
-        await startAppointment(schedule.appointment.id)
-        setTimer({
-          isRunning: true,
-          isPaused: false,
-          startTime: new Date(),
-          elapsedTime: 0,
-        })
-        setLastAction('start')
-      } catch (error) {
-        console.error('Erro ao iniciar sessão:', error)
-      }
-    } else if (timer.isPaused) {
-      // Retomar sessão
-      try {
-        await startAppointment(schedule.appointment.id)
-        setTimer((prev) => ({
-          ...prev,
-          isPaused: false,
-          startTime: new Date(Date.now() - prev.elapsedTime * 1000),
-        }))
-        setLastAction('resume')
-      } catch (error) {
-        console.error('Erro ao retomar sessão:', error)
-      }
+    if (!schedule?.appointment.id) return
+
+    // Verifica se o pagamento foi pago ou se está confirmado
+    const isPaymentSucceeded =
+      appointmentTransaction?.status === 'SUCCEEDED' ||
+      appointmentTransaction?.status === 'PAID'
+    const isConfirmed = schedule.appointment.status === 'CONFIRMED'
+
+    if (!isPaymentSucceeded && !isConfirmed) {
+      toast.error(
+        'Não é possível iniciar a sessão. Aguarde a confirmação e o pagamento.',
+      )
+      return
+    }
+
+    if (!timer.isRunning || timer.isPaused) {
+      // Iniciar ou retomar sessão
+      startAppointmentMutation.mutate(schedule.appointment.id)
     } else {
-      try {
-        await pauseAppointment(schedule.appointment.id)
-        setTimer((prev) => ({
-          ...prev,
-          isPaused: true,
-        }))
-        setLastAction('pause')
-      } catch (error) {
-        console.error('Erro ao pausar sessão:', error)
-      }
+      // Pausar sessão
+      pauseAppointmentMutation.mutate(schedule.appointment.id)
     }
   }
 
   const handleStopSession = async () => {
-    try {
-      await endAppointment(schedule.appointment.id)
-      setTimer({
-        isRunning: false,
-        isPaused: false,
-        startTime: null,
-        elapsedTime: 0,
-      })
-      setLastAction('stop')
-    } catch (error) {
-      console.error('Erro ao parar sessão:', error)
-    }
+    if (!schedule?.appointment.id) return
+    endAppointmentMutation.mutate(schedule.appointment.id)
   }
 
   const handleNoShow = async () => {
@@ -194,7 +295,6 @@ export function AppointmentModal({
 
   const handleSendPaymentReminder = async () => {
     try {
-      // await fetch(`/payments/${schedule.accountId}/reminder`, { method: 'POST' })
       console.log('Lembrete de pagamento enviado')
     } catch (error) {
       console.error('Erro ao enviar lembrete:', error)
@@ -217,18 +317,138 @@ export function AppointmentModal({
     ? Math.floor(schedule.appointment.totalElapsedMs / 1000)
     : timer.elapsedTime
 
+  const canStartSession =
+    (appointmentTransaction?.status === 'SUCCEEDED' ||
+      appointmentTransaction?.status === 'PAID') &&
+    schedule?.appointment.status === 'CONFIRMED'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] max-w-[1400px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-350 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2.5 text-xl font-bold ">
-            <span className="text-base font-normal dark:text-zinc-200/50">
-              Agendamento
-            </span>
-            #
-            {schedule?.appointment.id
-              ? schedule.appointment.id.slice(0, 8).toUpperCase()
-              : '-----'}
+          <DialogTitle className="flex items-center gap-2.5 text-xl font-bold w-full">
+            <div className="flex justify-between w-full">
+              <div className="flex gap-2.5 items-center">
+                <span className="text-base font-normal dark:text-zinc-200/50">
+                  Agendamento
+                </span>
+                #
+                {schedule?.appointment.id
+                  ? schedule.appointment.id.slice(0, 8).toUpperCase()
+                  : '-----'}
+              </div>
+              <div className="flex gap-2.5 items-center mr-6">
+                <div className="flex gap-2.5 items-center">
+                  <div
+                    className={`h-1.5 w-1.75 rounded-full ${
+                      appointmentTransaction?.status
+                        ? paymentStatusBgColors[
+                            appointmentTransaction.status
+                          ] || 'bg-gray-500'
+                        : 'bg-gray-500'
+                    }`}
+                  />
+                  <Label
+                    className={`text-base ${
+                      appointmentTransaction?.status
+                        ? paymentStatusColors[appointmentTransaction.status] ||
+                          'text-gray-500'
+                        : 'text-gray-500'
+                    }`}
+                  >
+                    {paymentStatusOptions.find(
+                      (option) =>
+                        option.value === appointmentTransaction?.status,
+                    )?.label || 'Desconhecido'}
+                  </Label>
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button size="icon-sm" variant="ghost">
+                      {' '}
+                      <ChevronDown size={14} className="mt-0.5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <header className="flex gap-2.5 items-center">
+                      <CreditCard size="16" className="text-muted-foreground" />{' '}
+                      <Label>Status do pagamento</Label>
+                    </header>
+                    <Separator className="mt-2.5 mb-3" />
+                    <div className="mt-2">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-sm text-accent-foreground/50">
+                          Status atual:
+                        </Label>
+                        <Label className="text-sm font-medium ">
+                          {paymentStatusOptions.find(
+                            (option) =>
+                              option.value === appointmentTransaction?.status,
+                          )?.label || 'Desconhecido'}
+                        </Label>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-2">
+                        <Label className="text-sm text-accent-foreground/50">
+                          Método de pagamento:
+                        </Label>
+                        <Label className="text-sm font-medium ">
+                          {appointmentTransaction?.method === 'PIX'
+                            ? 'Pix'
+                            : appointmentTransaction?.method === 'CREDIT_CARD'
+                              ? 'Cartão de Crédito'
+                              : appointmentTransaction?.method === 'DEBIT_CARD'
+                                ? 'Cartão de Débito'
+                                : '---'}
+                        </Label>
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <Label className="text-sm text-accent-foreground/50">
+                          Valor:
+                        </Label>
+                        <Label className="text-sm font-medium ">
+                          {appointmentTransaction
+                            ? formatCurrency(appointmentTransaction.amount)
+                            : '---'}
+                        </Label>
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <Label className="text-sm text-accent-foreground/50">
+                          Pago em:
+                        </Label>
+                        <Label className="text-sm font-medium ">
+                          {appointmentTransaction?.paidAt
+                            ? new Date(
+                                appointmentTransaction.paidAt,
+                              ).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: '2-digit',
+                              })
+                            : '---'}
+                        </Label>
+                      </div>
+                      <div className="flex justify-between items-center mt-2">
+                        <Label className="text-sm text-accent-foreground/50">
+                          Gerado em:
+                        </Label>
+                        <Label className="text-sm font-medium ">
+                          {appointmentTransaction?.createdAt
+                            ? new Date(
+                                appointmentTransaction.createdAt,
+                              ).toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                              })
+                            : '---'}
+                        </Label>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
           </DialogTitle>
         </DialogHeader>
 
@@ -270,69 +490,7 @@ export function AppointmentModal({
             </div>
           </div>
 
-          {/* Grid de colunas - Modalidade e Data/Hora */}
-
-          {/* FIM DO GRID */}
           <Separator />
-
-          {/* Seção de Pagamento */}
-          {/* <div className="bg-amber-50 dark:bg-amber-950/20 p-4 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-amber-500 rounded-lg flex items-center justify-center">
-                  <CreditCard className="h-4 w-4 text-white" />
-                </div>
-                <div className="flex gap-4 items-center">
-                  <div>
-                    <p className="font-semibold">
-                      Conta: {schedule?.appointment.currentTransactionId}
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {(() => {
-                        const lastFirstReminder = schedule.notification
-                          ?.filter((n) => n.reminderType === 'FIRST_REMINDER')
-                          // Ordena da mais nova para a mais antiga baseado no createdAt
-                          .sort(
-                            (a, b) =>
-                              new Date(b.createdAt).getTime() -
-                              new Date(a.createdAt).getTime(),
-                          )[0]
-
-                        if (!lastFirstReminder) return null
-
-                        return (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
-                              Último lembrete:{' '}
-                              {new Date(
-                                lastFirstReminder.createdAt,
-                              ).toLocaleDateString('pt-BR')}
-                            </span>
-                          </div>
-                        )
-                      })()}
-                    </div>
-                  </div>
-                  <Badge variant={isPaymentPaid ? 'default' : 'destructive'}>
-                    {isPaymentPaid ? 'Pago' : 'Pendente'}
-                  </Badge>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={isPaymentPaid}
-                onClick={handleSendPaymentReminder}
-                className="flex items-center gap-2"
-              >
-                <Bell className="h-4 w-4" />
-                Enviar Lembrete
-              </Button>
-            </div>
-          </div>
-
-          <Separator /> */}
-
           {/*Controles de Sessão */}
           <div className="p-2 items-center justify-center grid grid-cols-2">
             <div className="flex flex-col items-center gap-2">
@@ -367,7 +525,13 @@ export function AppointmentModal({
                         ? 'secondary'
                         : 'default'
                     }
-                    disabled={isCompleted || isCanceled}
+                    disabled={
+                      isCompleted ||
+                      isCanceled ||
+                      !canStartSession ||
+                      startAppointmentMutation.isPending ||
+                      pauseAppointmentMutation.isPending
+                    }
                     className="rounded-full"
                   >
                     {timer.isRunning && !timer.isPaused ? (
@@ -392,11 +556,17 @@ export function AppointmentModal({
                     onClick={handleStopSession}
                     variant="destructive"
                     className="rounded-full"
+                    disabled={endAppointmentMutation.isPending}
                   >
                     <Square className="" />
                   </Button>
                 )}
               </div>
+              {!canStartSession && !isCompleted && !isCanceled && (
+                <p className="text-xs text-amber-600 mt-2 text-center max-w-xs">
+                  Aguardando confirmação e pagamento para iniciar a sessão
+                </p>
+              )}
               {schedule.appointment.status === 'SCHEDULED' ||
                 (schedule.appointment.status === 'CONFIRMED' && (
                   <Button

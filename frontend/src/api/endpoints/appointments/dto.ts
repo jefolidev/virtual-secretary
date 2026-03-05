@@ -42,3 +42,4 @@ export interface FetchProfessionalSchedulesListResponse {
   appointments: FetchProfessionalSchedulesResponse[]
   pages: number
 }
+  

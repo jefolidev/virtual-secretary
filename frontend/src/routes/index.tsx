@@ -10,6 +10,7 @@ import { OAuthCallbackPage } from '@/pages/oauth-callback'
 import { ScheduleCalendarPage } from '@/pages/schedule/calendar'
 import { SettingsPage } from '@/pages/settings'
 import { AccountSettingsPage } from '@/pages/settings/pages/account/index'
+import { ConnectionsSettingsPage } from '@/pages/settings/pages/connections'
 import { ConsultationsSettingsPage } from '@/pages/settings/pages/consultations/index'
 import { NotificationsSettingsPage } from '@/pages/settings/pages/notifications/index'
 import { SignUpPage } from '@/pages/signup'
@@ -113,6 +114,10 @@ export const router = createBrowserRouter([
               {
                 path: 'consultations',
                 element: <ConsultationsSettingsPage />,
+              },
+              {
+                path: 'connections',
+                element: <ConnectionsSettingsPage />,
               },
             ],
           },

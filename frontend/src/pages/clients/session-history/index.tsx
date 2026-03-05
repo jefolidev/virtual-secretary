@@ -234,8 +234,8 @@ export function SessionHistory() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="PENDING">Pendente</SelectItem>
-                  <SelectItem value="PROCESSING">Paga</SelectItem>
-                  <SelectItem value="SUCCEEDED">Concluída</SelectItem>
+                  <SelectItem value="PROCESSING">Em processo</SelectItem>
+                  <SelectItem value="SUCCEEDED">Pago</SelectItem>
                   <SelectItem value="FAILED">Liberada</SelectItem>
                   <SelectItem value="REFUNDED">Reembolsado</SelectItem>
                   <SelectItem value="all">Todos</SelectItem>
