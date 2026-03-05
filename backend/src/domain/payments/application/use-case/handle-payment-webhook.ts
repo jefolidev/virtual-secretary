@@ -16,6 +16,8 @@ export type HandlePaymentWebhookUseCaseResponse = Either<
     appointmentId: string
     clientId: string
     professionalId: string
+    amount: number
+    appointmentStartDateTime: Date
     status: 'PAID' | 'FAILED' | 'PENDING' | 'REFUNDED'
     isPaid: boolean
   }
@@ -89,6 +91,8 @@ export class HandlePaymentWebhookUseCase {
       appointmentId: appointment.id.toString(),
       clientId: appointment.clientId.toString(),
       professionalId: appointment.professionalId.toString(),
+      amount: transaction.amount,
+      appointmentStartDateTime: appointment.startDateTime,
       status: domainStatus,
       isPaid,
     })

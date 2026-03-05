@@ -57,7 +57,7 @@ export class MercadoPagoWebhookController {
         return { received: true }
       }
 
-      const { clientId, isPaid, appointmentId, professionalId, status } = result.value
+      const { clientId, isPaid, appointmentId, professionalId, status, amount, appointmentStartDateTime } = result.value
 
       if (status === 'PENDING') {
         return { received: true }
@@ -75,9 +75,12 @@ export class MercadoPagoWebhookController {
       await this.sessionService.finishSessionsByUserId(user.id.toString())
 
       if (isPaid) {
+        const formattedAmount = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount)
+        const formattedDate = appointmentStartDateTime.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', dateStyle: 'short', timeStyle: 'short' })
+
         await this.whatsappService.sendMessage(
           user.whatsappNumber,
-          `✅ *Pagamento confirmado!*\n\nSeu pagamento foi recebido com sucesso. Seu agendamento está confirmado!\n\nSe precisar de qualquer informação, estou à disposição.`,
+          `✅ *Pagamento confirmado!*\n\n*Valor:* ${formattedAmount}\n*Agendamento:* ${formattedDate}\n\nSeu agendamento está confirmado! Se precisar de qualquer informação, estou à disposição.`,
         )
 
         const professionalUser = await this.userRepository.findByProfessionalId(professionalId)
@@ -85,7 +88,7 @@ export class MercadoPagoWebhookController {
           const notification = Notification.create({
             recipientId: new UniqueEntityId(professionalUser.id.toString()),
             title: 'Pagamento recebido',
-            content: `O pagamento do agendamento foi confirmado com sucesso.`,
+            content: `Pagamento de ${formattedAmount} confirmado de ${user.name} para o agendamento de ${formattedDate}.`,
             reminderType: 'PAYMENT_STATUS',
           })
           await this.notificationsRepository.create(notification)
