@@ -701,13 +701,21 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
         try {
           const now = Date.now()
           const startTime = new Date(appointment.startDateTime).getTime()
+
+          // Schedule or send T2H reminder
           const delay2h = startTime - 2 * 60 * 60 * 1000 - now
-          if (delay2h > 0) {
+          const hasT2HSent = appointment.reminders?.some(
+            (r) => r.type === 'T2H_REMINDER' && r.sentAt,
+          )
+
+          if (!hasT2HSent) {
             try {
+              // If delay is negative but reminder wasn't sent, send immediately
+              const effectiveDelay = Math.max(0, delay2h)
               await this.remindersQueue.add(
                 'send-2h-reminder',
                 { appointmentId: appointment.id.toString() },
-                { delay: delay2h },
+                { delay: effectiveDelay },
               )
             } catch (err) {
               console.error(
@@ -717,13 +725,20 @@ Seja natural, conversacional e amigável. Não use muitos emojis.`,
             }
           }
 
+          // Schedule or send T30MIN reminder
           const delay30min = startTime - 30 * 60 * 1000 - now
-          if (delay30min > 0) {
+          const hasT30MINSent = appointment.reminders?.some(
+            (r) => r.type === 'T30M_REMINDER' && r.sentAt,
+          )
+
+          if (!hasT30MINSent) {
             try {
+              // If delay is negative but reminder wasn't sent, send immediately
+              const effectiveDelay = Math.max(0, delay30min)
               await this.remindersQueue.add(
                 'send-30min-reminder',
                 { appointmentId: appointment.id.toString() },
-                { delay: delay30min },
+                { delay: effectiveDelay },
               )
             } catch (err) {
               console.error(

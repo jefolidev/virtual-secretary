@@ -22,7 +22,7 @@ describe('Start Appointment', () => {
     sut = new StartAppointmentUseCase(
       inMemoryAppointmentRepository,
       inMemoryClientRepository,
-      inMemoryProfessionalRepository
+      inMemoryProfessionalRepository,
     )
   })
 
@@ -33,7 +33,7 @@ describe('Start Appointment', () => {
 
     const professional = makeProfessional(
       {},
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
@@ -42,8 +42,10 @@ describe('Start Appointment', () => {
       {
         professionalId: professional.id,
         clientId: client.id,
+        status: 'CONFIRMED',
+        paymentStatus: 'SUCCEEDED',
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
 
     await inMemoryAppointmentRepository.create(appointment)
@@ -71,14 +73,14 @@ describe('Start Appointment', () => {
 
     const professional = makeProfessional(
       {},
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
 
     const anotherProfessional = makeProfessional(
       {},
-      new UniqueEntityId('another-professional-id')
+      new UniqueEntityId('another-professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(anotherProfessional)
@@ -88,7 +90,7 @@ describe('Start Appointment', () => {
         professionalId: professional.id,
         clientId: client.id,
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
 
     await inMemoryAppointmentRepository.create(appointment)
@@ -107,14 +109,14 @@ describe('Start Appointment', () => {
     }
   })
 
-  it('should not be able to start an appointment if already started', async () => {
+  it('should not be able to start an appointment without payment', async () => {
     const client = makeClient({}, new UniqueEntityId('client-id'))
 
     await inMemoryClientRepository.create(client)
 
     const professional = makeProfessional(
       {},
-      new UniqueEntityId('professional-id')
+      new UniqueEntityId('professional-id'),
     )
 
     await inMemoryProfessionalRepository.create(professional)
@@ -123,13 +125,93 @@ describe('Start Appointment', () => {
       {
         professionalId: professional.id,
         clientId: client.id,
+        status: 'CONFIRMED',
+        paymentStatus: 'PENDING',
       },
-      new UniqueEntityId('appointment-id')
+      new UniqueEntityId('appointment-id'),
     )
 
     await inMemoryAppointmentRepository.create(appointment)
 
-    appointment.status = 'COMPLETED'
+    const response = await sut.execute({
+      appointmentId: appointment.id.toString(),
+      professionalId: professional.id.toString(),
+    })
+
+    expect(response.isLeft()).toBe(true)
+
+    if (response.isLeft()) {
+      expect(inMemoryAppointmentRepository.items[0]?.status).toBe('CONFIRMED')
+      expect(response.value).toBeInstanceOf(BadRequestError)
+      expect((response.value as BadRequestError).message).toContain(
+        'payment must be completed',
+      )
+    }
+  })
+
+  it('should not be able to start an appointment without confirmation', async () => {
+    const client = makeClient({}, new UniqueEntityId('client-id'))
+
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {},
+      new UniqueEntityId('professional-id'),
+    )
+
+    await inMemoryProfessionalRepository.create(professional)
+
+    const appointment = makeAppointment(
+      {
+        professionalId: professional.id,
+        clientId: client.id,
+        status: 'SCHEDULED',
+        paymentStatus: 'SUCCEEDED',
+      },
+      new UniqueEntityId('appointment-id'),
+    )
+
+    await inMemoryAppointmentRepository.create(appointment)
+
+    const response = await sut.execute({
+      appointmentId: appointment.id.toString(),
+      professionalId: professional.id.toString(),
+    })
+
+    expect(response.isLeft()).toBe(true)
+
+    if (response.isLeft()) {
+      expect(inMemoryAppointmentRepository.items[0]?.status).toBe('SCHEDULED')
+      expect(response.value).toBeInstanceOf(BadRequestError)
+      expect((response.value as BadRequestError).message).toContain(
+        'appointment must be confirmed',
+      )
+    }
+  })
+
+  it('should not be able to start an appointment if already started', async () => {
+    const client = makeClient({}, new UniqueEntityId('client-id'))
+
+    await inMemoryClientRepository.create(client)
+
+    const professional = makeProfessional(
+      {},
+      new UniqueEntityId('professional-id'),
+    )
+
+    await inMemoryProfessionalRepository.create(professional)
+
+    const appointment = makeAppointment(
+      {
+        professionalId: professional.id,
+        clientId: client.id,
+        status: 'COMPLETED',
+        paymentStatus: 'SUCCEEDED',
+      },
+      new UniqueEntityId('appointment-id'),
+    )
+
+    await inMemoryAppointmentRepository.create(appointment)
 
     const response = await sut.execute({
       appointmentId: appointment.id.toString(),

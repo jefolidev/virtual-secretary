@@ -57,6 +57,24 @@ export class StartAppointmentUseCase {
         ),
       )
 
+    // Validate payment status
+    if (appointment.paymentStatus !== 'SUCCEEDED') {
+      return left(
+        new BadRequestError(
+          'Cannot start appointment: payment must be completed.',
+        ),
+      )
+    }
+
+    // Validate confirmation status
+    if (appointment.status !== 'CONFIRMED') {
+      return left(
+        new BadRequestError(
+          'Cannot start appointment: appointment must be confirmed.',
+        ),
+      )
+    }
+
     try {
       if (appointment.totalElapsedMs) {
         appointment.resume()

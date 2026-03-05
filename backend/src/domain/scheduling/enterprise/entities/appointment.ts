@@ -300,8 +300,12 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
   }
 
   public start() {
-    if (this.props.status !== 'SCHEDULED') {
-      throw new Error('Can only start a scheduled appointment')
+    if (this.props.status !== 'CONFIRMED') {
+      throw new Error('Can only start a confirmed appointment')
+    }
+
+    if (this.props.paymentStatus !== 'SUCCEEDED') {
+      throw new Error('Can only start an appointment with payment succeeded')
     }
 
     this.props.status = 'IN_PROGRESS'

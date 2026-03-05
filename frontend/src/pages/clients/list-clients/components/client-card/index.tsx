@@ -7,6 +7,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { Separator } from '@/components/ui/separator'
+import { formatCPF } from '@/utils/format-cpf'
 import { formatPhoneNumber } from '@/utils/format-phone'
 import dayjs from 'dayjs'
 import 'dayjs/locale/pt-br'
@@ -25,7 +26,6 @@ import { useState } from 'react'
 import type { ClientRegistredContacts, ClientUnlinkedContacts } from '../..'
 import { isRegisteredContact } from '../../utils/is-user-registred'
 import { ClientDialogContent } from '../client-dialog-content'
-import { formatCPF } from '@/utils/format-cpf'
 
 dayjs.extend(relativeTime)
 dayjs.locale('pt-br')
@@ -59,7 +59,7 @@ export function ClientCard({ data }: ClientCardProps) {
           role="button"
           tabIndex={0}
           onKeyDown={(e) => e.key === 'Enter' && setOpen(true)}
-          className={`border-gray-300 dark:border-gray-50/20 flex flex-col gap-2 p-5 rounded-md border justify-center hover:cursor-pointer hover:bg-muted/10 transition-colors transform-gpu will-change-transform `}
+          className={`border-gray-300 dark:border-gray-50/20 bg-card flex flex-col gap-2 p-5 rounded-md border justify-center hover:cursor-pointer hover:bg-muted/10 transition-colors transform-gpu will-change-transform `}
         >
           {/* Header */}
           <div className="flex flex-col gap-2.5">

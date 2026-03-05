@@ -380,7 +380,7 @@ export function AppointmentModal({
                         <Label className="text-sm text-accent-foreground/50">
                           Status atual:
                         </Label>
-                        <Label className="text-sm font-medium ">
+                        <Label className="text-sm font-medium ">ṕ
                           {paymentStatusOptions.find(
                             (option) =>
                               option.value === appointmentTransaction?.status,
@@ -392,7 +392,7 @@ export function AppointmentModal({
                         <Label className="text-sm text-accent-foreground/50">
                           Método de pagamento:
                         </Label>
-                        <Label className="text-sm font-medium ">
+                        <Label className="text-sm text-nowrap font-medium ">
                           {appointmentTransaction?.method === 'PIX'
                             ? 'Pix'
                             : appointmentTransaction?.method === 'CREDIT_CARD'

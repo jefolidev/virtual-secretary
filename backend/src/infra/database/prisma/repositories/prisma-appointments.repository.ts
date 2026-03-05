@@ -88,23 +88,8 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
         { delay: delayD1 },
       )
 
-      let delay2h = consultationTime - 2 * 60 * 60 * 1000 - Date.now()
-      if (delay2h <= 0) delay2h = 0
-
-      await this.remindersQueue.add(
-        'send-2h-reminder',
-        { appointmentId: appointment.id.toString() },
-        { delay: delay2h },
-      )
-
-      let delay30m = consultationTime - 30 * 60 * 1000 - Date.now()
-      if (delay30m <= 0) delay30m = 0
-
-      await this.remindersQueue.add(
-        'send-30m-reminder',
-        { appointmentId: appointment.id.toString() },
-        { delay: delay30m },
-      )
+      // Note: T2H and T30MIN reminders are scheduled when the appointment is confirmed
+      // See whatsapp.service.ts handleConfirmAppointment method
 
       await tx.appointment.create({
         data: {
@@ -412,7 +397,6 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
     const appointmentsWithUser = appointments.filter(
       (a) => a.client && a.client.user,
     )
-
 
     return appointmentsWithUser.map((raw) =>
       PrismaAppointmentWithClientMapper.toDomain(raw),

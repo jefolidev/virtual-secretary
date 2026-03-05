@@ -4,17 +4,15 @@ import {
 } from '@/api/endpoints/appointments'
 import type { FetchProfessionalSchedulesResponse } from '@/api/endpoints/appointments/dto'
 import { PaginationButtons } from '@/components/pagination-buttons'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { useAuth } from '@/contexts/auth-context'
-import { Search } from 'lucide-react'
+import {
+  Calendar,
+  ChevronDown,
+  CreditCard,
+  Filter,
+  Search,
+  Video,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { SessionHistoryItem } from './components/session-history-item'
@@ -89,6 +87,9 @@ export function SessionHistory() {
   const [searchTerm, setSearchTerm] = useState('')
   const [expandedSession, setExpandedSession] = useState<string | null>(null)
 
+  const selectClass =
+    'w-full pl-3 pr-8 py-2 text-xs bg-transparent text-foreground border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-colors appearance-none cursor-pointer'
+
   const handleFilterChange = (
     filterType: 'period' | 'status' | 'paymentStatus' | 'modality',
     value: string,
@@ -110,7 +111,7 @@ export function SessionHistory() {
     <div className="">
       <div className="flex justify-between items-center mb-2 py-6 border-b px-8">
         <div>
-          <h1 className="text-3xl font-semibold">Histórico de Sessões</h1>
+          <h1 className="text-2xl font-semibold">Histórico de Sessões</h1>
           <p className="text-sm text-muted-foreground">
             Visualize e gerencie o histórico completo de todas as sessões
             realizadas
@@ -160,106 +161,116 @@ export function SessionHistory() {
       </div>
 
       <div className="p-6">
-        <div className="bg-foreground/1 rounded-lg border border-foreground/5 p-6 mb-6">
-          <div className="flex gap-4 items-center mb-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Buscar por paciente"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-white dark:bg-transparent"
-              />
-            </div>
+        <div className="bg-card rounded-2xl border border-border px-6 py-5 space-y-4 mb-6">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar por paciente ou número de sessão..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value)
+                setCurrentPage(1)
+              }}
+              className="w-full pl-9 pr-4 py-2.5 text-xs bg-transparent text-foreground placeholder:text-muted-foreground border-b border-border focus:outline-none focus:border-ring transition-colors"
+            />
           </div>
 
-          <div className="grid grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+          {/* Filter Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-1">
             <div>
-              <Label className="block text-sm font-medium text-accent-foreground mb-2">
+              <label className="block text-[10px] uppercase tracking-wider font-medium text-muted-foreground mb-1.5">
+                <Calendar className="inline w-3 h-3 mr-1 opacity-70" />
                 Período
-              </Label>
-              <Select
-                value={filterPeriod}
-                onValueChange={(value) => handleFilterChange('period', value)}
-              >
-                <SelectTrigger className="w-full bg-white dark:bg-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todo período</SelectItem>
-                  <SelectItem value="last-week">Última semana</SelectItem>
-                  <SelectItem value="last-month">Último mês</SelectItem>
-                  <SelectItem value="last-year">Último ano</SelectItem>
-                </SelectContent>
-              </Select>
+              </label>
+              <div className="relative">
+                <select
+                  value={filterPeriod}
+                  onChange={(e) => handleFilterChange('period', e.target.value)}
+                  className={selectClass}
+                >
+                  <option value="all">Todo período</option>
+                  <option value="last-week">Última semana</option>
+                  <option value="last-month">Último mês</option>
+                  <option value="last-year">Último ano</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
 
             <div>
-              <Label className="block text-sm font-medium text-accent-foreground mb-2">
+              <label className="block text-[10px] uppercase tracking-wider font-medium text-muted-foreground mb-1.5">
+                <Filter className="inline w-3 h-3 mr-1 opacity-70" />
                 Status da Sessão
-              </Label>
-              <Select
-                value={filterStatus}
-                onValueChange={(value) => handleFilterChange('status', value)}
-              >
-                <SelectTrigger className="w-full bg-white dark:bg-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="SCHEDULED">Agendada</SelectItem>
-                  <SelectItem value="CONFIRMED">Confirmada</SelectItem>
-                  <SelectItem value="CANCELLED">Cancelada</SelectItem>
-                  <SelectItem value="RESCHEDULED">Remarcada</SelectItem>
-                  <SelectItem value="NO_SHOW">No-show</SelectItem>
-                  <SelectItem value="IN_PROGRESS">Em andamento</SelectItem>
-                  <SelectItem value="COMPLETED">Realizada</SelectItem>
-                </SelectContent>
-              </Select>
+              </label>
+              <div className="relative">
+                <select
+                  value={filterStatus}
+                  onChange={(e) => {
+                    handleFilterChange('status', e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className={selectClass}
+                >
+                  <option value="all">Todos</option>
+                  <option value="SCHEDULED">Agendada</option>
+                  <option value="CONFIRMED">Confirmada</option>
+                  <option value="CANCELLED">Cancelada</option>
+                  <option value="RESCHEDULED">Remarcada</option>
+                  <option value="NO_SHOW">No-show</option>
+                  <option value="IN_PROGRESS">Em andamento</option>
+                  <option value="COMPLETED">Realizada</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
 
             <div>
-              <Label className="block text-sm font-medium text-accent-foreground mb-2">
-                Status de Pagamento
-              </Label>
-              <Select
-                value={filterPayment}
-                onValueChange={(value) =>
-                  handleFilterChange('paymentStatus', value)
-                }
-              >
-                <SelectTrigger className="w-full bg-white dark:bg-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PENDING">Pendente</SelectItem>
-                  <SelectItem value="PROCESSING">Em processo</SelectItem>
-                  <SelectItem value="SUCCEEDED">Pago</SelectItem>
-                  <SelectItem value="FAILED">Liberada</SelectItem>
-                  <SelectItem value="REFUNDED">Reembolsado</SelectItem>
-                  <SelectItem value="all">Todos</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="block text-[10px] uppercase tracking-wider font-medium text-muted-foreground mb-1.5">
+                <CreditCard className="inline w-3 h-3 mr-1 opacity-70" />
+                Pagamento
+              </label>
+              <div className="relative">
+                <select
+                  value={filterPayment}
+                  onChange={(e) => {
+                    handleFilterChange('paymentStatus', e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className={selectClass}
+                >
+                  <option value="all">Todos</option>
+                  <option value="PENDING">Pendente</option>
+                  <option value="PROCESSING">Em processo</option>
+                  <option value="SUCCEEDED">Pago</option>
+                  <option value="FAILED">Liberada</option>
+                  <option value="REFUNDED">Reembolsado</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
 
             <div>
-              <Label className="block text-sm font-medium text-accent-foreground mb-2">
+              <label className="block text-[10px] uppercase tracking-wider font-medium text-muted-foreground mb-1.5">
+                <Video className="inline w-3 h-3 mr-1 opacity-70" />
                 Modalidade
-              </Label>
-              <Select
-                value={filterModality}
-                onValueChange={(value) => handleFilterChange('modality', value)}
-              >
-                <SelectTrigger className="w-full bg-white dark:bg-transparent">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas</SelectItem>
-                  <SelectItem value="ONLINE">Online</SelectItem>
-                  <SelectItem value="IN_PERSON">Presencial</SelectItem>
-                </SelectContent>
-              </Select>
+              </label>
+              <div className="relative">
+                <select
+                  value={filterModality}
+                  onChange={(e) => {
+                    handleFilterChange('modality', e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className={selectClass}
+                >
+                  <option value="all">Todas</option>
+                  <option value="ONLINE">Online</option>
+                  <option value="IN_PERSON">Presencial</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
           </div>
         </div>

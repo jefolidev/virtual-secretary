@@ -2,15 +2,7 @@ import { api } from '@/api/axios'
 import type { Appointment } from '@/api/schemas/fetch-professional-schedules.dto'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Calendar, Filter, Search } from 'lucide-react'
+import { ArrowUpDown, ChevronDown, Filter, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ClientCard, type ClientCardProps } from './components/client-card'
 import { ControlBar } from './components/control-bar'
@@ -72,6 +64,9 @@ export function ListClientsPage() {
 
   const [searchedUser, setSearchedUser] = useState<string>('')
 
+  const selectClass =
+    'w-full pl-3 pr-8 py-2 text-xs bg-transparent text-foreground border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-ring transition-colors appearance-none cursor-pointer'
+
   const handleFetchClients = async () => {
     try {
       const response = await api.get<ClientContactsResponse>(
@@ -107,7 +102,7 @@ export function ListClientsPage() {
   const [searchQuery, setSearchQuery] = useState('')
 
   return (
-    <div>
+    <>
       <div className="flex justify-between items-center mb-2 py-6 border-b px-8">
         <div>
           <h1 className="text-2xl font-semibold">Gerenciamento de Pacientes</h1>
@@ -133,105 +128,114 @@ export function ListClientsPage() {
         />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="bg-foreground/1 rounded-lg border border-foreground/5 p-4 mb-2">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-400" />
-              <Input
-                placeholder="Buscar por nome, email, telefone ou CPF..."
-                value={searchedUser}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-10 bg-white dark:bg-transparent"
-              />
-            </div>
-
-            {/* Filter by Type */}
-            <Select
-              value={filterType}
-              onValueChange={(value) => setFilterType(value as FilterType)}
-            >
-              <SelectTrigger className="w-full md:w-50 bg-white dark:bg-transparent">
-                <Filter className="size-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos os Pacientes</SelectItem>
-                <SelectItem value="registered">Cadastrados</SelectItem>
-                <SelectItem value="unregistered">Não Cadastrados</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Sort */}
-            <Select
-              value={sortType}
-              onValueChange={(value) => setSortType(value as SortType)}
-            >
-              <SelectTrigger className="w-full md:w-50 bg-white dark:bg-transparent">
-                <Calendar className="size-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="name">Ordenar por Nome</SelectItem>
-                <SelectItem value="recent">Mais Recentes</SelectItem>
-                <SelectItem value="appointments">Mais Consultas</SelectItem>
-              </SelectContent>
-            </Select>
+      <div className="px-6 py-4">
+        <div className="bg-card rounded-2xl border border-border px-6 py-5 space-y-4 mb-2">
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar por nome, email, telefone ou CPF..."
+              value={searchedUser}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2.5 text-xs bg-transparent text-foreground placeholder:text-muted-foreground border-b border-border focus:outline-none focus:border-ring transition-colors"
+            />
           </div>
 
-          {/* Active Filters */}
-          {(searchQuery || filterType !== 'all') && (
-            <div className="flex items-center gap-2  pt-4  border-gray-100">
-              <span className="text-sm text-accent-foreground">
-                Filtros ativos:
-              </span>
-              {searchQuery && (
-                <Badge variant="default" className="gap-1">
-                  Busca: {searchQuery}
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="ml-1 hover:text-accent-foreground"
-                  >
-                    ×
-                  </button>
-                </Badge>
-              )}
-              {filterType !== 'all' && (
-                <Badge variant="default" className="gap-1">
-                  Tipo:{' '}
-                  {filterType === 'registered'
-                    ? 'Cadastrados'
-                    : filterType === 'unregistered'
-                      ? 'Não Cadastrados'
-                      : 'Online'}
-                  <button
-                    onClick={() => setFilterType('all')}
-                    className="ml-1 hover:text-gray-900"
-                  >
-                    ×
-                  </button>
-                </Badge>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSearchQuery('')
-                  setFilterType('all')
-                }}
-                className="text-xs ml-auto"
-              >
-                Limpar todos
-              </Button>
+          {/* Filter Row */}
+          <div className="grid grid-cols-2 gap-4 pt-1">
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider font-medium text-muted-foreground mb-1.5">
+                <Filter className="inline w-3 h-3 mr-1 opacity-70" />
+                Tipo de Paciente
+              </label>
+              <div className="relative">
+                <select
+                  value={filterType}
+                  onChange={(e) => setFilterType(e.target.value as FilterType)}
+                  className={selectClass}
+                >
+                  <option value="all">Todos os Pacientes</option>
+                  <option value="registered">Cadastrados</option>
+                  <option value="unregistered">Não Cadastrados</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+              </div>
             </div>
-          )}
+
+            <div>
+              <label className="block text-[10px] uppercase tracking-wider font-medium text-muted-foreground mb-1.5">
+                <ArrowUpDown className="inline w-3 h-3 mr-1 opacity-70" />
+                Ordenar por
+              </label>
+              <div className="relative">
+                <select
+                  value={sortType}
+                  onChange={(e) => setSortType(e.target.value as SortType)}
+                  className={selectClass}
+                >
+                  <option value="name">Ordenar por Nome</option>
+                  <option value="recent">Mais Recentes</option>
+                  <option value="appointments">Mais Consultas</option>
+                </select>
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground pointer-events-none" />
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Active Filters */}
+        {(searchQuery || filterType !== 'all') && (
+          <div className="flex items-center gap-2  pt-4  border-gray-100">
+            <span className="text-sm text-accent-foreground">
+              Filtros ativos:
+            </span>
+            {searchQuery && (
+              <Badge variant="default" className="gap-1">
+                Busca: {searchQuery}
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="ml-1 hover:text-accent-foreground"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            {filterType !== 'all' && (
+              <Badge variant="default" className="gap-1">
+                Tipo:{' '}
+                {filterType === 'registered'
+                  ? 'Cadastrados'
+                  : filterType === 'unregistered'
+                    ? 'Não Cadastrados'
+                    : 'Online'}
+                <button
+                  onClick={() => setFilterType('all')}
+                  className="ml-1 hover:text-gray-900"
+                >
+                  ×
+                </button>
+              </Badge>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSearchQuery('')
+                setFilterType('all')
+              }}
+              className="text-xs ml-auto"
+            >
+              Limpar todos
+            </Button>
+          </div>
+        )}
       </div>
 
       <p className="pl-7 text-sm mb-2 text-foreground/50">
         {clients.length} pacientes encontrado
       </p>
+
       <div
         className="grid gap-4 px-6"
         style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}
@@ -264,6 +268,6 @@ export function ListClientsPage() {
           }
         })}
       </div>
-    </div>
+    </>
   )
 }

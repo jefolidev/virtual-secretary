@@ -1,13 +1,13 @@
 import { Either, left, right } from '@/core/either'
 import { UniqueEntityId } from '@/core/entities/unique-entity-id'
 import { BadRequestError } from '@/core/errors/bad-request'
-import { GoogleNotConnectedError } from '@/core/errors/google-not-connected'
 import { Injectable } from '@nestjs/common'
 import dayjs from 'dayjs'
+import { GoogleNotConnectedError } from '../../../../core/errors/google-not-connected'
 import { NotFoundError } from '../../../../core/errors/resource-not-found-error'
 import {
-  Appointment,
-  type AppointmentModalityType,
+    Appointment,
+    type AppointmentModalityType,
 } from '../../enterprise/entities/appointment'
 import { AppointmentsRepository } from '../repositories/appointments.repository'
 import { ClientRepository } from '../repositories/client.repository'
