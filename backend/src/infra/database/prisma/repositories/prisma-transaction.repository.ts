@@ -39,7 +39,9 @@ export class PrismaTransactionRepository implements TransactionRepository {
     return PrismaTransactionMapper.toDomain(raw)
   }
 
-  async findByExternalReference(externalReference: string): Promise<Transaction | null> {
+  async findByExternalReference(
+    externalReference: string,
+  ): Promise<Transaction | null> {
     const raw = await this.prisma.transaction.findFirst({
       where: { externalReference },
       orderBy: { createdAt: 'desc' },
@@ -54,6 +56,18 @@ export class PrismaTransactionRepository implements TransactionRepository {
     })
 
     return rows.map(PrismaTransactionMapper.toDomain)
+  }
+
+  async findByAppointmentId(
+    appointmentId: string,
+  ): Promise<Transaction | null> {
+    const raw = await this.prisma.transaction.findFirst({
+      where: { externalReference: appointmentId },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    if (!raw) return null
+    return PrismaTransactionMapper.toDomain(raw)
   }
 
   async save(transaction: Transaction): Promise<void> {

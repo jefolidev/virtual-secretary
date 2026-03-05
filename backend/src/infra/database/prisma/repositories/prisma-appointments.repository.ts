@@ -413,6 +413,7 @@ export class PrismaAppointmentsRepository implements AppointmentsRepository {
       (a) => a.client && a.client.user,
     )
 
+
     return appointmentsWithUser.map((raw) =>
       PrismaAppointmentWithClientMapper.toDomain(raw),
     )

@@ -428,7 +428,7 @@ export class Appointment extends AggregateRoot<AppointmentProps> {
       {
         ...props,
         status: props.status ?? 'SCHEDULED',
-        paymentStatus: 'PENDING',
+        paymentStatus: props.paymentStatus ?? 'PENDING',
         isPaid: props.isPaid ?? false,
         googleMeetLink: props.googleMeetLink ?? null,
         startedAt: props.startedAt ?? null,

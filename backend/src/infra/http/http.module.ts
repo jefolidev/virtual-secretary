@@ -1,12 +1,13 @@
 import { GetEvaluationStatsUseCase } from '@/domain/evaluation/application/use-case/get-evaluation-stats'
 import { FetchProfessionalNotificationsUseCase } from '@/domain/notifications/application/use-cases/fetch-professional-notifications'
 import { ReadNotificationUseCase } from '@/domain/notifications/application/use-cases/read-notification'
-import { InitiateNewTransactionUseCase } from '@/domain/payments/application/use-case/initiate-new-transaction'
 import { AddProfessionalToOrganizationUseCase } from '@/domain/organization/application/use-cases/add-professional-to-organization'
 import { CreateOrganizationUseCase } from '@/domain/organization/application/use-cases/create-organization'
 import { FetchOrganizationByIdUseCase } from '@/domain/organization/application/use-cases/fetch-organization-by-id'
 import { RemoveProfessionalFromOrganizationUseCase } from '@/domain/organization/application/use-cases/remove-professional-from-organization'
 import { UpdateOrganizationUseCase } from '@/domain/organization/application/use-cases/update-organization'
+import { FetchTransactionByAppointmentIdUseCase } from '@/domain/payments/application/use-case/fetch-transaction-by-appointment-id'
+import { InitiateNewTransactionUseCase } from '@/domain/payments/application/use-case/initiate-new-transaction'
 import { AuthenticateStudentUseCase } from '@/domain/scheduling/application/use-cases/authenticate-user'
 import { CancelAppointmentUseCase } from '@/domain/scheduling/application/use-cases/cancel-appointment'
 import { ChangeProfessionalWorkDaysUseCase } from '@/domain/scheduling/application/use-cases/change-professional-work-days'
@@ -43,8 +44,8 @@ import { StartAppointmentUseCase } from '@/domain/scheduling/application/use-cas
 import { Module } from '@nestjs/common'
 import { CryptographyModule } from '../cryptography/cryptography.module'
 import { DatabaseModule } from '../database/database.module'
-import { MercadoPagoModule } from '../webhooks/mercado-pago/mercado-pago.module'
 import { GoogleOAuthCallbackController } from '../webhooks/google-calendar/controllers/handle-oauth-callback.controller'
+import { MercadoPagoModule } from '../webhooks/mercado-pago/mercado-pago.module'
 import { AddProfessionalToOrganizationController } from './controllers/add-professional-to-organization.controller'
 import { AuthenticateController } from './controllers/authenticate.controller'
 import { CancelAppointmentController } from './controllers/cancel-appointment.controller'
@@ -72,6 +73,7 @@ import { FetchProfessionalWithNotificationSettingsController } from './controlle
 import { FetchProfessionalNotificationsController } from './controllers/fetch-professional-notifications.controller'
 import { FetchProfessionalSettingsController } from './controllers/fetch-professional-settings.controller'
 import { FetchProfessionalController } from './controllers/fetch-professionals.controller'
+import { FetchTransactionByAppointmentController } from './controllers/fetch-transaction-by-appointment.controller'
 import { FetchUsersContactsController } from './controllers/fetch-users-contacts.controller'
 import { ForgotPasswordController } from './controllers/forgot-password.controller'
 import { GetEvaluationStatsController } from './controllers/get-evaluation-stats.controller'
@@ -134,6 +136,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     StartAppointmentController,
     UpdateOrganizationController,
     FetchUsersContactsController,
+    FetchTransactionByAppointmentController,
   ],
   providers: [
     AddProfessionalToOrganizationUseCase,
@@ -178,6 +181,7 @@ import { UpdateOrganizationController } from './controllers/update-organization.
     UpdateOrganizationUseCase,
     FetchUsersContactsUseCase,
     InitiateNewTransactionUseCase,
+    FetchTransactionByAppointmentIdUseCase,
   ],
 })
 export class HttpModule {}

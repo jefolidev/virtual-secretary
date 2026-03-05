@@ -131,12 +131,12 @@ export class Transaction extends Entity<TransactionProps> {
     return this.props.createdAt
   }
 
-
   public markAsPaid(externalPaymentId: string): void {
     if (this.props.status !== 'PENDING')
       throw new Error('Is not possible pay a transaction that is not pendent.')
 
     this.props.status = 'PAID'
+    this.props.paidAt = new Date()
   }
 
   public markAsFailed(): void {
@@ -146,12 +146,8 @@ export class Transaction extends Entity<TransactionProps> {
     this.props.status = 'FAILED'
   }
 
- 
   static create(
-    props: Optional<
-      TransactionProps,
-      'createdAt' | 'status' | 'paidAt' 
-    >,
+    props: Optional<TransactionProps, 'createdAt' | 'status' | 'paidAt'>,
     id?: UniqueEntityId,
   ) {
     const transaction = new Transaction(
